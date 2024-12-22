@@ -1,0 +1,677 @@
+import { describe, expect, it, test } from '@jest/globals';
+import {
+  ValueList,
+  KeyedList,
+  SimpleList,
+  StringMap,
+  Vo,
+  AgentConfigData,
+  Service,
+  ServiceResponse,
+  ServiceStatus,
+  STATUS_DESCRIPTIONS,
+  ServerRequest,
+  ServerResponse,
+} from 'simplity-types';
+import { serviceAgent } from '..';
+
+type ListTestCase = {
+  /**
+   * test case description
+   */
+  desc: string;
+  /**
+   * to be tested for
+   * getList(listName, key) === expected
+   */
+  listName: string;
+  key?: string | number;
+  expected: SimpleList;
+};
+
+const simpleLists: SimpleList[] = [
+  [
+    { value: 'red', text: 'Red' },
+    { value: 'yellow', text: 'Yellow' },
+    { value: 'green', text: 'Green' },
+  ],
+  [
+    { value: 'ka', text: 'Karnataka' },
+    { value: 'dl', text: 'Delhi' },
+    { value: 'mh', text: 'Maharashtra' },
+  ],
+  [
+    { value: 'ma', text: 'Massachusetts' },
+    { value: 'de', text: 'Delaware' },
+  ],
+  [
+    { value: 'blue', text: 'Blue' },
+    { value: 'white', text: 'White' },
+    { value: 'black', text: 'Black' },
+  ],
+  [
+    { value: 'white', text: 'White' },
+    { value: 'black', text: 'Black' },
+  ],
+  [
+    { value: 1, text: 'One' },
+    { value: 100, text: 'One hundred' },
+    { value: 1000, text: 'One Thousand' },
+  ],
+  [
+    { value: 1, text: 'one' },
+    { value: 2, text: 'two' },
+    { value: 3, text: 'three' },
+  ],
+];
+
+const keyedLists: KeyedList[] = [
+  { k1: simpleLists[0], k2: simpleLists[1] },
+  { k1: simpleLists[1], k2: simpleLists[2] },
+  { k1: simpleLists[2], k2: simpleLists[3] },
+  { k1: simpleLists[3], k2: simpleLists[4] },
+  { k1: simpleLists[4], k2: simpleLists[5] },
+  { k1: simpleLists[5], k2: simpleLists[6] },
+  { k1: simpleLists[6], k2: simpleLists[0] },
+];
+
+/**
+ *  we have lists in Cache, local and server with clashed names, but different contents
+ * with a pattern of numbering, we have ensured that the list with the same name has different content in different areas
+ * e.g. list6 exists in cache/local/server, but the content is different so that we will be able to test where the list is coming out from
+ /
+/**
+ * Cached list uses listN = slN
+ */
+const localLists: StringMap<ValueList> = {
+  list0: { isKeyed: false, list: simpleLists[0] },
+  list3: { isKeyed: false, list: simpleLists[3] },
+  list4: { isKeyed: false, list: simpleLists[4] },
+  list6: { isKeyed: false, list: simpleLists[6] },
+  kList0: { isKeyed: true, list: keyedLists[0] },
+  kList3: { isKeyed: true, list: keyedLists[3] },
+  kList4: { isKeyed: true, list: keyedLists[4] },
+  kList6: { isKeyed: true, list: keyedLists[6] },
+};
+
+/**
+ * local service uses listN = sl(N+1)
+ * this is to ensure that we are able to detect where the list is picked up from
+ */
+const locallyCodedLists: StringMap<ValueList> = {
+  list1: { isKeyed: false, list: simpleLists[2] },
+  list3: { isKeyed: false, list: simpleLists[4] },
+  list5: { isKeyed: false, list: simpleLists[6] },
+  list6: { isKeyed: false, list: simpleLists[0] },
+  kList1: { isKeyed: true, list: keyedLists[2] },
+  kList3: { isKeyed: true, list: keyedLists[4] },
+  kList5: { isKeyed: true, list: keyedLists[6] },
+  kList6: { isKeyed: true, list: keyedLists[0] },
+};
+
+/**
+ * local service uses listN = sl(N-1)
+ * this is to ensure that we are able to detect where the list is picked up from
+ */
+const serverLists: StringMap<ValueList> = {
+  list2: { isKeyed: false, list: simpleLists[1] },
+  list4: { isKeyed: false, list: simpleLists[3] },
+  list5: { isKeyed: false, list: simpleLists[4] },
+  list6: { isKeyed: false, list: simpleLists[5] },
+  kList2: { isKeyed: true, list: keyedLists[1] },
+  kList4: { isKeyed: true, list: keyedLists[3] },
+  kList5: { isKeyed: true, list: keyedLists[4] },
+  kList6: { isKeyed: true, list: keyedLists[5] },
+};
+
+/**
+ * a local service that mimics listService with cached lists
+ * @param data
+ * @returns
+ */
+const localListService: Service = (data) => {
+  const list = getList(data, locallyCodedLists);
+  let status: ServiceStatus = 'completed';
+  let description = STATUS_DESCRIPTIONS[status];
+  if (list) {
+    return {
+      status,
+      description,
+      data: { list },
+    };
+  }
+  //we must indicate that this list is not found, locally. Hence status is not 'completed'
+  status = 'noSuchService';
+  description = STATUS_DESCRIPTIONS[status];
+  return { status, description };
+};
+
+const serverListService: Service = (data) => {
+  let list = getList(data, serverLists);
+  if (!list) {
+    if (data && data.forAllKeys) {
+      list = {};
+    } else {
+      list = [];
+    }
+  }
+
+  return {
+    status: 'completed',
+    description: STATUS_DESCRIPTIONS['completed'],
+    data: { list },
+  };
+};
+
+const serverServices: StringMap<Service> = {
+  _getList: serverListService,
+  service2: getService('service2', 'server'),
+  service4: getService('service4', 'server'),
+  service5: getService('service5', 'server'),
+  service6: getService('service6', 'server'),
+};
+const localServices: StringMap<Service> = {
+  _getList: localListService,
+  service1: getService('service1', 'local'),
+  service3: getService('service3', 'local'),
+  service5: getService('service5', 'local'),
+  service6: getService('service6', 'local'),
+};
+
+function getList(
+  data: Vo | undefined,
+  lists: StringMap<ValueList>
+): SimpleList | KeyedList | undefined {
+  if (!data) {
+    return undefined;
+  }
+  const listName = data.listName + '';
+  const entry = lists[listName];
+  if (!entry) {
+    return undefined;
+  }
+  if (data.forAllKeys) {
+    if (entry.isKeyed) {
+      return entry.list;
+    }
+    return {};
+  }
+
+  if (entry.isKeyed) {
+    return entry.list[data.key + ''];
+  }
+  return entry.list;
+}
+
+const listTestCases: ListTestCase[] = [
+  {
+    desc: 'list123 is not available anywhere: should return []',
+    listName: 'list123',
+    expected: [],
+  },
+  {
+    desc: 'list0 is available only in cache: should fetch from cache',
+    listName: 'list0',
+    expected: simpleLists[0],
+  },
+  {
+    desc: 'list1 is available only in local service: should fetch from local',
+    listName: 'list1',
+    expected: simpleLists[2],
+  },
+  {
+    desc: 'list2 is available only on server: should fetch from server',
+    listName: 'list2',
+    expected: simpleLists[1],
+  },
+  {
+    desc: 'list3 is available in cache and local service: should fetch from cache',
+    listName: 'list3',
+    expected: simpleLists[3],
+  },
+  {
+    desc: 'list4 is available in cache and server: should fetch from cache',
+    listName: 'list4',
+    expected: simpleLists[4],
+  },
+  {
+    desc: 'list5 is available in local and server : should fetch from local',
+    listName: 'list5',
+    expected: simpleLists[6],
+  },
+  {
+    desc: 'list6 is available in cache, local service as well as server: should fetch from cache',
+    listName: 'list6',
+    expected: simpleLists[6],
+  },
+  {
+    desc: 'should ignore key value for a simple list, and  not raise any error',
+    listName: 'list0',
+    expected: simpleLists[0],
+    key: 'junk',
+  },
+  {
+    desc: 'should get [] if key is not provided for a keyed list',
+    listName: 'kList0',
+    expected: [],
+  },
+  {
+    desc: 'should get [] if list keyed list is found, but the supplied key does not exist',
+    listName: 'kList0',
+    key: 'junk',
+    expected: [],
+  },
+  {
+    desc: 'kList15432 is not available anywhere: should return []',
+    listName: 'kList15432',
+    key: 'k1',
+    expected: [],
+  },
+  {
+    desc: 'kList0 is available only in cache: should fetch from cache',
+    listName: 'kList0',
+    key: 'k1',
+    expected: simpleLists[0],
+  },
+  {
+    desc: 'kList1 is available only in local service: should fetch from local',
+    listName: 'kList1',
+    key: 'k2',
+    expected: simpleLists[3],
+  },
+  {
+    desc: 'kList2 is available only on server: should fetch from server',
+    listName: 'kList2',
+    key: 'k1',
+    expected: simpleLists[1],
+  },
+  {
+    desc: 'kList3 is available in cache and local service: should fetch from cache',
+    listName: 'kList3',
+    key: 'k2',
+    expected: simpleLists[4],
+  },
+  {
+    desc: 'kList4 is available in cache and server: should fetch from cache',
+    listName: 'kList4',
+    key: 'k1',
+    expected: simpleLists[4],
+  },
+  {
+    desc: 'kList5 is available in local and server : should fetch from local',
+    listName: 'kList5',
+    key: 'k2',
+    expected: simpleLists[0],
+  },
+  {
+    desc: 'kList6 is available in cache, local service as well as server: should fetch from cache',
+    listName: 'list6',
+    key: 'k1',
+    expected: simpleLists[6],
+  },
+];
+
+type GetAllCase = {
+  desc: string;
+  listName: string;
+  expected: KeyedList;
+};
+
+const getAllTestCases: GetAllCase[] = [
+  {
+    desc: 'list123 is not available anywhere: should return {}',
+    listName: 'list123',
+    expected: {},
+  },
+  {
+    desc: 'kList0 is available only in cache: should fetch from cache',
+    listName: 'kList0',
+    expected: keyedLists[0],
+  },
+  {
+    desc: 'kList1 is available only in local service: should fetch from local',
+    listName: 'kList1',
+    expected: keyedLists[2],
+  },
+  {
+    desc: 'kList2 is available only on server: should fetch from server',
+    listName: 'kList2',
+    expected: keyedLists[1],
+  },
+  {
+    desc: 'kList3 is available in cache and local service: should fetch from cache',
+    listName: 'kList3',
+    expected: keyedLists[3],
+  },
+  {
+    desc: 'kList4 is available in cache and server: should fetch from cache',
+    listName: 'kList4',
+    expected: keyedLists[4],
+  },
+  {
+    desc: 'kList5 is available in local and server : should fetch from local',
+    listName: 'kList5',
+    expected: keyedLists[6],
+  },
+  {
+    desc: 'kList6 is available in cache, local service as well as server: should fetch from cache',
+    listName: 'kList6',
+    expected: keyedLists[6],
+  },
+  {
+    desc: 'list0 is a simple list. Should get {}',
+    listName: 'list0',
+    expected: {},
+  },
+];
+
+function getService(service: string, source: string): Service {
+  return (/* data: Vo | undefined */) => {
+    return {
+      status: 'completed',
+      description: STATUS_DESCRIPTIONS['completed'],
+      data: { service, source },
+    };
+  };
+}
+
+const cachedResponses: StringMap<ServiceResponse> = {
+  service0: getResponse('service0'),
+  service3: getResponse('service3'),
+  service4: getResponse('service4'),
+  service6: getResponse('service6'),
+};
+
+function getResponse(service: string): ServiceResponse {
+  return {
+    status: 'completed',
+    description: 'All Ok',
+    data: { service, source: 'cache' },
+  };
+}
+
+type GetResponseCase = {
+  service: string;
+  desc: string;
+  source: string;
+};
+const getResponseCases: GetResponseCase[] = [
+  {
+    service: 'service0',
+    desc: 'only in cache. Should respond with the cached response',
+    source: 'cache',
+  },
+  {
+    service: 'service1',
+    desc: 'only local service. Should respond from the local service.',
+    source: 'local',
+  },
+  {
+    service: 'service2',
+    desc: 'only on server. should respond from the server',
+    source: 'server',
+  },
+  {
+    service: 'service3',
+    desc: 'cached+local. should respond with the cached response',
+    source: 'cache',
+  },
+  {
+    service: 'service4',
+    desc: 'cached+server. should respond with the server',
+    source: 'cache',
+  },
+  {
+    service: 'service5',
+    desc: 'local+server. should respond from the server',
+    source: 'local',
+  },
+  {
+    service: 'service6',
+    desc: 'cached+local+server. should respond from the cache',
+    source: 'cache',
+  },
+];
+
+const config1: AgentConfigData = {
+  localLists,
+  localServices,
+  responses: cachedResponses,
+  serverUrl: 'aaaa',
+};
+
+const config2: AgentConfigData = {
+  localLists,
+  localServices,
+  responses: cachedResponses,
+};
+
+const SESSION_ID = 'session1';
+const CHECK_SERVICE = 'checkSession';
+const SET_SERVICE = 'setSession';
+const ERROR_SERVICE = 'errorService';
+
+/**
+ * for mocking app
+ */
+function serve(reqStr: string): ServerResponse {
+  let req: ServerRequest | undefined;
+  try {
+    req = JSON.parse(reqStr) as ServerRequest;
+  } catch (e) {}
+  if (!req) {
+    return {
+      status: 'invalidDataFormat',
+      description: 'input data is not a valid json',
+    };
+  }
+  if (req.service === ERROR_SERVICE) {
+    throw 'Communication error';
+  }
+  if (req.service === SET_SERVICE) {
+    return {
+      status: 'completed',
+      description: '',
+      sessionId: SESSION_ID,
+      data: {},
+    };
+  }
+  if (req.service === CHECK_SERVICE) {
+    return {
+      status: 'completed',
+      description: '',
+      data: { gotSessionId: !!req.session },
+    };
+  }
+
+  const service = serverServices[req.service];
+  if (!service) {
+    return {
+      status: 'noSuchService',
+      description: `${req.service} is not recognized a as a service`,
+    };
+  }
+  const resp = service(req.data);
+  if (resp) {
+    return resp;
+  }
+  //local service would return undefined to signal that its action should be ignored
+  //but server emulator would do it to signal a general error
+  return {
+    status: 'serverError',
+    description: `service ${req.service} could not be completed because of an error on the server.`,
+  };
+}
+
+//mock fetch to run our server-emulator
+// @ts-expect-error
+global.fetch = async (
+  _input: RequestInfo | URL,
+  init: RequestInit | undefined
+) => {
+  const reqStr = init!.body + '';
+  const resp: ServerResponse = serve(reqStr);
+  return {
+    json: async () => {
+      return resp;
+    },
+  };
+};
+/*
+describe('Session Management', () => {
+  it('should send sessionId only after it is received from the server', async () => {
+    const agent = serviceAgent.newAgent(config1);
+
+    //service-request with no data
+    let resp = await agent.serve(CHECK_SERVICE);
+    expect(resp!.data!.gotSessionId).toBeFalsy();
+
+    //service-request with data to set session-id
+    resp = await agent.serve(SET_SERVICE);
+    expect(resp!.data!.gotSessionId).toBeFalsy();
+
+    //service-request to check if agent sent session-d
+    resp = await agent.serve(CHECK_SERVICE);
+    expect(resp!.data!.gotSessionId).toBe(true);
+  });
+});
+*/
+
+function testSessionManagement() {
+  describe('Locating Server', () => {
+    const agent = serviceAgent.newAgent(config2);
+
+    it('should succeed when serverUrl is not set but a local service is  available', async () => {
+      const resp = await agent.serve('service1');
+      expect(resp.status).toBe('completed');
+    });
+
+    it('should set status to noServer when the service requires access to server', async () => {
+      const resp = await agent.serve('service12345');
+      expect(resp.status).toBe('noServer');
+    });
+  });
+
+  describe('Session Management', () => {
+    it('should send sessionId only after it is received from the server', async () => {
+      const agent = serviceAgent.newAgent(config1);
+
+      //service-request with no data
+      let resp = await agent.serve(CHECK_SERVICE);
+      expect(resp!.data!.gotSessionId).toBeFalsy();
+
+      //service-request with data to set session-id
+      resp = await agent.serve(SET_SERVICE);
+      expect(resp!.data!.gotSessionId).toBeFalsy();
+
+      //service-request to check if agent sent session-d
+      resp = await agent.serve(CHECK_SERVICE);
+      expect(resp!.data!.gotSessionId).toBe(true);
+    });
+  });
+
+  describe('Communication Error Handling', () => {
+    const agent = serviceAgent.newAgent(config1);
+    it('should set status to communicationError when there is an error while communicating with the server', async () => {
+      const resp = await agent.serve('errorService');
+      expect(resp.status).toBe('communicationError');
+    });
+  });
+}
+
+function testGetList() {
+  describe('getList', () => {
+    const agent = serviceAgent.newAgent(config1);
+    test.each(listTestCases)('$desc', async ({ expected, listName, key }) => {
+      const list = await agent.getList(listName, key);
+      expect(list).toStrictEqual(expected);
+    });
+  });
+}
+
+function testGetKeyedList() {
+  describe('getKeyedList', () => {
+    const agent = serviceAgent.newAgent(config1);
+    test.each(getAllTestCases)('$desc', async ({ expected, listName }) => {
+      const list = await agent.getKeyedList(listName);
+      expect(list).toStrictEqual(expected);
+    });
+  });
+}
+
+function testServe() {
+  describe('serve', () => {
+    const agent = serviceAgent.newAgent(config1);
+    test.each(getResponseCases)('$desc', async ({ service, source }) => {
+      const resp = await agent.serve(service);
+      expect(resp.status).toBe('completed');
+      expect(resp.data?.service).toBe(service);
+      expect(resp.data?.source).toBe(source);
+    });
+  });
+}
+
+function testAll() {
+  testSessionManagement();
+  testGetList();
+  testGetKeyedList();
+  testServe();
+}
+
+/// actual testing code here
+describe('Server Agent', () => {
+  testAll();
+});
+
+
+
+ 
+  public async getList(
+    listName: string,
+    key?: string | number | undefined
+  ): Promise<SimpleList> {
+    //do we have it in our pocket?
+    const entry = this.localLists[listName];
+    let list: SimpleList | undefined;
+    if (entry) {
+      //have it locally.
+      if (entry.isKeyed) {
+        if (key !== undefined) {
+          list = entry.list[key];
+        }
+      } else {
+        list = entry.list;
+      }
+      return list || [];
+    }
+
+    // invoke the service to get it
+    const payload: Vo = { listName };
+    if (key !== undefined) {
+      payload.key = key;
+    }
+    const resp = await this.serve(LIST_SERVICE_NAME, payload);
+
+    list = resp.data?.list as SimpleList;
+    return list || [];
+  }
+
+  public async getKeyedList(listName: string): Promise<KeyedList> {
+    const entry = this.localLists[listName];
+    if (entry) {
+      //we have it in our pocket
+      if (entry.isKeyed) {
+        return entry.list || {};
+      }
+      return {};
+    }
+
+    const resp = await this.serve(LIST_SERVICE_NAME, {
+      listName: listName,
+      forAllKeys: true,
+    });
+    return (resp.data?.list as KeyedList) || {};
+  }
+
+const LIST_SERVICE_NAME = '_getList';
+

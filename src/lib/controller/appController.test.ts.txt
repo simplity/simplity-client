@@ -1,0 +1,1263 @@
+import { app } from '..';
+/*
+login should set User and we can test getUser and logout and getUser
+*/
+
+import { describe, expect, it, jest, test } from '@jest/globals';
+import {
+  StringMap,
+  ValueSchema,
+  GridBagStyle,
+  Layout,
+  ListSource,
+  MenuItem,
+  Module,
+  Page,
+  BaseComponent,
+  Form,
+  ClientAppParams,
+  AppComponents,
+  FunctionEntry,
+  AppController,
+  ServiceAgent,
+  SimpleList,
+  KeyedList,
+  ServiceResponse,
+  Vo,
+  AppView,
+  LayoutView,
+} from 'simplity-types';
+
+const imageBasePath = 'https://example.com/images/';
+const startingLayout = 'layoutOne';
+const startingModule = 'menu1';
+
+//components of app
+const messages: StringMap<string> = {
+  message1: 'message1 with no params',
+  message2: '2:${2} 0:${0} 2again:${2} 1:${1} 0again:${0} and ${3}',
+  message3: 'message3 with params lookalikes $ {1} ${ 1} ${1 } $(1) {2} ${1)',
+};
+
+const _defaultStyle: GridBagStyle = {
+  name: '_defaultStyle', //Conventions.defaultGridStyle,
+  defaultChildStyle: 'defChildSt',
+  widthStyles: {
+    entireRow: 'defEntireRow',
+    narrow: 'defNarrow',
+    normal: 'defNormal',
+    quiteNarrow: 'defQNarrow',
+    quiteWide: 'defQWide',
+    wide: 'defWide',
+  },
+  parentStyle: 'defParentSt',
+};
+
+const gridStyle1: GridBagStyle = {
+  name: 'gridStyle1',
+  defaultChildStyle: 'childStyle',
+  widthStyles: {
+    entireRow: 'entireRow',
+    narrow: 'narrow',
+    normal: 'normal',
+    quiteNarrow: 'narrow',
+    quiteWide: 'quiteWide',
+    wide: 'wide',
+  },
+  parentStyle: 'parentSt',
+};
+
+const style2: GridBagStyle = {
+  name: 'style2',
+  defaultChildStyle: 'c2',
+  widthStyles: {
+    entireRow: 'er2',
+    narrow: 'n2',
+    normal: 'n2',
+    quiteNarrow: 'nar',
+    quiteWide: 'qw',
+    wide: 'wide',
+  },
+  parentStyle: 'parents',
+};
+const gridStyles = { _defaultStyle, gridStyle1, style2 };
+
+const form1: Form = {
+  name: 'form1',
+  fieldNames: [],
+  fields: {},
+};
+
+const form2: Form = {
+  name: 'form2',
+  fieldNames: ['a'],
+  fields: {
+    a: {
+      name: 'a',
+      compType: 'field',
+      isRequired: true,
+      renderAs: 'check-box',
+      valueSchema: 'vs',
+      valueType: 'boolean',
+    },
+  },
+};
+const forms = { form1, form2 };
+
+const comp1: BaseComponent = {
+  name: 'comp1',
+  compType: 'button',
+};
+
+const comp3: BaseComponent = {
+  name: 'comp3',
+  compType: 'static',
+};
+const customComps = { comp1, comp3 };
+
+const layoutOne: Layout = {
+  name: 'layoutOne',
+  appTitle: 'This is Layout 1',
+  modules: ['Module1'],
+};
+
+const layoutTwo: Layout = {
+  name: 'layoutTwo',
+  appTitle: 'k2',
+  modules: ['Module1'],
+};
+const layouts = { layoutOne, layoutTwo };
+
+const list1: SimpleList = [
+  { value: 1, text: 'one' },
+  { value: 2, text: 'two' },
+];
+const list2: SimpleList = [{ value: 3, text: 'three' }];
+
+const kList1: KeyedList = {
+  l1: list1,
+};
+
+const kList2: KeyedList = {
+  k1: list1,
+  k2: list2,
+};
+
+const simpleList1: ListSource = {
+  name: 'simpleList1',
+  isKeyed: false,
+  okToCache: false,
+  list: list1,
+  isRuntime: false,
+};
+
+const keyedList1: ListSource = {
+  name: 'keyedList1',
+  isKeyed: true,
+  okToCache: true,
+  keyedList: kList1,
+  isRuntime: false,
+};
+
+const keyedList2: ListSource = {
+  name: 'keyedList2',
+  isKeyed: true,
+  okToCache: false,
+  isRuntime: true,
+};
+
+const simpleList2: ListSource = {
+  name: 'simpleList2',
+  isKeyed: false,
+  okToCache: true,
+  isRuntime: true,
+};
+const listSources: StringMap<ListSource> = {
+  simpleList1,
+  simpleList2,
+  keyedList1,
+  keyedList2,
+};
+
+const menuItem1: MenuItem = {
+  name: 'menuItem1',
+  activeImg: 'abcd',
+};
+
+const menuItem2: MenuItem = {
+  name: 'menuItem2',
+  img: 'a.png',
+};
+
+const menuItem3: MenuItem = {
+  name: 'menuItem3',
+  label: 'MenuItem-3',
+  isHidden: true,
+};
+const menuItems = { menuItem1, menuItem2, menuItem3 };
+
+const Module1: Module = {
+  name: 'Module1',
+  label: 'Module-1',
+  menuItems: ['menuItem1', 'menuItem3'],
+};
+const Module2: Module = {
+  name: 'Module2',
+  label: 'Module-2',
+  menuItems: ['menuItem2', 'aBn'],
+};
+
+const modules = { Module1, Module2 };
+
+const page1: Page = {
+  name: 'page1',
+  dataPanel: {
+    name: 'dp',
+    compType: 'panel',
+    children: [],
+  },
+};
+
+const page2: Page = {
+  name: 'page2',
+  dataPanel: {
+    name: 'someDataPanel',
+    compType: 'panel',
+    children: [],
+  },
+};
+const pages = { page1, page2 };
+
+const schema1: ValueSchema = {
+  name: 'name',
+  valueType: 'text',
+};
+
+const schema2: ValueSchema = {
+  name: 'name',
+  valueType: 'boolean',
+};
+const valueSchemas = { schema1, schema2 };
+
+const fn1: FunctionEntry = {
+  scope: 'form',
+  fn: (p1, p2) => {
+    p1;
+    p2;
+    throw new Error();
+  },
+};
+const fn2: FunctionEntry = {
+  scope: 'global',
+  fn: (p1, p2) => {
+    p1;
+    p2;
+    throw new Error();
+  },
+};
+
+const functions: StringMap<FunctionEntry> = { fn1, fn2 };
+
+const appComps: AppComponents = {
+  messages,
+  forms,
+  layouts,
+  listSources,
+  menuItems,
+  modules: modules,
+  pages,
+  valueSchemas,
+  customComps,
+  gridStyles,
+};
+
+type TestCases = {
+  [key: string]: {
+    desc: string;
+    data: any[][];
+  }[];
+};
+
+//const testCases: TestCases = {};
+/**
+ * data
+ */
+const getterCases: TestCases = {
+  getImageSrc: [
+    {
+      desc: 'should prefix baseSrc to imageName',
+      data: [
+        [imageBasePath + 'photo.png', 'photo.png'],
+        [imageBasePath + 'a-http:photo.png', 'a-http:photo.png'],
+        [imageBasePath + 'http-photo.png', 'http-photo.png'],
+        [imageBasePath + 'httpsS:-photo.png', 'httpsS:-photo.png'],
+      ],
+    },
+    {
+      desc: 'should not prefix baseSrc if image name starts with "http:"',
+      data: [
+        [
+          'http://example.com/images/photo.png',
+          'http://example.com/images/photo.png',
+        ],
+        ['hTTp:photo.jpg', 'hTTp:photo.jpg'],
+        ['hTTpS:photo.jpg', 'hTTpS:photo.jpg'],
+      ],
+    },
+  ],
+  getGridStyle: [
+    {
+      desc: 'should return default grid style if no grid-style is defined for the parameter',
+      data: [
+        [_defaultStyle, undefined],
+        [_defaultStyle, ''],
+        [_defaultStyle, 'abcd'],
+        [_defaultStyle, ' style2'], //style2 exists but not " style2"
+      ],
+    },
+    {
+      desc: 'should return the named grid style if it exists',
+      data: [
+        [style2, 'style2'],
+        [gridStyle1, 'gridStyle1'],
+      ],
+    },
+  ],
+  getMessage: [
+    {
+      desc: 'should return id if no message exists for the id',
+      data: [
+        ['', '', undefined],
+        ['junk', 'junk', undefined],
+        ['abcd', 'abcd', []],
+        ['1234', '1234', ['abcd']],
+        [' message1', ' message1', ['one']], //msg1 exists but not " msg1"
+      ],
+    },
+    {
+      desc: 'should return text as it is if the message has no embedded parameters',
+      data: [
+        ['message1 with no params', 'message1', undefined],
+        ['message1 with no params', 'message1', ['aa']],
+        [
+          'message3 with params lookalikes $ {1} ${ 1} ${1 } $(1) {2} ${1)',
+          'message3',
+          ['a', 'b'],
+        ],
+      ],
+    },
+    {
+      desc: 'Should substitute all instances. Should not substitute if value for the parameter is missing',
+      data: [
+        [
+          '2:cc 0:aa 2again:cc 1:${1} 0again:aa and ${3}',
+          'message2',
+          ['aa', undefined, 'cc'],
+        ],
+      ],
+    },
+  ],
+  getForm: [
+    {
+      desc: 'should throw error if the form is not found',
+      data: [
+        //null expected is treated by the tester as "expect Error thrown"
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+      ],
+    },
+    {
+      desc: 'should get the form with this name in the repository',
+      data: [
+        [form1, 'form1'],
+        [form2, 'form2'],
+      ],
+    },
+  ],
+  getCustomComp: [
+    {
+      desc: 'should throw error if the comp is not found',
+      data: [
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+      ],
+    },
+    {
+      desc: 'should get the comp with this name in the repository',
+      data: [
+        [comp1, 'comp1'],
+        [comp3, 'comp3'],
+      ],
+    },
+  ],
+  getPage: [
+    {
+      desc: 'should throw error if the page is not found',
+      data: [
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+      ],
+    },
+    {
+      desc: 'should get the page with this name in the repository',
+      data: [
+        [page1, 'page1'],
+        [page2, 'page2'],
+      ],
+    },
+  ],
+  getModule: [
+    {
+      desc: 'should return undefined if this main-menu does not exist, or if the access to this main-menu is denied',
+      data: [
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+      ],
+    },
+    {
+      desc: 'should get the main-menu with this name in the repository',
+      data: [
+        [Module1, 'Module1'],
+        [Module2, 'Module2'],
+      ],
+    },
+  ],
+  getMenu: [
+    {
+      desc: 'should return undefined if the comp is not found, or if access is denied to this mail',
+      data: [
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+      ],
+    },
+    {
+      desc: 'should get the comp with this name in the repository',
+      data: [
+        [menuItem1, 'menuItem1'],
+        [menuItem2, 'menuItem2'],
+        [menuItem3, 'menuItem3'],
+      ],
+    },
+  ],
+  getLayout: [
+    {
+      desc: 'should throw error if the layout is not found',
+      data: [
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+      ],
+    },
+    {
+      desc: 'should get the layout with this name in the repository',
+      data: [
+        [layoutOne, 'layoutOne'],
+        [layoutTwo, 'layoutTwo'],
+      ],
+    },
+  ],
+  getFn: [
+    {
+      desc: 'should throw error if the function is not found',
+      data: [
+        [null, undefined],
+        [null, ''],
+        [null, 'non-existent'],
+        [null, 'fn1 '],
+      ],
+    },
+    {
+      desc: 'should get the function entry with this name in the repository',
+      data: [
+        [fn1, 'fn1'],
+        [fn2, 'fn2'],
+      ],
+    },
+  ],
+};
+
+const allowedMenuItems = 'menuItem1,  menuItem3';
+const notAllowedCases: string[][] = [
+  ['menuItem 1'],
+  ['menuItem2'],
+  ['menuItem3'],
+  ['menuItem2', 'menuItem3'],
+  ['menuItem3', 'junk'],
+];
+const allowedCases: string[][] = [['menuItem1'], ['menuItem3', 'menuItem1']];
+
+class LocalStorageMock implements Storage {
+  private store: StringMap<string> = {};
+  length: number = 0;
+
+  clear() {
+    this.store = {};
+    this.length = 0;
+  }
+
+  getItem(key: string) {
+    const item = this.store[key];
+    if (item === undefined) {
+      return null;
+    }
+    return item;
+  }
+
+  setItem(key: string, value: string) {
+    if (this.store[key] === undefined) {
+      this.length++;
+    }
+    this.store[key] = String(value);
+  }
+
+  removeItem(key: string) {
+    if (this.store[key] === undefined) {
+      return;
+    }
+    delete this.store[key];
+    this.length--;
+  }
+  key(index: number): string | null {
+    throw new Error(
+      `key() method is not supported in Local Storage. index =${index} `
+    );
+  }
+}
+const superUserData: Vo = { userName: 'JamesBond' };
+const userData: Vo = {
+  userName: 'AamAdmi',
+  allowedMenuIds: 'menuItem2,menuItem3',
+};
+const responseData1: Vo = { a: 1, b: 'b' };
+const serviceAgent: ServiceAgent = {
+  async getKeyedList(listName) {
+    switch (listName) {
+      //test case to check whether the list came from the server or local
+      case 'keyedList1':
+        return kList2;
+
+      //test for an unlisted listName but the server would still respond
+      case 'keyedList3':
+        return kList1;
+
+      default:
+        //return kLIst1 for all registered keyed-lists
+        const src = listSources[listName];
+        if (src && src.isKeyed) {
+          return kList1;
+        }
+    }
+    return {};
+  },
+
+  async getList(listName, key) {
+    if (listName === 'simpleList2') {
+      return list2;
+    }
+    if (listName === 'keyedList2') {
+      return kList2[key!] || [];
+    }
+    const k = listSources[listName];
+    if (!k) {
+      return [];
+    }
+    if (k.isKeyed) {
+      if (!key) {
+        return [];
+      }
+      return kList1[key] || [];
+    }
+    return list1;
+  },
+
+  async serve(serviceName, _data) {
+    const resp: ServiceResponse = {
+      status: 'completed',
+      description: 'all ok',
+    };
+    switch (serviceName) {
+      case 'superLogin':
+        resp.data = superUserData;
+        return resp;
+      case 'userLogin':
+        resp.data = userData;
+        return resp;
+      case 'hackerLogin': //login done, but no data!!
+        return resp;
+      case 'service1':
+        resp.data = responseData1;
+        return resp;
+      default:
+        resp.status = 'noSuchService';
+        resp.description = 'invalid service name';
+        return resp;
+    }
+  },
+};
+
+//TODO: test with the above mock;
+serviceAgent;
+//@ts-expect-error
+const layoutView: LayoutView = {};
+//@ts-expect-error
+const appView: AppView = {};
+/*
+const appView: AppView = {
+  renderLayout: jest.fn((layout: Layout) => {
+    layout;
+    return layoutView;
+  }),
+};
+*/
+function newController(params?: {
+  withNoAgent?: boolean;
+  login?: string;
+}): AppController {
+  const lg = params?.login;
+  let toLogin = true;
+  let loginServiceName = 'superLogin';
+  if (lg !== undefined) {
+    toLogin = false;
+    loginServiceName = lg;
+  }
+
+  const dep: ClientAppParams = {
+    appName: 'testApp',
+    imageBasePath,
+    startingLayout,
+    startingModule,
+    functions,
+    loginServiceName,
+  };
+
+  const ac = app.newAc(appComps, dep, appView);
+  if (toLogin) {
+    //ac.login({});
+  }
+  return ac;
+}
+
+function testGetters() {
+  const ac = newController();
+  ac.setAccessControls('*');
+  for (const key in getterCases) {
+    describe(`${key}`, () => {
+      getterCases[key].forEach((c) => {
+        test(c.desc, () => {
+          c.data.forEach((data) => {
+            const [exp, p1, p2] = data;
+            let val;
+            //some methods are optimized to throw error instead of returning undefined
+            let gotError = false;
+            try {
+              val = invokeMethod(ac, key, p1, p2);
+            } catch (e) {
+              gotError = true;
+            }
+            if (exp === null) {
+              expect(gotError).toBe(true);
+            } else {
+              expect(gotError).toBe(false);
+              expect(val).toBe(exp);
+            }
+          });
+        });
+      });
+    });
+  }
+}
+
+// text context/session/local-storage
+function testContext() {
+  describe('ContextStorage with global.sessionStorage', () => {
+    testStorage(true);
+  });
+
+  describe('ContextStorage with NO global.sessionStorage', () => {
+    testStorage(false);
+  });
+}
+
+function testValidation() {
+  const ac = newController();
+  it('should validate value as per value-schema', () => {
+    let res = ac.validateValue('schema1', true);
+    expect(res.value).toBe('true');
+    expect(res.messages).toBe(undefined);
+    res = ac.validateValue('schema2', 'junk');
+    expect(res.value).toBe(undefined);
+    expect(res.messages).not.toBe(undefined);
+    expect(res.messages?.length).toBe(1);
+  });
+
+  it('should generate error for invalid schema name', () => {
+    const res = ac.validateValue('junk', 'abcd');
+    expect(res.value).toBe(undefined);
+    expect(res.messages?.length).toBe(1);
+    expect(res.messages![0].messageId).toBe(
+      app.Conventions.errorSchemaIsMissing
+    );
+  });
+}
+
+/**
+ * class[method](params) does not work. Hence this function with switch-case..
+ */
+function invokeMethod(
+  ac: AppController,
+  method: string,
+  p1: unknown,
+  p2: unknown
+): unknown {
+  switch (method) {
+    case 'getFn':
+      return ac.getFn(p1 as string);
+    case 'getImageSrc':
+      return ac.getImageSrc(p1 as string);
+    case 'getGridStyle':
+      return ac.getGridStyle(p1 as string);
+    case 'getMessage':
+      return ac.getMessage(p1 as string, p2 as string[] | undefined);
+    case 'getForm':
+      return ac.getForm(p1 as string);
+    case 'getPage':
+      return ac.getPage(p1 as string);
+    case 'getModule':
+      return ac.getModule(p1 as string);
+    case 'getMenu':
+      return ac.getMenu(p1 as string);
+    case 'getLayout':
+      return ac.getLayout(p1 as string);
+    case 'getCustomComp':
+      return ac.getCustomComp(p1 as string);
+    default:
+      const msg = `Error with the test code!!!. No switch case written for method ${method}`;
+      console.error(msg);
+      throw new Error(`${method} is not a valid method`);
+  }
+}
+
+function testStorage(globalUsed: boolean) {
+  const desc = globalUsed
+    ? 'should use global.sessionStorage'
+    : 'should use simulated storage';
+  it(`${desc}`, () => {
+    if (globalUsed) {
+      global.sessionStorage = new LocalStorageMock();
+    } else {
+      // @ts-expect-error
+      global.sessionStorage = undefined;
+    }
+    const ac = newController();
+    ac.clearContext();
+
+    const key = 'a';
+    const value = 'some stored value';
+    const values: (string | undefined)[] = [];
+    const expects = [
+      undefined,
+      value,
+      value,
+      undefined,
+      value,
+      undefined,
+      undefined,
+    ];
+
+    values[0] = ac.getContextValue(key);
+    ac.setContextValue(key, value);
+    values[1] = ac.getContextValue(key);
+    ac.removeContextValue(key + 'a');
+    values[2] = ac.getContextValue(key);
+    ac.removeContextValue(key);
+    values[3] = ac.getContextValue(key);
+    ac.setContextValue(key, value);
+    values[4] = ac.getContextValue(key);
+    ac.setContextValue(key, undefined); //same as removing it
+    values[5] = ac.getContextValue(key);
+
+    ac.setContextValue(key, value);
+    ac.clearContext();
+    values[6] = ac.getContextValue(key);
+
+    for (let idx = 0; idx < values.length; idx++) {
+      expect(values[idx]).toBe(expects[idx]);
+    }
+  });
+}
+
+function testMenuAccess() {
+  it('should allow any menu if * is set as allowed menu items', () => {
+    const ac = newController();
+    ac.setAccessControls('*');
+    const res = ac.atLeastOneAllowed(['a', 'b', 'c']);
+    expect(res).toBe(true);
+  });
+
+  it('should allow if every menu item in the list is allowed, is defined and is not hidden', () => {
+    const ac = newController();
+    ac.setAccessControls(allowedMenuItems);
+    notAllowedCases.forEach((arg) => {
+      expect(ac.atLeastOneAllowed(arg)).toBe(false);
+    });
+
+    allowedCases.forEach((arg) => {
+      expect(ac.atLeastOneAllowed(arg)).toBe(true);
+    });
+
+    ac.setAccessControls('');
+    expect(ac.atLeastOneAllowed(['menuItem1'])).toBe(false);
+  });
+}
+
+function testResponse() {
+  it('should throw error if service agent is not valid', async () => {
+    const ac = newController({ withNoAgent: true });
+
+    expect(() => {
+      ac.serve('service1').catch(() => {
+        throw new Error();
+      });
+    }).toThrow();
+  });
+
+  it('should get response from the agent', async () => {
+    const ac = newController();
+    let resp = await ac.serve('service1');
+    expect(resp.data).toBe(responseData1);
+    resp = await ac.serve('junk');
+    expect(resp.status).toBe('noSuchService');
+  });
+
+  it('should download if response is received', async () => {
+    const ac = newController();
+    const resp = await ac.downloadServiceResponse('file1', 'service1', {});
+    expect(resp).toBe(true);
+  });
+
+  it('should not download if response is not received', async () => {
+    const ac = newController();
+    const resp = await ac.downloadServiceResponse('file1', 'junk', {});
+    expect(resp).toBe(false);
+  });
+}
+
+function testLoginLogout() {
+  it('should succeed if no login service is set', async () => {
+    const ac = newController({ login: '' });
+    expect(await ac.login({})).toBe(true);
+    expect(ac.getUser()).toStrictEqual({});
+  });
+
+  it('should not set user if login service returns with errors', async () => {
+    const ac = newController({ login: 'junk' });
+    expect(await ac.login({})).toBe(false);
+    expect(ac.getUser()).toBeUndefined();
+  });
+
+  it('should set user after successful login', async () => {
+    const ac = newController({ login: 'superLogin' });
+    expect(await ac.login({})).toBe(true);
+    expect(ac.getUser()).toStrictEqual(superUserData);
+  });
+
+  it('should treat login as failure if user-data is not returned', async () => {
+    const ac = newController({ login: 'hacker' });
+    expect(await ac.login({})).toBe(false);
+    expect(ac.getUser()).toBeUndefined();
+  });
+
+  it('should remove user after logout', async () => {
+    const ac = newController({ login: 'superLogin' });
+    expect(await ac.login({})).toBe(true);
+    expect(ac.getUser()).toStrictEqual(superUserData);
+    await ac.logout();
+    expect(ac.getUser()).toBeUndefined();
+  });
+
+  describe('Main menu access control', () => {
+    it('should allow all access to superUser, but only after login and before logout', async () => {
+      const ac = newController({ login: 'superLogin' });
+
+      //before login
+      expect(ac.getModuleIfAccessible('Module1')).toBeUndefined();
+      expect(ac.getMenuIfAccessible('menuItem1')).toBeUndefined();
+
+      await ac.login({});
+      //after login
+      expect(ac.getModuleIfAccessible('Module1')).toStrictEqual(Module1);
+      expect(ac.getMenuIfAccessible('menuItem1')).toStrictEqual(menuItem1);
+
+      await ac.logout();
+      //after logout
+      expect(ac.getModuleIfAccessible('Module1')).toBeUndefined();
+      expect(ac.getMenuIfAccessible('menuItem1')).toBeUndefined();
+    });
+
+    it('should allow specified access to a user, but only after login and before logout', async () => {
+      //this user has access to Module2 and menuitem2
+      const ac = newController({ login: 'userLogin' });
+
+      //before login
+      expect(ac.getModuleIfAccessible('Module2')).toBeUndefined();
+      expect(ac.getMenuIfAccessible('menuItem2')).toBeUndefined();
+
+      const ok = await ac.login({});
+      expect(ok).toBe(true);
+      //after login
+      expect(ac.getModuleIfAccessible('Module2')).toStrictEqual(Module2);
+      expect(ac.getMenuIfAccessible('menuItem2')).toStrictEqual(menuItem2);
+
+      //has no access to others after login
+      expect(ac.getMenuIfAccessible('menuItem1')).toBeUndefined();
+      expect(ac.getModuleIfAccessible('Module1')).toBeUndefined();
+
+      await ac.logout();
+      //after logout
+      expect(ac.getModuleIfAccessible('Module2')).toBeUndefined();
+      expect(ac.getMenuIfAccessible('menuItem1')).toBeUndefined();
+    });
+    it('should not allow any access when login fails', async () => {
+      const ac = newController({ login: 'junk' });
+      await ac.login({});
+      expect(ac.getModuleIfAccessible('Module2')).toBeUndefined();
+      expect(ac.getMenuIfAccessible('menuItem2')).toBeUndefined();
+      expect(ac.getMenuIfAccessible('menuItem1')).toBeUndefined();
+      expect(ac.getModuleIfAccessible('Module1')).toBeUndefined();
+    });
+  });
+}
+
+function testLists() {
+  it('should return [] for invalid listName', async () => {
+    const ac = newController();
+    let list = await ac.getList('aaaa', false);
+    expect(list).toStrictEqual([]);
+  });
+
+  it('should return [] for keyed-listName', async () => {
+    const ac = newController();
+    let list = await ac.getList('keyedList1', false);
+    expect(list).toStrictEqual([]);
+  });
+
+  it('should return from static list when found', async () => {
+    const ac = newController();
+    let list = await ac.getList('simpleList1', false);
+    expect(list).toStrictEqual(list1);
+  });
+
+  it('should return from the server ', async () => {
+    const ac = newController();
+    let list = await ac.getList('simpleList2', false);
+    expect(list).toStrictEqual(list2);
+  });
+
+  it('should return [] for invalid listName', async () => {
+    const ac = newController();
+    let list = await ac.getList('aaaa', false, '');
+    expect(list).toStrictEqual([]);
+  });
+
+  it('should return from static list when found', async () => {
+    const ac = newController();
+    let list = await ac.getList('keyedList1', false, 'l1');
+    expect(list).toStrictEqual(list1);
+  });
+
+  it('should return from the server ', async () => {
+    const ac = newController();
+    let list = await ac.getList('keyedList2', false, 'k2');
+    expect(list).toStrictEqual(list2);
+  });
+
+  it('should return [] when list found, but not with the key ', async () => {
+    const ac = newController();
+    let list = await ac.getList('keyedList1', false, 'abcd');
+    expect(list).toStrictEqual([]);
+    list = await ac.getList('keyedList2', false, 'jjjj');
+    expect(list).toStrictEqual([]);
+  });
+}
+
+function testKeyedLists() {
+  it('should get the keyed list from the server even if the list is not defined as list source', async () => {
+    const ac = newController();
+    let list = await ac.getKeyedList('keyedList3', false);
+    expect(list).toStrictEqual(kList1);
+  });
+
+  it('should return {} if the list exists but is not keyed', async () => {
+    const ac = newController();
+    let list = await ac.getKeyedList('simpleList1', false);
+    expect(list).toStrictEqual({});
+  });
+
+  it('should get it from the design-time list if available', async () => {
+    const ac = newController();
+    let list = await ac.getKeyedList('keyedList1', false);
+    expect(list).toStrictEqual(kList1);
+  });
+
+  it('should get it from the server when forceRefresh is true', async () => {
+    const ac = newController();
+    let list = await ac.getKeyedList('keyedList1', true);
+    expect(list).toStrictEqual(kList2);
+  });
+}
+
+function testMisc() {
+  it('getFunction should throw error in case of scope mismatch', () => {
+    const ac = newController();
+    expect(() => {
+      ac.getFn('fn1', 'value');
+    }).toThrow();
+  });
+}
+function pendingTests() {
+  describe('isPageValid', () => {
+    it('should return false always, till it is implemented', () => {
+      const ac = newController();
+      expect(ac.isPageValid('page1')).toBe(false);
+    });
+  });
+
+  describe('getPermittedPages', () => {
+    it('should return [] always, till it is implemented', () => {
+      const ac = newController();
+      expect(ac.getPermittedPages()).toStrictEqual([]);
+    });
+  });
+}
+
+/**
+ * main test scripts starts here
+ */
+describe('App Controller', () => {
+  describe(`Getters and Setters`, () => {
+    testGetters();
+  });
+
+  describe(`Context Storage`, () => {
+    testContext();
+  });
+
+  describe(`Validation`, () => {
+    testValidation();
+  });
+
+  describe(`Menu Access Control`, () => {
+    testMenuAccess();
+  });
+
+  describe('serve', () => {
+    testResponse();
+  });
+  describe('Login/Logout', () => {
+    testLoginLogout();
+  });
+  describe('getList', () => {
+    testLists();
+  });
+  describe('getKeyedList', () => {
+    testKeyedLists();
+  });
+
+  describe('Misc functionality', () => {
+    testMisc();
+  });
+  //TODO: functionality not yet implemented
+  describe('Pending Code', () => {
+    pendingTests();
+  });
+});
+
+
+function testGetList() {
+  describe('getList', () => {
+    const agent = serviceAgent.newAgent(config1);
+    test.each(listTestCases)('$desc', async ({ expected, listName, key }) => {
+      const list = await agent.getList(listName, key);
+      expect(list).toStrictEqual(expected);
+    });
+  });
+}
+
+function testGetKeyedList() {
+  describe('getKeyedList', () => {
+    const agent = serviceAgent.newAgent(config1);
+    test.each(getAllTestCases)('$desc', async ({ expected, listName }) => {
+      const list = await agent.getKeyedList(listName);
+      expect(list).toStrictEqual(expected);
+    });
+  });
+}
+
+
+
+const listTestCases: ListTestCase[] = [
+  {
+    desc: 'list123 is not available anywhere: should return []',
+    listName: 'list123',
+    expected: [],
+  },
+  {
+    desc: 'list0 is available only in cache: should fetch from cache',
+    listName: 'list0',
+    expected: simpleLists[0],
+  },
+  {
+    desc: 'list1 is available only in local service: should fetch from local',
+    listName: 'list1',
+    expected: simpleLists[2],
+  },
+  {
+    desc: 'list2 is available only on server: should fetch from server',
+    listName: 'list2',
+    expected: simpleLists[1],
+  },
+  {
+    desc: 'list3 is available in cache and local service: should fetch from cache',
+    listName: 'list3',
+    expected: simpleLists[3],
+  },
+  {
+    desc: 'list4 is available in cache and server: should fetch from cache',
+    listName: 'list4',
+    expected: simpleLists[4],
+  },
+  {
+    desc: 'list5 is available in local and server : should fetch from local',
+    listName: 'list5',
+    expected: simpleLists[6],
+  },
+  {
+    desc: 'list6 is available in cache, local service as well as server: should fetch from cache',
+    listName: 'list6',
+    expected: simpleLists[6],
+  },
+  {
+    desc: 'should ignore key value for a simple list, and  not raise any error',
+    listName: 'list0',
+    expected: simpleLists[0],
+    key: 'junk',
+  },
+  {
+    desc: 'should get [] if key is not provided for a keyed list',
+    listName: 'kList0',
+    expected: [],
+  },
+  {
+    desc: 'should get [] if list keyed list is found, but the supplied key does not exist',
+    listName: 'kList0',
+    key: 'junk',
+    expected: [],
+  },
+  {
+    desc: 'kList15432 is not available anywhere: should return []',
+    listName: 'kList15432',
+    key: 'k1',
+    expected: [],
+  },
+  {
+    desc: 'kList0 is available only in cache: should fetch from cache',
+    listName: 'kList0',
+    key: 'k1',
+    expected: simpleLists[0],
+  },
+  {
+    desc: 'kList1 is available only in local service: should fetch from local',
+    listName: 'kList1',
+    key: 'k2',
+    expected: simpleLists[3],
+  },
+  {
+    desc: 'kList2 is available only on server: should fetch from server',
+    listName: 'kList2',
+    key: 'k1',
+    expected: simpleLists[1],
+  },
+  {
+    desc: 'kList3 is available in cache and local service: should fetch from cache',
+    listName: 'kList3',
+    key: 'k2',
+    expected: simpleLists[4],
+  },
+  {
+    desc: 'kList4 is available in cache and server: should fetch from cache',
+    listName: 'kList4',
+    key: 'k1',
+    expected: simpleLists[4],
+  },
+  {
+    desc: 'kList5 is available in local and server : should fetch from local',
+    listName: 'kList5',
+    key: 'k2',
+    expected: simpleLists[0],
+  },
+  {
+    desc: 'kList6 is available in cache, local service as well as server: should fetch from cache',
+    listName: 'list6',
+    key: 'k1',
+    expected: simpleLists[6],
+  },
+];
+
+type GetAllCase = {
+  desc: string;
+  listName: string;
+  expected: KeyedList;
+};
+
+const getAllTestCases: GetAllCase[] = [
+  {
+    desc: 'list123 is not available anywhere: should return {}',
+    listName: 'list123',
+    expected: {},
+  },
+  {
+    desc: 'kList0 is available only in cache: should fetch from cache',
+    listName: 'kList0',
+    expected: keyedLists[0],
+  },
+  {
+    desc: 'kList1 is available only in local service: should fetch from local',
+    listName: 'kList1',
+    expected: keyedLists[2],
+  },
+  {
+    desc: 'kList2 is available only on server: should fetch from server',
+    listName: 'kList2',
+    expected: keyedLists[1],
+  },
+  {
+    desc: 'kList3 is available in cache and local service: should fetch from cache',
+    listName: 'kList3',
+    expected: keyedLists[3],
+  },
+  {
+    desc: 'kList4 is available in cache and server: should fetch from cache',
+    listName: 'kList4',
+    expected: keyedLists[4],
+  },
+  {
+    desc: 'kList5 is available in local and server : should fetch from local',
+    listName: 'kList5',
+    expected: keyedLists[6],
+  },
+  {
+    desc: 'kList6 is available in cache, local service as well as server: should fetch from cache',
+    listName: 'kList6',
+    expected: keyedLists[6],
+  },
+  {
+    desc: 'list0 is a simple list. Should get {}',
+    listName: 'list0',
+    expected: {},
+  },
+];

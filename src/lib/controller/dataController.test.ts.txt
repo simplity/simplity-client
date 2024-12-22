@@ -1,0 +1,415 @@
+import { describe, expect, it, jest } from '@jest/globals';
+import { DC } from './dataController';
+import {
+  Button,
+  ButtonNode,
+  Form,
+  DataField,
+  DisplaySettings,
+  EventAction,
+  FieldNode,
+  LeafNode,
+  PageController,
+  Panel,
+  PanelNode,
+  SimpleList,
+  StaticComp,
+  StaticNode,
+  StringMap,
+  Value,
+} from 'simplity-types';
+
+//@ts-expect-error
+const pc: PageController = {};
+
+const field1: DataField = {
+  name: 'field1',
+  compType: 'field',
+  valueType: 'text',
+  isRequired: true,
+  renderAs: 'select',
+  valueSchema: 'text',
+  listName: 'list1',
+};
+
+const field2: DataField = {
+  name: 'field2',
+  compType: 'field',
+  valueType: 'text',
+  isRequired: true,
+  renderAs: 'select',
+  valueSchema: 'text',
+  listName: 'list2',
+  listKeyName: 'field3',
+};
+
+const field3: DataField = {
+  name: 'field3',
+  compType: 'field',
+  valueType: 'text',
+  isRequired: true,
+  renderAs: 'text-field',
+  valueSchema: 'text',
+};
+function createField(comp: DataField): FieldNode {
+  return {
+    name: comp.name,
+    comp,
+    validate: jest.fn<() => boolean>(),
+    setValue: jest.fn(),
+    isValid: jest.fn<() => boolean>(),
+    setList: jest.fn<() => void>(),
+    setDisplay: jest.fn<() => void>(),
+    addListener: jest.fn<() => boolean>(),
+    getValue: jest.fn<() => Value>(),
+  };
+}
+
+const fieldControl1 = createField(field1);
+const fieldControl2 = createField(field2);
+const fieldControl3 = createField(field3);
+
+const button1: Button = {
+  name: 'button1',
+  compType: 'button',
+  buttonType: 'navigation',
+  onClick: 'button1_clicked',
+};
+
+const buttonControl: ButtonNode = {
+  comp: button1,
+  name: 'button1',
+  setDisplay: jest.fn(),
+  addListener: jest.fn<() => boolean>(),
+};
+
+const static1: StaticComp = {
+  name: 'static1',
+  compType: 'static',
+  onClick: 'static1_clicked',
+  staticType: 'content',
+};
+
+const staticControl: StaticNode = {
+  comp: static1,
+  name: 'static1',
+  setDisplay: jest.fn(),
+  addListener: jest.fn<() => boolean>(),
+};
+const panel1: Panel = {
+  name: 'panel1',
+  compType: 'panel',
+  children: [],
+};
+const panelControl: PanelNode = {
+  comp: panel1,
+  name: 'panel1',
+  addListener: jest.fn<() => boolean>(),
+  setDisplay: jest.fn(),
+};
+
+const form: Form = {
+  name: 'form1',
+  fieldNames: ['field1', 'field2', 'field3'],
+  fields: {
+    field1,
+    field2,
+    field3,
+  },
+  validationFunctions: ['v1', 'v2'],
+  keyFields: ['field1', 'field2'],
+};
+
+const triggers: StringMap<EventAction[]> = {
+  button1: [
+    { actionName: 'a1', controlName: 'button1', eventName: 'change' },
+    { actionName: 'a2', controlName: 'button1', eventName: 'changing' },
+  ],
+  static1: [{ actionName: 'a3', controlName: 'static1', eventName: 'change' }],
+};
+function newDc(): DC {
+  return new DC(pc, form, triggers);
+}
+
+function registerChild() {
+  it('should return false if the control is a duplicate ', () => {
+    const dc = newDc();
+    expect(dc.registerChild(staticControl)).toBe(true);
+    expect(dc.registerChild(staticControl)).toBe(false);
+    expect(dc.registerChild(fieldControl1)).toBe(true);
+    expect(dc.registerChild(fieldControl1)).toBe(false);
+  });
+
+  it('should return false if the control is not a leaf-node', () => {
+    const dc = newDc();
+    //@ts-expect-error
+    expect(dc.registerChild(panelControl as LeafNode)).toBe(false);
+  });
+
+  it('should attach listeners for change and changing events for a field', () => {});
+  const dc = newDc();
+  expect(dc.registerChild(fieldControl1)).toBe(true);
+  expect(fieldControl1.addListener).toHaveBeenCalledTimes(2);
+  expect(fieldControl1.addListener).toHaveBeenCalledWith(
+    'changing',
+    expect.anything()
+  );
+  expect(fieldControl1.addListener).toHaveBeenCalledWith(
+    'change',
+    expect.anything()
+  );
+
+  it('should request the list if the field has listName', () => {
+    const dc = newDc();
+    expect(dc.registerChild(fieldControl1)).toBe(true);
+    //expect(dc.pc.requestList).toHaveBeenCalledWith('list1');
+  });
+
+  it('should attach a listener if the control has onClick ', () => {
+    const dc = newDc();
+    expect(dc.registerChild(staticControl)).toBe(true);
+    expect(staticControl.addListener).toHaveBeenCalledWith(
+      'click',
+      expect.anything()
+    );
+  });
+
+  it('should attach the right event if a trigger is specified at the page level', () => {
+    const dc = newDc();
+    expect(dc.registerChild(staticControl)).toBe(true);
+
+    expect(staticControl.addListener).toHaveBeenCalledWith(
+      'click',
+      expect.anything()
+    ); //primary registration
+    expect(staticControl.addListener).toHaveBeenCalledWith(
+      'change',
+      expect.anything()
+    ); //through triggers at the page level
+
+    expect(dc.registerChild(buttonControl)).toBe(true);
+    expect(buttonControl.addListener).toHaveBeenCalledWith(
+      'click',
+      expect.anything()
+    ); //primary registration
+    expect(buttonControl.addListener).toHaveBeenCalledWith(
+      'change',
+      expect.anything()
+    ); //through triggers at the page level
+    expect(buttonControl.addListener).toHaveBeenCalledWith(
+      'changing',
+      expect.anything()
+    ); //through triggers at the page level
+  });
+}
+
+function rendered() {
+  it('should attach a listener for the key-field if a field has keyed-list.', () => {
+    const dc = newDc();
+    expect(dc.registerChild(fieldControl2)).toBe(true);
+    jest.clearAllMocks();
+    dc.rendered();
+    //keyed-field is not registered. hence no listeners
+    expect(fieldControl3.addListener).toHaveBeenCalledTimes(0); //
+
+    //let us add the key-field
+    expect(dc.registerChild(fieldControl3)).toBe(true);
+    jest.clearAllMocks();
+    dc.rendered();
+    expect(fieldControl3.addListener).toHaveBeenCalledWith(
+      'change',
+      expect.anything()
+    );
+  });
+}
+
+function setData() {
+  it('should call setValue() for any field for which data is received', () => {
+    const dc = newDc();
+    expect(dc.registerChild(fieldControl1)).toBe(true);
+    expect(dc.registerChild(fieldControl2)).toBe(true);
+    expect(dc.registerChild(fieldControl3)).toBe(true);
+    jest.clearAllMocks();
+    dc.setData({ field1: 'abcd', field2: 'hi', junk: 'junk', button1: 123 });
+    expect(fieldControl1.setValue).toHaveBeenCalledWith('abcd');
+    expect(fieldControl2.setValue).toHaveBeenCalledWith('hi');
+    expect(fieldControl3.setValue).toHaveBeenCalledTimes(0);
+  });
+}
+const simpleList: SimpleList = [{ value: 1, text: 'One' }];
+
+function setList() {
+  it('should call setList for the field', () => {
+    const dc = newDc();
+    expect(dc.registerChild(fieldControl1)).toBe(true);
+    jest.clearAllMocks();
+    dc.setList('field1', simpleList);
+    expect(fieldControl1.setList).toHaveBeenCalledWith(simpleList);
+  });
+
+  it('should not call setList if the specified name is not a field', () => {
+    const dc = newDc();
+    expect(dc.registerChild(fieldControl2)).toBe(true);
+    jest.clearAllMocks();
+    dc.setList('field1', simpleList);
+    dc.setList('junk', simpleList);
+    dc.setList('button1', simpleList);
+    expect(fieldControl1.setList).toHaveBeenCalledTimes(0);
+    expect(fieldControl2.setList).toHaveBeenCalledTimes(0);
+  });
+}
+
+function setDisplay() {
+  it('should call setDisplay on valid children', () => {
+    const dc = newDc();
+    expect(dc.registerChild(fieldControl2)).toBe(true);
+    expect(dc.registerChild(buttonControl)).toBe(true);
+    jest.clearAllMocks();
+    const d: DisplaySettings = {
+      errorMessage: 'Error Message',
+      classes: { add: ['style'], remove: ['style1', 'style2'] },
+    };
+    dc.setDisplay(['field1', 'field2', 'button1', 'static1'], d);
+    expect(fieldControl1.setDisplay).toHaveBeenCalledTimes(0);
+    expect(staticControl.setDisplay).toHaveBeenCalledTimes(0);
+    expect(fieldControl2.setDisplay).toHaveBeenCalledWith(d);
+    expect(buttonControl.setDisplay).toHaveBeenCalledWith(d);
+  });
+}
+
+function getDataField() {
+  it('should get data field if the field exists', () => {
+    const dc = newDc();
+    expect(dc.getDataField('field1')).toBe(field1);
+  });
+
+  it('should return undefined if the field does not exist', () => {
+    const dc = newDc();
+    expect(dc.getDataField('field111')).toBeUndefined();
+  });
+}
+
+function getData() {
+  it('should get values for names with values, and not names with undefined as values', () => {
+    const dc = newDc();
+    expect(dc.getData(['field1'])).toStrictEqual({});
+
+    dc.setData({ field1: 'a', field2: '2', junk: 'junk' });
+    expect(dc.getData(['field1', 'field3'])).toStrictEqual({ field1: 'a' });
+  });
+  const d = { field1: 'a', junk: 'junk', field2: 'abcd' };
+
+  it('should return all values if names are skipped', () => {
+    const dc = newDc();
+    dc.setData(d);
+    expect(dc.getData()).toStrictEqual(d);
+  });
+
+  it('should return {} if no names are specified, or all names are invalid', () => {
+    const dc = newDc();
+    dc.setData(d);
+    expect(dc.getData([])).toStrictEqual({});
+    expect(dc.getData(['abcd', 'ffg'])).toStrictEqual({});
+  });
+}
+
+function isValid() {
+  it('should return true if no control is registered', () => {
+    const dc = newDc();
+    expect(dc.isValid()).toBe(true);
+  });
+
+  it('should return false if at least one field is invalid', () => {
+    const dc = newDc();
+    dc.registerChild(fieldControl1);
+    dc.registerChild(fieldControl2);
+    dc.registerChild(fieldControl3);
+    jest.clearAllMocks();
+    (fieldControl1.isValid as jest.Mock).mockReturnValue(true);
+    (fieldControl2.isValid as jest.Mock).mockReturnValue(true);
+    (fieldControl3.isValid as jest.Mock).mockReturnValue(false);
+    expect(dc.isValid()).toBe(false);
+  });
+
+  it('should return true if every one of the registered field is valid', () => {
+    const dc = newDc();
+    dc.registerChild(fieldControl1);
+    dc.registerChild(fieldControl2);
+    dc.registerChild(fieldControl3);
+    dc.registerChild(staticControl);
+    //@ts-expect-error
+    dc.setData({ a: undefined });
+    (fieldControl1.isValid as jest.Mock).mockReturnValue(true);
+    (fieldControl2.isValid as jest.Mock).mockReturnValue(true);
+    (fieldControl3.isValid as jest.Mock).mockReturnValue(true);
+    expect(dc.isValid()).toBe(true);
+  });
+}
+
+function hasKeys() {
+  it('should return true if the form has no key fields', () => {
+    const formWithNoKeys = JSON.parse(JSON.stringify(form)) as Form;
+    delete formWithNoKeys.keyFields;
+    const dc = new DC(pc, formWithNoKeys);
+    expect(dc.hasKeyValues()).toBe(true);
+  });
+
+  it('should return true if every key field has a value (not undefined)', () => {
+    const dc = newDc();
+    dc.setData({ field1: 'some value', field2: 'some other value' });
+    expect(dc.hasKeyValues()).toBe(true);
+  });
+
+  it('should return false if at least one key field has no value (value is undefined)', () => {
+    const dc = newDc();
+    dc.setData({ field1: 'some value', field3: 'some other value' });
+    expect(dc.hasKeyValues()).toBe(false);
+  });
+}
+
+function fieldValueChanged() {
+  it('should change the value of the field in its data', () => {
+    const dc = newDc();
+    dc.setData({ field1: 'some value' });
+    expect(dc.isValid()).toBe(true);
+    dc.valueHasChanged('field1', 'new', false);
+    expect(dc.getData(['field1'])).toStrictEqual({ field1: 'new' });
+    expect(dc.isValid()).toBe(false);
+  });
+}
+
+function test() {
+  describe('registerChild', () => {
+    registerChild();
+  });
+
+  describe('rendered', () => {
+    rendered();
+  });
+  describe('setData', () => {
+    setData();
+  });
+  describe('setList', () => {
+    setList();
+  });
+  describe('setDisplay', () => {
+    setDisplay();
+  });
+  describe('getDataField', () => {
+    getDataField();
+  });
+  describe('getData', () => {
+    getData();
+  });
+  describe('isValid', () => {
+    isValid();
+  });
+  describe('hasKeys', () => {
+    hasKeys();
+  });
+  describe('fieldValueChanged', () => {
+    fieldValueChanged();
+  });
+}
+
+test();

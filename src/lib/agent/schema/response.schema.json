@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://simplity.org/schemas/response",
+  "title": "Service Response",
+  "description": "Schema of a response from a server",
+  "required": ["serviceName"],
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/status",
+      "title": "Request Status",
+      "description": "status code"
+    },
+
+    "description": {
+      "type": "string",
+      "title": "Status Description",
+      "description": "Human readable description for the status code"
+    },
+    "messages": {
+      "$ref": "#/$defs/messages"
+    },
+    "data": {
+      "type": "object",
+      "title": "Output Data",
+      "description": "Output Data as per the schema prescribed for the service being requested."
+    }
+  },
+  "$defs": {
+    "status": {
+      "type": {
+        "enum": [
+          "served",
+          "servedWithErrors",
+          "serviceNameRequired",
+          "noSuchService",
+          "sessionRequired",
+          "noSuchSession",
+          "invalidDataFormat",
+          "serverError"
+        ]
+      }
+    },
+    "messageType": {
+      "type": {
+        "enum": ["info", "success", "warning", "error"]
+      }
+    },
+    "message": {
+      "type": "object",
+      "required": ["id", "type", "text"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/messageType"
+        },
+        "text": {
+          "type": "string"
+        },
+        "fieldName": {
+          "type": "string"
+        },
+        "objectName": {
+          "type": "string"
+        },
+        "idx": {
+          "type": "number"
+        },
+        "params": {
+          "type": "array",
+          "element": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "messages": {
+      "type": "array",
+      "element": {
+        "$ref": "#/$defs/message"
+      }
+    }
+  }
+}

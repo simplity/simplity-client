@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://simplity.org/schemas/request",
+  "title": "Service Request",
+  "description": "Schema of a service request",
+  "required": ["serviceName"],
+  "properties": {
+    "serviceName": {
+      "type": "string",
+      "title": "Service Name",
+      "description": "Name of the service being requested"
+    },
+    "sessionId": {
+      "type": "string",
+      "title": "Session Id",
+      "description": "session id is used to implement a conversational mode between the server and the client. It is also used for authentication"
+    },
+    "requestId": {
+      "type": "string",
+      "title": "Request Id",
+      "description": "Optional reference id that the response will refer back to"
+    },
+    "data": {
+      "type": "object",
+      "title": "Input Data",
+      "description": "Input Data as per the schema prescribed for the service being requested."
+    }
+  }
+}

@@ -1,0 +1,197 @@
+import { describe, expect, it, jest } from '@jest/globals';
+import { MC } from './moduleController';
+import {
+  AppController,
+  LayoutController,
+  MenuItem,
+  Module,
+  ModuleView,
+  NavigationAction,
+  Page,
+  StringMap,
+} from 'simplity-types';
+
+const page1: Page = {
+  name: 'page1',
+  dataPanel: {
+    name: 'panel1',
+    compType: 'panel',
+    panelType: 'simple',
+    children: [],
+  },
+};
+const page2: Page = {
+  name: 'page2',
+  dataPanel: {
+    name: 'panel2',
+    compType: 'panel',
+    panelType: 'simple',
+    children: [],
+  },
+};
+const pages: StringMap<Page> = { page1, page2 };
+
+const menu1: MenuItem = {
+  id: 'menu1',
+  pageName: 'page1',
+  params: { a: 'a' },
+};
+const menu2: MenuItem = {
+  id: 'menu2',
+  pageName: 'page2',
+};
+const menu3: MenuItem = {
+  id: 'menu3',
+  pageName: 'page1',
+};
+
+const menu4: MenuItem = {
+  id: 'menu4',
+  pageName: 'invalid-page',
+};
+
+const menus: StringMap<MenuItem> = { menu1, menu2, menu3, menu4 };
+
+//@ts-expect-error
+const ac: AppController = {
+  getMenu(id) {
+    return menus[id];
+  },
+  getPage(pageName) {
+    return pages[pageName];
+  },
+};
+
+//@ts-expect-error
+const lc: LayoutController = {
+  ac,
+  displayMenu: jest.fn(),
+  navigate: jest.fn<() => boolean>(() => true),
+};
+
+const module: Module = {
+  name: 'module1',
+  label: 'Module 1',
+  menuItems: ['menu1', 'menu2', 'menu3', 'menu4', 'non-existent'],
+  startingMenu: 'menu1',
+};
+const moduleView: ModuleView = {
+  module,
+  displayMenu: jest.fn(),
+  menuChanged: jest.fn(),
+  titleChanged: jest.fn(),
+};
+function newMc(): MC {
+  return new MC(lc, moduleView, undefined, { a: 1 });
+}
+
+function displayMenu() {
+  it('should trigger displayMenu() on the layout controller', () => {
+    const mc = newMc();
+    mc.displayMenu(true, true);
+    expect(lc.displayMenu).toHaveBeenLastCalledWith(true);
+    expect(moduleView.displayMenu).toHaveBeenCalledTimes(0);
+  });
+  it('should trigger displayMenu() for the view when showMenu for sideMenu changes', () => {
+    const mc = newMc();
+    mc.displayMenu(true, true);
+    expect(moduleView.displayMenu).toHaveBeenCalledTimes(0);
+
+    jest.clearAllMocks();
+    mc.displayMenu(false, false);
+    expect(moduleView.displayMenu).toHaveBeenCalledWith(false);
+
+    jest.clearAllMocks();
+    mc.displayMenu(true, false);
+    expect(moduleView.displayMenu).toHaveBeenCalledTimes(0);
+
+    jest.clearAllMocks();
+    mc.displayMenu(false, true);
+    expect(moduleView.displayMenu).toHaveBeenCalledWith(true);
+  });
+}
+
+function setPageTitle() {
+  it('should invoke titleChanged on the view', () => {
+    const mc = newMc();
+    const title = 'Page Title';
+    mc.setPageTitle(title);
+    expect(moduleView.titleChanged).toHaveBeenCalledWith(title);
+  });
+}
+
+function navigate() {
+  const nav1: NavigationAction = {
+    name: 'nav1',
+    type: 'navigation',
+    moduleName: 'module1',
+  };
+  const nav2: NavigationAction = {
+    name: 'nav2',
+    type: 'navigation',
+    moduleName: 'module2',
+    menuName: 'menu2',
+  };
+  const nav3: NavigationAction = {
+    name: 'nav3',
+    type: 'navigation',
+    moduleName: 'module2',
+  };
+
+  it('should invoke navigate() on layout-controller if the module is the same as the existing one', () => {
+    const mc = newMc();
+    expect(mc.navigate(nav1)).toBe(true);
+    expect(lc.navigate).toHaveBeenCalledWith(nav1);
+  });
+
+  it('should invoke menuChanged() on the view for the new menu', () => {
+    const mc = newMc();
+    mc.navigate(nav1);
+    jest.clearAllMocks();
+
+    mc.navigate(nav2);
+    expect(moduleView.menuChanged).toHaveBeenCalledWith('menu1', 'menu2');
+
+    jest.clearAllMocks();
+    expect(mc.navigate(nav3)).toBe(true);
+    expect(moduleView.menuChanged).toHaveBeenCalledWith('menu2', 'menu1');
+  });
+}
+
+function selectMenu() {
+  it('should invoke menuChanged() on the view for the changed menu', () => {
+    const mc = newMc();
+    mc.selectMenu('menu1', { a: 1 }, true);
+    expect(lc.displayMenu).toHaveBeenCalledTimes(1);
+    expect(moduleView.displayMenu).toHaveBeenCalledTimes(1);
+    expect(moduleView.menuChanged).toHaveBeenCalledWith('menu1', 'menu1');
+
+    jest.clearAllMocks();
+    mc.selectMenu('menu2');
+    expect(lc.displayMenu).toHaveBeenCalledTimes(1);
+    expect(moduleView.displayMenu).toHaveBeenCalledTimes(1);
+    expect(moduleView.menuChanged).toHaveBeenCalledWith('menu1', 'menu2');
+
+    jest.clearAllMocks();
+    expect(mc.selectMenu('menu4')).toBe(false); //invalid page
+
+    jest.clearAllMocks();
+    expect(mc.selectMenu('invalid-menu')).toBe(false);
+  });
+}
+
+function test() {
+  describe('displayMenu', () => {
+    displayMenu();
+  });
+  describe('setPageTitle', () => {
+    setPageTitle();
+  });
+  describe('navigate', () => {
+    navigate();
+  });
+  describe('selectMenu', () => {
+    selectMenu();
+  });
+}
+test();

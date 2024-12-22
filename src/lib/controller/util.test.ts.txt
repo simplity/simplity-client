@@ -1,0 +1,63 @@
+import { describe, expect, test, jest, afterEach } from '@jest/globals';
+import { util } from './util';
+
+afterEach(() => {
+  // restore the spy created with spyOn
+  jest.restoreAllMocks();
+});
+const testCases = {
+  /**
+   * data: [expected-value, defaultStyle, userSpecified]
+   */
+  getEffectiveStyle: [
+    {
+      desc: 'should return "" if both params are not specified',
+      data: [
+        [undefined, undefined, ''],
+        [undefined, '', ''],
+        ['', undefined, ''],
+        ['', '', ''],
+      ],
+    },
+    {
+      desc: 'should return the specified parameter, if only one of them is specified.',
+      data: [
+        [undefined, 'p1', 'p1'],
+        ['p2', '', 'p2'],
+        ['pp', undefined, 'pp'],
+        ['', 'p', 'p'],
+      ],
+    },
+    {
+      desc: 'if param2 starts with +, it should return "param1 param2"',
+      data: [
+        ['style1', '+style2', 'style1 style2'],
+        ['style1', '++style2', 'style1 +style2'],
+        ['st', 'yle', 'yle'],
+      ],
+    },
+  ],
+};
+
+describe('getEffectiveStyle()', () => {
+  testCases.getEffectiveStyle.forEach((c) => {
+    test(c.desc, () => {
+      c.data.forEach((params) => {
+        expect(util.getEffectiveStyle(params[0], params[1])).toBe(params[2]);
+      });
+    });
+  });
+});
+
+const vo = { field1: { field1_1: 'abcd', field2: 12 }, field2: 23 };
+const fileName = 'someFileName';
+describe('should download a file', () => {
+  //TODO: this is a dummy code to just run the code. But how do we test?
+  util.download(vo, fileName);
+  test('Link element should have the right attributes', () => {
+    expect(vo.field2).toBe(23);
+  });
+  test('Link element should get clicked', () => {
+    expect(vo.field1.field2).toBe(12);
+  });
+});

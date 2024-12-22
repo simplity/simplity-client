@@ -1,0 +1,93 @@
+import { describe, expect, it } from '@jest/globals';
+
+function test() {
+  describe('register', () => register());
+  describe('endOfTab', () => endOfTab());
+  describe('endOfTabGroup', () => endOfTabGroup());
+  describe('pageRendered', () => pageRendered());
+  describe('pageLoaded', () => pageLoaded());
+  describe('receiveData', () => receiveData());
+  describe('setFieldValues', () => setFieldValues());
+  describe('setColumnValues', () => setColumnValues());
+  describe('getFieldValues', () => getFieldValues());
+  describe('getColumnValues', () => getColumnValues());
+  describe('setVariable', () => setVariable());
+  describe('setModifiedStatus', () => setModifiedStatus());
+  describe('setDirty', () => setDirty());
+  describe('isValid', () => isValid());
+  describe('setDisplay', () => setDisplay());
+  describe('showPageButtons', () => showPageButtons());
+  describe('act', () => act());
+  describe('actForForm', () => actForForm());
+  describe('callFunction', () => callFunction());
+  describe('requestGet', () => requestGet());
+  describe('requestSave', () => requestSave());
+  describe('requestChildFilter', () => requestChildFilter());
+  describe('requestList', () => requestList());
+  describe('showMessages', () => alert());
+  describe('enableUx', () => enableUx());
+  describe('disableUx', () => disableUx());
+  describe('formActionReturned', () => formActionReturned());
+}
+
+function register(): void {}
+
+function endOfTab(): void {}
+
+function endOfTabGroup(): void {}
+
+function pageRendered(): void {}
+
+function pageLoaded(): void {}
+
+function receiveData(): void {}
+
+function setFieldValues(): void {}
+
+function setColumnValues(): void {}
+
+function getFieldValues(): void {}
+
+function getColumnValues(): void {}
+
+function setVariable(): void {}
+
+function setModifiedStatus(): void {}
+
+function setDirty(): void {}
+
+function isValid(): void {}
+
+function setDisplay(): void {}
+
+function showPageButtons(): void {}
+
+function act(): void {}
+
+function actForForm(): void {}
+
+function callFunction(): void {}
+
+function requestGet(): void {}
+
+function requestSave(): void {}
+
+function requestChildFilter(): void {}
+
+function requestList(): void {}
+
+function enableUx(): void {}
+
+function disableUx(): void {}
+
+function formActionReturned(): void {}
+
+function alert(): void {}
+
+describe('Page Controller Test not yet implemented', () => {
+  test();
+  it('should be true', () => {
+    let bool = true;
+    expect(bool).toBe(true);
+  });
+});

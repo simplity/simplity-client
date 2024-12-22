@@ -1,0 +1,679 @@
+import { describe, expect, it, jest } from '@jest/globals';
+import {
+  Button,
+  DataField,
+  PageController,
+  StaticComp,
+  TableController,
+  Table,
+  Vo,
+} from 'simplity-types';
+import { tableController } from '..';
+
+const col1: DataField = {
+  compType: 'field',
+  name: 'col1',
+  valueType: 'text',
+  valueSchema: 'field1',
+  isRequired: true,
+  renderAs: 'text',
+  label: 'Col 1',
+};
+const col2: Button = {
+  compType: 'button',
+  buttonType: 'primary',
+  name: 'col2',
+  onClick: 'junk',
+  label: 'Col 2',
+};
+
+const col3: StaticComp = {
+  compType: 'static',
+  name: 'col3',
+  staticType: 'line',
+  onClick: 'junk',
+  label: 'Col 3',
+};
+
+const colNames = ['col1', 'col2', 'col3'];
+const colNames1 = ['_select_', 'col1', 'col2', 'col3'];
+const colLabels = ['Col 1', '', '']; //labels are used only for fields
+const colLabels1 = ['', 'Col 1', '', '']; //labels are used only for fields
+//met data behind this view-component.
+const comp: Table = {
+  compType: 'table',
+  formName: 'form1',
+  name: 'table1',
+  columns: [col1, col2, col3],
+  maxRows: 2,
+  minRows: 1,
+};
+const compString = JSON.stringify(comp);
+let clickableComp: Table = JSON.parse(compString);
+clickableComp.onRowClick = 'rowClicked';
+
+let selectableComp: Table = JSON.parse(compString);
+selectableComp.selectColumnName = 'field2';
+
+let selectableClickableComp: Table = JSON.parse(compString);
+selectableClickableComp.selectColumnName = 'field2';
+selectableClickableComp.onRowClick = 'rowClicked';
+
+//for that has the fields that are used by the child-view-components of this table
+//fields are themselves not used, hence we use dummy
+const field1 = { name: 'field1' };
+const field2 = { name: 'field2' };
+const form = {
+  name: 'form1',
+  fields: { field1, field2 },
+};
+
+const view: TableInterface = {
+  name: comp.name,
+  comp,
+
+  setData: jest.fn(),
+  infoChanged: jest.fn(),
+  changeAttribute: jest.fn(),
+};
+
+const selectableView: TableInterface = {
+  name: comp.name,
+  comp: selectableComp,
+  setData: jest.fn(),
+  infoChanged: jest.fn(),
+  changeAttribute: jest.fn(),
+};
+
+const clickableView: TableInterface = {
+  name: comp.name,
+  comp: clickableComp,
+  setData: jest.fn(),
+  infoChanged: jest.fn(),
+  changeAttribute: jest.fn(),
+};
+const selectableClickableView: TableInterface = {
+  name: comp.name,
+  comp: selectableClickableComp,
+  setData: jest.fn(),
+  infoChanged: jest.fn(),
+  changeAttribute: jest.fn(),
+};
+
+//application controller is used to get the form
+const ac = {
+  getForm: (formName: string) => {
+    if (formName === 'form1') {
+      return form;
+    }
+    return undefined;
+  },
+};
+
+//page controller is called with no return values. Easy to mock
+const pc = { ac, actForForm: jest.fn(), registerTable: jest.fn() };
+
+function newTableData(): Vo[] {
+  return [
+    { field1: 'zero', field2: true },
+    { field1: 'one', field2: false },
+    { field1: 'two', field2: false },
+  ];
+}
+//@ts-expect-error
+const fakePc: PageControllerInterface = pc;
+const dummyFn = () => {};
+/**
+ *
+ * factory
+ */
+function newTc(
+  clickable?: boolean,
+  selectable?: boolean
+): TableControllerInterface {
+  let v = view;
+  if (clickable) {
+    if (selectable) {
+      v = selectableClickableView;
+    } else {
+      v = clickableView;
+    }
+  } else {
+    if (selectable) {
+      v = selectableView;
+    } else {
+      v = view;
+    }
+  }
+
+  return tableController.createController(fakePc, v);
+}
+
+function constructorTest() {
+  it('should throw error if form-name is invalid', () => {
+    const invalidComp = JSON.parse(JSON.stringify(comp)) as Table;
+    invalidComp.formName = 'some non existing form';
+    const v: TableInterface = {
+      name: comp.name,
+      comp: invalidComp,
+      setData: dummyFn,
+      changeAttribute: dummyFn,
+      infoChanged: dummyFn,
+    };
+
+    expect(() => {
+      tableController.createController(fakePc, v);
+    }).toThrow();
+  });
+
+  it('should register when created', () => {
+    const tc = newTc();
+    expect(pc.registerTable).toBeCalledWith(comp.name, tc, view);
+  });
+}
+
+function getNameTest() {
+  it('should get the name of this controller', () => {
+    const tc = newTc();
+    expect(tc.getName()).toBe(comp.name);
+  });
+}
+
+function getFormFieldTest() {
+  it('should get the name of this controller', () => {
+    const tc = newTc();
+    expect(tc.getFormField('field1')).toStrictEqual(field1);
+  });
+}
+
+function getFormNameTest() {
+  it('should get the name of this controller', () => {
+    const tc = newTc();
+    expect(tc.getFormName()).toBe(form.name);
+  });
+}
+
+function sizeTest() {
+  it('should get the number of rows in the table data', () => {
+    const tc = newTc();
+    const tableData = newTableData();
+    tc.receiveData(tableData);
+    expect(tc.size()).toBe(tableData.length);
+  });
+}
+
+function getRowTest() {
+  it('should get the specified row or undefined in the tabular data', () => {
+    const tc = newTc();
+    const tableData = newTableData();
+    tc.receiveData(tableData);
+    expect(tc.getRow(-1)).toBeUndefined();
+    expect(tc.getRow(8)).toBeUndefined();
+    expect(tc.getRow(1)).toStrictEqual(tableData[1]);
+  });
+}
+
+function getColumnValueTest() {
+  const tc = newTc();
+  const tableData = newTableData();
+  tc.receiveData(tableData);
+  it('should get the column value in the tabular data', () => {
+    const tests: [any, string, number][] = [
+      [undefined, 'junk', 0],
+      [undefined, 'field1', 6],
+      ['one', 'field1', 1],
+      [false, 'field2', 2],
+    ];
+    tests.forEach(([exp, col, idx]) => {
+      expect(tc.getColumnValue(col, idx)).toBe(exp);
+    });
+  });
+}
+
+function getTableInfoTest() {
+  it('should get the underlying tableINfo', () => {
+    const tc = newTc();
+    const info = tc.getTableInfo();
+    expect(info.columnNames).toStrictEqual(['col1', 'col2', 'col3']);
+  });
+}
+
+function receiveDataTest() {
+  it('should set and propagate data to view-components', () => {
+    const tc = newTc();
+    const tableData = newTableData();
+    tc.receiveData(tableData);
+    expect(tc.extractAll()).toStrictEqual(tableData);
+    const info = tc.getTableInfo();
+    expect(view.setData).toBeCalledWith(tableData, info);
+  });
+}
+
+function extractAllTest() {
+  // tested as part of receiveDataText()
+}
+
+function setFieldValueTest() {
+  it('should do nothing.', () => {
+    const tc = newTc();
+    expect(tc.setFieldValue('someFieldName', 'some value')).toBeUndefined();
+  });
+}
+
+function getFieldValueTest() {
+  const tc = newTc();
+  const tableData = newTableData();
+  tc.receiveData(tableData);
+  it('should get the column value in the tabular data', () => {
+    const tests: [any, string, number][] = [
+      [undefined, 'junk', 0],
+      [undefined, 'field1', 6],
+      ['one', 'field1', 1],
+      [false, 'field2', 2],
+    ];
+    tests.forEach(([exp, col, idx]) => {
+      expect(tc.getFieldValue(col, idx)).toBe(exp);
+    });
+  });
+}
+
+function selectARowTest() {
+  it('should select the row and propagate events for the same', () => {
+    const tc = newTc(true);
+    const tableData = newTableData();
+    const info = tc.getTableInfo() as TableInfo;
+    const spy = jest.spyOn(info, 'rowSelectionChanged');
+    tc.receiveData(tableData);
+    tc.rowClicked(1);
+    tc.selectARow(true);
+    expect(spy).toBeCalledWith(1, true);
+    tc.rowClicked(0);
+    tc.selectARow(false);
+    expect(spy).toBeCalledWith(0, false);
+  });
+  //TODO: selection
+}
+
+function selectAllRowsTest() {
+  it('should select all the rows and propagate events for the same', () => {
+    const tc = newTc(true);
+    const tableData = newTableData();
+    const info = tc.getTableInfo() as TableInfo;
+    const spy = jest.spyOn(info, 'selectAllChanged');
+    tc.receiveData(tableData);
+    tc.selectAllRows(true);
+    expect(spy).toBeCalledWith(true);
+    tc.selectAllRows(false);
+    expect(spy).toHaveBeenLastCalledWith(false);
+  });
+}
+
+function rowClickedTest() {
+  it('should set the current row, and trigger events', () => {
+    const tc = newTc(true);
+    const tableData = newTableData();
+
+    tc.receiveData(tableData);
+    let info = tc.getTableInfo();
+    expect(info.currentRowIdx).toBe(0);
+
+    info = tc.rowClicked(-3);
+    expect(info.currentRowIdx).toBe(0);
+    expect(pc.actForForm).not.toBeCalled();
+
+    tc.rowClicked(tableData.length);
+    expect(pc.actForForm).not.toBeCalled();
+    expect(info.currentRowIdx).toBe(0);
+
+    tc.rowClicked(1);
+    const data = tc.extractAll();
+    expect(info.currentRowIdx).toBe(1);
+    expect(pc.actForForm).toBeCalledWith('rowClicked', undefined, data[1]);
+  });
+}
+
+function columnClickedTest() {
+  it('should trigger event for column click', () => {
+    const tc = newTc(true);
+    const tableData = newTableData();
+    tc.receiveData(tableData);
+    const row = { a: 12, b: 'abcd' };
+    const action = 'someAction';
+    tc.columnClicked(row, action);
+    expect(pc.actForForm).toBeCalledWith(action, undefined, row);
+  });
+}
+
+function setCurrentRowIdxTest() {
+  it('should set the current row', () => {
+    const tc = newTc();
+    const tableData = newTableData();
+    tc.receiveData(tableData);
+    const info = tc.getTableInfo();
+    tc.setCurrentRowIdx(1);
+    expect(info.currentRowIdx).toBe(1);
+
+    tc.setCurrentRowIdx(-3);
+    expect(info.currentRowIdx).toBe(1);
+
+    tc.setCurrentRowIdx(100);
+    expect(info.currentRowIdx).toBe(1);
+
+    tc.setCurrentRowIdx(0);
+    expect(info.currentRowIdx).toBe(0);
+  });
+}
+
+function validateTest() {
+  it('should validate min/max rows ', () => {
+    const tc = newTc(false, true);
+    const tableData = newTableData();
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    //minRows is 1 and maxRows is 2
+    tc.selectAllRows(true);
+    expect(info.nbrSelected).toBe(3);
+    expect(tc.isValid()).toBe(false);
+    expect(info.rowSelections).toStrictEqual([true, true, true]);
+
+    tc.selectAllRows(false);
+    expect(info.nbrSelected).toBe(0);
+    expect(tc.isValid()).toBe(false);
+    expect(info.rowSelections).toStrictEqual([false, false, false]);
+
+    info.rowSelectionChanged(1, true);
+    expect(info.nbrSelected).toBe(1);
+    expect(tc.isValid()).toBe(true);
+    expect(info.rowSelections).toStrictEqual([false, true, false]);
+
+    info.rowSelectionChanged(0, true);
+    expect(info.nbrSelected).toBe(2);
+    expect(tc.isValid()).toBe(true);
+    expect(info.rowSelections).toStrictEqual([true, true, false]);
+
+    info.rowSelectionChanged(2, true);
+    expect(info.nbrSelected).toBe(3);
+    expect(tc.isValid()).toBe(false);
+    expect(info.rowSelections).toStrictEqual([true, true, true]);
+  });
+}
+
+function testTc() {
+  describe('constructor', () => {
+    constructorTest();
+  });
+
+  describe('getTableInfo', () => {
+    getTableInfoTest();
+  });
+
+  describe('getName', () => {
+    getNameTest();
+  });
+
+  describe('getFormField', () => {
+    getFormFieldTest();
+  });
+
+  describe('getFormName', () => {
+    getFormNameTest();
+  });
+
+  describe('size', () => {
+    sizeTest();
+  });
+
+  describe('getRow', () => {
+    getRowTest();
+  });
+
+  describe('getColumnValue', () => {
+    getColumnValueTest();
+  });
+
+  describe('receiveData', () => {
+    receiveDataTest();
+  });
+
+  describe('extractAll', () => {
+    extractAllTest();
+  });
+
+  describe('setFieldValue', () => {
+    setFieldValueTest();
+  });
+
+  describe('getFieldValue', () => {
+    getFieldValueTest();
+  });
+
+  describe('selectARow', () => {
+    selectARowTest();
+  });
+
+  describe('selectAllRows', () => {
+    selectAllRowsTest();
+  });
+
+  describe('rowClicked', () => {
+    rowClickedTest();
+  });
+
+  describe('columnClicked', () => {
+    columnClickedTest();
+  });
+
+  describe('setCurrentRowIdx', () => {
+    setCurrentRowIdxTest();
+  });
+
+  describe('validate', () => {
+    validateTest();
+  });
+}
+
+function constructorTiTest() {
+  it('should throw error if onclick as well as selection are specified', () => {
+    expect(() => {
+      newTc(true, true);
+    }).toThrow();
+  });
+
+  it('should not add column for selection', () => {
+    let tc = newTc();
+    let info = tc.getTableInfo();
+    expect(info.columnNames).toStrictEqual(colNames);
+    expect(info.columnLabels).toStrictEqual(colLabels);
+    expect(info.rowIsClickable).toBe(false);
+    expect(info.selectColumn).toBeUndefined();
+    expect(info.minRows).toBe(1);
+    expect(info.maxRows).toBe(2);
+    expect(info.totalRows).toBe(0);
+    expect(info.nbrSelected).toBe(0);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([]);
+  });
+
+  it('should add column for selection', () => {
+    let tc = newTc(false, true);
+    let info = tc.getTableInfo();
+    expect(info.columnNames).toStrictEqual(colNames1);
+    expect(info.columnLabels).toStrictEqual(colLabels1);
+    expect(info.rowIsClickable).toBe(false);
+    expect(info.selectColumn).toBe('field2');
+    expect(info.minRows).toBe(1);
+    expect(info.maxRows).toBe(2);
+    expect(info.totalRows).toBe(0);
+    expect(info.nbrSelected).toBe(0);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([]);
+  });
+}
+
+function selectAllChangedTest() {
+  it('should show all selections', () => {
+    const tableData = newTableData();
+    const tc = newTc(false, true);
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    info.selectAllChanged(true);
+
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(3);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(true);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([true, true, true]);
+  });
+
+  it('should show no selections', () => {
+    const tableData = newTableData();
+    const tc = newTc(false, true);
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    info.selectAllChanged(false);
+
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(0);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([false, false, false]);
+  });
+}
+
+function onSelectionChangeTest() {
+  it('should update selections', () => {
+    const tableData = newTableData();
+    const tc = newTc(false, true);
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+
+    info.rowSelectionChanged(0, false); //only selection removed
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(0);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([false, false, false]);
+
+    tc.setCurrentRowIdx(1);
+    tc.selectARow(true);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(1);
+    expect(info.currentRowIdx).toBe(1);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(true);
+    expect(info.rowSelections).toStrictEqual([false, true, false]);
+
+    info.rowSelectionChanged(2, true);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(2);
+    expect(info.currentRowIdx).toBe(1);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(true);
+    expect(info.rowSelections).toStrictEqual([false, true, true]);
+
+    info.rowSelectionChanged(0, true);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(3);
+    expect(info.currentRowIdx).toBe(1);
+    expect(info.allSelected).toBe(true);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([true, true, true]);
+
+    info.rowSelectionChanged(0, false);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(2);
+    expect(info.currentRowIdx).toBe(1);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(true);
+    expect(info.rowSelections).toStrictEqual([false, true, true]);
+  });
+}
+
+function resetTest() {
+  it('should not update selections when selection is not enabled', () => {
+    const tableData = newTableData();
+    const tc = newTc();
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(0);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([false, false, false]);
+  });
+
+  it('should show some selections', () => {
+    const tableData = newTableData();
+    const tc = newTc(false, true);
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(1);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(true);
+    expect(info.rowSelections).toStrictEqual([true, false, false]);
+  });
+
+  it('should show all selections', () => {
+    const tableData = newTableData();
+    tableData.forEach((row) => (row['field2'] = true));
+    const tc = newTc(false, true);
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(3);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(true);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([true, true, true]);
+  });
+
+  it('should show no selections', () => {
+    const tableData = newTableData();
+    tableData.forEach((row) => (row['field2'] = false));
+    const tc = newTc(false, true);
+    const info = tc.getTableInfo();
+    tc.receiveData(tableData);
+    expect(info.totalRows).toBe(3);
+    expect(info.nbrSelected).toBe(0);
+    expect(info.currentRowIdx).toBe(0);
+    expect(info.allSelected).toBe(false);
+    expect(info.someSelected).toBe(false);
+    expect(info.rowSelections).toStrictEqual([false, false, false]);
+  });
+}
+
+function testTi() {
+  describe('constructor', () => {
+    constructorTiTest();
+  });
+
+  describe('rowSelectionChanged', () => {
+    onSelectionChangeTest();
+  });
+
+  describe('selectAllChanged', () => {
+    selectAllChangedTest();
+  });
+
+  describe('resetChanged', () => {
+    resetTest();
+  });
+}
+
+describe('Table Controller', () => {
+  testTc();
+});
+
+describe('Table Info', () => {
+  testTi();
+});

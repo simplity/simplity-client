@@ -1,0 +1,42 @@
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { AppView, RuntimeApp } from 'simplity-types';
+
+import { AC } from './appController';
+import { app } from '../controller/app';
+jest.mock('./appController');
+
+const ac = AC as jest.Mock;
+beforeEach(() => {
+  // Clear all instances and calls to constructor and all methods:
+  ac.mockClear();
+});
+
+const appComps: RuntimeApp = {
+  forms: {},
+  messages: {},
+  validationFns: {},
+  listSources: {},
+  pages: {},
+  modules: {},
+  layouts: {},
+  menuItems: {},
+  name: 'app',
+  imageBasePath: '',
+  startingLayout: 'l1',
+  startingModule: 'module1',
+  maxLengthForTextField: 400,
+};
+
+//TODO: test to be written again after the agent-refactoring
+//@ts-expect-error
+const appView: AppView = {};
+function test() {
+  describe('AppCOntroller', () => {
+    it('should call the constructor', () => {
+      app.newAc(appComps, appView);
+      expect(0).toBe(0);
+      //expect(ac).toHaveBeenCalledWith(sa, appComps, appParams, appView);
+    });
+  });
+}
+test();
