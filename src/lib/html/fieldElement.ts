@@ -4,7 +4,7 @@ import {
   FieldView,
   FieldRendering,
   SimpleList,
-  systemMessages,
+  systemResources,
   Value,
   FormController,
 } from 'simplity-types';
@@ -277,7 +277,7 @@ export class FieldElement extends BaseElement implements FieldView {
     if (!this.textValue) {
       this.value = '';
       if (this.comp.isRequired) {
-        msgs = [this.createMessage(systemMessages._valueRequired)];
+        msgs = [this.createMessage(systemResources.messages._valueRequired)];
       }
     } else {
       const vs = this.comp.valueSchema;

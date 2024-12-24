@@ -1,4 +1,4 @@
-import { RuntimeApp, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, NavigationAction, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType } from 'simplity-types';
+import { AppRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, NavigationAction, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType } from 'simplity-types';
 export declare class AC implements AppController {
     /**
      * This is the root html element for this app.
@@ -42,7 +42,7 @@ export declare class AC implements AppController {
     /**
      * meta-data components for this apps
      */
-    runtimeApp: RuntimeApp, 
+    appRuntime: AppRuntime, 
     /**
      * This is the root html element for this app.
      */

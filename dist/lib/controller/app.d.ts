@@ -1,4 +1,4 @@
-import { AppController, AppView, PageController, PageView, RuntimeApp } from 'simplity-types';
+import { AppController, AppView, PageController, PageView, AppRuntime } from 'simplity-types';
 /**
  * utility to create controllers
  */
@@ -41,11 +41,11 @@ export declare const app: {
      * create an App Controller.
      * This instance is the return-value for subsequent calls to getController()
   
-     * @param runtimeApp
+     * @param appRuntime
      * @param appView
      * @returns
      */
-    newAc: (runtimeApp: RuntimeApp, appView: AppView) => AppController;
+    newAc: (appRuntime: AppRuntime, appView: AppView) => AppController;
     /**
      * To be invoked ONLY after createNew() is invoked. An error is thrown otherwise.
      * @returns current active instance

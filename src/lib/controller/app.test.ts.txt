@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { AppView, RuntimeApp } from 'simplity-types';
+import { AppView, AppRuntime } from 'simplity-types';
 
 import { AC } from './appController';
 import { app } from '../controller/app';
@@ -11,7 +11,7 @@ beforeEach(() => {
   ac.mockClear();
 });
 
-const appComps: RuntimeApp = {
+const appComps: AppRuntime = {
   forms: {},
   messages: {},
   validationFns: {},

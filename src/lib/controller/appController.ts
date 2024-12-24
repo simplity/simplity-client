@@ -1,6 +1,6 @@
 import { loggerStub } from '../logger-stub/logger';
 import {
-  RuntimeApp,
+  AppRuntime,
   AppController,
   Form,
   FunctionDetails,
@@ -107,7 +107,7 @@ export class AC implements AppController {
     /**
      * meta-data components for this apps
      */
-    runtimeApp: RuntimeApp,
+    appRuntime: AppRuntime,
 
     /**
      * This is the root html element for this app.
@@ -115,9 +115,9 @@ export class AC implements AppController {
     private readonly appView: AppView
   ) {
     this.agent = serviceAgent.newAgent({
-      localServices: runtimeApp.localServices,
-      responses: runtimeApp.cachedResponses,
-      serverUrl: runtimeApp.serverUrl,
+      localServices: appRuntime.localServices,
+      responses: appRuntime.cachedResponses,
+      serverUrl: appRuntime.serverUrl,
     });
     //issue in node environment. sessionStorage is just a boolean!!!
     if (global.sessionStorage && (global.sessionStorage as any).getItem) {
@@ -126,23 +126,23 @@ export class AC implements AppController {
       this.context = simulatedSession;
     }
 
-    this.loginServiceName = runtimeApp.loginServiceName || '';
-    this.logoutServiceName = runtimeApp.logoutServiceName || '';
+    this.loginServiceName = appRuntime.loginServiceName || '';
+    this.logoutServiceName = appRuntime.logoutServiceName || '';
 
-    this.functionDetails = runtimeApp.functionDetails || {};
-    this.imageBasePath = runtimeApp.imageBasePath;
+    this.functionDetails = appRuntime.functionDetails || {};
+    this.imageBasePath = appRuntime.imageBasePath;
 
-    this.allMessages = runtimeApp.messages || {};
-    this.listSources = runtimeApp.listSources || {};
-    this.allPages = runtimeApp.pages || {};
-    this.allForms = runtimeApp.forms || {};
-    this.allHtmls = runtimeApp.htmls || {};
+    this.allMessages = appRuntime.messages || {};
+    this.listSources = appRuntime.listSources || {};
+    this.allPages = appRuntime.pages || {};
+    this.allForms = appRuntime.forms || {};
+    this.allHtmls = appRuntime.htmls || {};
 
-    this.allLayouts = runtimeApp.layouts || {};
-    this.allModules = runtimeApp.modules || {};
+    this.allLayouts = appRuntime.layouts || {};
+    this.allModules = appRuntime.modules || {};
 
-    this.allMenus = runtimeApp.menuItems || {};
-    this.validationFns = this.createValidationFns(runtimeApp.valueSchemas);
+    this.allMenus = appRuntime.menuItems || {};
+    this.validationFns = this.createValidationFns(appRuntime.valueSchemas);
   }
 
   private createValidationFns(

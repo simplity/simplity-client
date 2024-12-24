@@ -2,12 +2,12 @@ import { LayoutElement } from './layoutElement';
 import {
   Alert,
   AppController,
+  AppRuntime,
   AppView,
   Logger,
   NavigationAction,
   NavigationParams,
   PanelView,
-  RuntimeApp,
   StringMap,
   Values,
 } from 'simplity-types';
@@ -26,20 +26,20 @@ export class AppElement implements AppView {
 
   /**
    *
-   * @param runtimeApp
+   * @param appRuntime
    * @param appEle container element to which the app-view is to be appended to
    */
-  constructor(runtimeApp: RuntimeApp, appEle: HTMLElement) {
+  constructor(appRuntime: AppRuntime, appEle: HTMLElement) {
     this.logger = loggerStub.getLogger();
 
     this.root = appEle;
 
     //create the all important and all powerful controller of controllers!!!
-    this.ac = app.newAc(runtimeApp, this);
+    this.ac = app.newAc(appRuntime, this);
 
     //render the default layout
-    this.renderLayout(runtimeApp.startingLayout, {
-      module: runtimeApp.startingModule,
+    this.renderLayout(appRuntime.startingLayout, {
+      module: appRuntime.startingModule,
     });
   }
 

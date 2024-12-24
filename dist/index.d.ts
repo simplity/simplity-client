@@ -1,4 +1,4 @@
-import { Logger, RuntimeApp } from 'simplity-types';
+import { Logger, AppRuntime } from 'simplity-types';
 export declare const simplityClient: {
     /**
      * Simplity uses the console as the default device to log to.
@@ -14,5 +14,5 @@ export declare const simplityClient: {
      * @returns
      */
     setLogger: (logger: Logger | undefined) => void;
-    startHtmlClient: (runtimeApp: RuntimeApp, root: HTMLElement) => import("simplity-types").AppController;
+    startHtmlClient: (appRuntime: AppRuntime, root: HTMLElement) => import("simplity-types").AppController;
 };

@@ -3,8 +3,8 @@ import {
   AppView,
   PageController,
   PageView,
-  RuntimeApp,
-  systemMessages,
+  AppRuntime,
+  systemResources,
 } from 'simplity-types';
 import { PC } from './pageController';
 import { loggerStub } from '../logger-stub/logger';
@@ -45,33 +45,33 @@ export const app = {
     /**
      * value is required
      */
-    errorValueIsRequired: systemMessages._valueRequired,
+    errorValueIsRequired: systemResources.messages._valueRequired,
     /**
      * generic error message when validation fails and  no specific error id is specified
      */
-    errorInvalidValue: systemMessages._invalidValue,
+    errorInvalidValue: systemResources.messages._invalidValue,
     /**
      * general error message when reg-ex fails, and the value schema does not provide specific error
      */
-    errorSchemaIsMissing: systemMessages._missingSchema,
+    errorSchemaIsMissing: systemResources.messages._missingSchema,
   },
 
   /**
    * create an App Controller.
    * This instance is the return-value for subsequent calls to getController()
 
-   * @param runtimeApp
+   * @param appRuntime
    * @param appView
    * @returns
    */
-  newAc: (runtimeApp: RuntimeApp, appView: AppView) => {
+  newAc: (appRuntime: AppRuntime, appView: AppView) => {
     if (ac) {
       logger.warn(
-        `The controller for app ${runtimeApp.name} exists, but a new one being created. This is an ERROR in production mode`
+        `The controller for app ${appRuntime.name} exists, but a new one being created. This is an ERROR in production mode`
       );
     }
 
-    ac = new AC(runtimeApp, appView);
+    ac = new AC(appRuntime, appView);
     return ac;
   },
 

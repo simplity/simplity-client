@@ -9,17 +9,17 @@ const PAGE_TITLE = 'page-title';
 class AppElement {
     /**
      *
-     * @param runtimeApp
+     * @param appRuntime
      * @param appEle container element to which the app-view is to be appended to
      */
-    constructor(runtimeApp, appEle) {
+    constructor(appRuntime, appEle) {
         this.logger = logger_1.loggerStub.getLogger();
         this.root = appEle;
         //create the all important and all powerful controller of controllers!!!
-        this.ac = app_1.app.newAc(runtimeApp, this);
+        this.ac = app_1.app.newAc(appRuntime, this);
         //render the default layout
-        this.renderLayout(runtimeApp.startingLayout, {
-            module: runtimeApp.startingModule,
+        this.renderLayout(appRuntime.startingLayout, {
+            module: appRuntime.startingModule,
         });
     }
     renderLayout(layoutName, params) {
