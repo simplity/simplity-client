@@ -47,6 +47,7 @@ export declare class AC implements AppController {
      * This is the root html element for this app.
      */
     appView: AppView);
+    private createValidationFns;
     newWindow(url: string): void;
     closePopup(): void;
     newError(msg: string): Error;

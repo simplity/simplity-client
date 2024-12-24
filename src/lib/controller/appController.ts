@@ -23,12 +23,12 @@ import {
   KeyedList,
   ValueType,
   FunctionType,
+  ValueSchema,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
-import { parseToValue } from './parseToValue';
-
+import { createValidationFn, parseToValue } from '../validation/validation';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 
@@ -142,9 +142,20 @@ export class AC implements AppController {
     this.allModules = runtimeApp.modules || {};
 
     this.allMenus = runtimeApp.menuItems || {};
-    this.validationFns = runtimeApp.validationFns || {};
+    this.validationFns = this.createValidationFns(runtimeApp.valueSchemas);
   }
 
+  private createValidationFns(
+    schemas?: StringMap<ValueSchema>
+  ): StringMap<ValueValidationFn> {
+    const fns: StringMap<ValueValidationFn> = {};
+    if (schemas) {
+      for (const [name, schema] of Object.entries(schemas)) {
+        fns[name] = createValidationFn(schema);
+      }
+    }
+    return fns;
+  }
   newWindow(url: string): void {
     logger.info(
       `Request to open a window for url:${url} received. This feature is not yet implemented`
