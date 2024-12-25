@@ -243,7 +243,7 @@ export class PC implements PageController {
   }
 
   getList(control: FieldView, key?: string | number | undefined): void {
-    const listName = control.comp.listName;
+    const listName = control.field.listName;
     if (!listName) {
       logger.warn(
         `Control ${control.name} does not have listName, but a list is requested for it. Request ignored`

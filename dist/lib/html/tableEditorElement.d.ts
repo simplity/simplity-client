@@ -2,7 +2,7 @@ import { TableEditor, TableEditorView, Values, FormController } from 'simplity-t
 import { BaseElement } from './baseElement';
 export declare class TableEditorElement extends BaseElement implements TableEditorView {
     readonly fc: FormController;
-    readonly comp: TableEditor;
+    readonly table: TableEditor;
     private tec;
     private tableEle;
     private rowsEle;
@@ -10,7 +10,7 @@ export declare class TableEditorElement extends BaseElement implements TableEdit
     private dataRowEle;
     private headerCellEle;
     private dataCellEle;
-    constructor(fc: FormController, comp: TableEditor);
+    constructor(fc: FormController, table: TableEditor);
     /**
      * remove all rows that are rendered
      */

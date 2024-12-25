@@ -1,9 +1,9 @@
-import { Form, FormController, Panel } from 'simplity-types';
+import { Form, FormController, Panel, PanelView } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
 import { elementFactory } from './elementFactory';
 
-export class PanelElement extends BaseElement {
+export class PanelElement extends BaseElement implements PanelView {
   private readonly contentEle: HTMLElement;
   /**
    * in case this panel is associated with a child-form

@@ -65,7 +65,7 @@ export class TEC implements TableEditorController {
     this.ac = this.pc.ac;
     this.view = view;
 
-    this.table = view.comp;
+    this.table = view.table;
     const formName = this.table.formName;
     if (formName) {
       this.form = this.ac.getForm(formName);

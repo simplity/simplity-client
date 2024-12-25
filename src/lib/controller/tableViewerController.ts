@@ -88,7 +88,7 @@ export class TWC implements TableViewerController {
     this.ac = this.pc.ac;
     this.view = view;
 
-    this.table = view.comp as TableViewer;
+    this.table = view.table as TableViewer;
     const formName = this.table.formName;
     if (formName) {
       this.form = this.ac.getForm(formName);

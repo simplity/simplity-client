@@ -62,13 +62,13 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
 
   constructor(
     public readonly fc: FormController,
-    public readonly comp: TableViewer
+    public readonly table: TableViewer
   ) {
-    super(fc, comp, 'table');
+    super(fc, table, 'table');
 
-    this.sortable = !!comp.sortable;
-    this.searchable = !!comp.searchable;
-    this.configurable = !!comp.configurable;
+    this.sortable = !!table.sortable;
+    this.searchable = !!table.searchable;
+    this.configurable = !!table.configurable;
 
     /**
      * typically <Table>
@@ -113,11 +113,11 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     this.dataCellEle.remove();
     this.dataRowEle.remove();
 
-    if (this.comp.onRowClick) {
+    if (this.table.onRowClick) {
       this.tableEle.setAttribute('data-clickable', '');
     }
 
-    if (comp.selectFieldName) {
+    if (table.selectFieldName) {
       this.tableEle.setAttribute('data-selectable', '');
     }
 

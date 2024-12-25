@@ -6,10 +6,10 @@ import { BaseElement } from './baseElement';
  * This base class handles that part.
  */
 export declare class LeafElement extends BaseElement {
-    comp: StaticComp | Button;
+    table: StaticComp | Button;
     /**
      * to be called if this view component is to be available for any run-time changes lik enable/disable
      */
-    constructor(fc: FormController | undefined, comp: StaticComp | Button, inColumn?: boolean);
+    constructor(fc: FormController | undefined, table: StaticComp | Button, inColumn?: boolean);
     setDisplay(settings: DisplaySettings): void;
 }

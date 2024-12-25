@@ -117,11 +117,11 @@ export class FC implements FormController {
     }
 
     this.children[name] = view;
-    const typ = view.comp.compType;
+    const typ = view.table.compType;
     if (typ === 'field') {
       this.fieldViews[name] = view as FieldView;
     } else if (typ === 'panel') {
-      if ((view.comp as Tab).tabLabel !== undefined) {
+      if ((view.table as Tab).tabLabel !== undefined) {
         this.beginTab(name);
       }
     } else if (typ === 'tabs') {
@@ -185,7 +185,7 @@ export class FC implements FormController {
 
   formRendered(): void {
     for (const fieldView of Object.values(this.fieldViews)) {
-      const field = fieldView.comp;
+      const field = fieldView.field;
       if (!field.listName) {
         continue;
       }

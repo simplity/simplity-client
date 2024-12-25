@@ -33,16 +33,16 @@ export class BaseElement implements BaseView {
 
   /**
    *
-   * @param comp meta data for this view component
+   * @param table meta data for this view component
    * @param templateName to be used to create the HTML element. ignored if root is provided
    * @param template instance to be cloned as HTML element
    */
   constructor(
     public readonly fc: FormController | undefined,
-    public readonly comp: BaseComponent,
+    public readonly table: BaseComponent,
     templateName?: string
   ) {
-    this.name = comp.name;
+    this.name = table.name;
     if (fc) {
       this.pc = fc.pc;
       this.ac = this.pc.ac;
@@ -51,7 +51,7 @@ export class BaseElement implements BaseView {
       this.pc = app.getCurrentPc();
     }
     this.root = htmlUtil.newHtmlElement(
-      this.comp.customHtml || 'template' + '-' + templateName
+      this.table.customHtml || 'template' + '-' + templateName
     );
     if (fc) {
       fc.registerChild(this);
@@ -65,13 +65,13 @@ export class BaseElement implements BaseView {
      */
     this.inputEle = this.root.querySelector('input') || undefined;
 
-    if (comp.label) {
+    if (table.label) {
       this.labelEle = htmlUtil.getOptionalElement(this.root, 'label');
       if (this.labelEle) {
-        this.labelEle.innerText = comp.label;
+        this.labelEle.innerText = table.label;
       } else {
         this.logger.info(
-          `node ${comp.name} has a label value of "${comp.label}" bot the html has no element with data-id="label"`
+          `node ${table.name} has a label value of "${table.label}" bot the html has no element with data-id="label"`
         );
       }
     }
@@ -83,7 +83,7 @@ export class BaseElement implements BaseView {
    */
   protected setError(msg: unknown): void {
     this.logger.warn(
-      `component type ${this.comp.compType} has not implemented setError(), but a request is received with value="${msg}"`
+      `component type ${this.table.compType} has not implemented setError(), but a request is received with value="${msg}"`
     );
     this.setDataAttr('error', msg === undefined ? undefined : '' + msg);
   }
@@ -111,7 +111,7 @@ export class BaseElement implements BaseView {
   }
 
   clicked() {
-    const action = this.comp.onClick;
+    const action = this.table.onClick;
     if (action) {
       if (this.fc) {
         this.fc.act(action);

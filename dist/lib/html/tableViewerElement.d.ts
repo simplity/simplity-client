@@ -2,7 +2,7 @@ import { TableViewer, Values, TableViewerView, LeafComponent, ValueRenderingDeta
 import { BaseElement } from './baseElement';
 export declare class TableViewerElement extends BaseElement implements TableViewerView {
     readonly fc: FormController;
-    readonly comp: TableViewer;
+    readonly table: TableViewer;
     private twc;
     /**
      * components of this panel
@@ -40,7 +40,7 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private sortedOn;
     private sortedRows;
     private sortedAscending;
-    constructor(fc: FormController, comp: TableViewer);
+    constructor(fc: FormController, table: TableViewer);
     showData(data: Values[]): void;
     private addTd;
     renderData(data: Values[], columns: ValueRenderingDetails[]): void;

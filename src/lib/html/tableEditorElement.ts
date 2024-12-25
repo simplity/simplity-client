@@ -23,9 +23,9 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
 
   constructor(
     public readonly fc: FormController,
-    public readonly comp: TableEditor
+    public readonly table: TableEditor
   ) {
-    super(fc, comp, 'grid');
+    super(fc, table, 'grid');
 
     /**
      * typically <Table>
@@ -47,9 +47,9 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
      */
     this.dataRowEle = htmlUtil.getChildElement(this.root, 'row');
     const btn = htmlUtil.getChildElement(this.root, 'add-button');
-    if (comp.rowsCanBeAdded) {
+    if (table.rowsCanBeAdded) {
       btn.addEventListener('click', () => {
-        console.info(`add row clicked for ${this.comp.name}`);
+        console.info(`add row clicked for ${this.table.name}`);
         this.tec.appendRow();
       });
     } else {
@@ -95,10 +95,10 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
     const rowEle = this.dataRowEle.cloneNode(true) as HTMLElement;
     rowEle.setAttribute('data-idx', rowIdx.toString());
 
-    for (const column of this.comp.children) {
+    for (const column of this.table.children) {
       const cellEle = this.dataCellEle.cloneNode(true) as HTMLElement;
       let value = values && values[column.name];
-      if (this.comp.editable) {
+      if (this.table.editable) {
         const field = elementFactory.newElement(fc, column, value, true);
         cellEle.appendChild(field.root);
       } else {
@@ -115,7 +115,7 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
   }
 
   private renderHeader() {
-    for (const column of this.comp.children) {
+    for (const column of this.table.children) {
       const ele = this.headerCellEle.cloneNode(true) as HTMLElement;
       htmlUtil.appendText(ele, column.label || '');
       this.headerRowEle.appendChild(ele);

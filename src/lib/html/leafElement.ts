@@ -24,10 +24,10 @@ export class LeafElement extends BaseElement {
    */
   constructor(
     fc: FormController | undefined,
-    public comp: StaticComp | Button,
+    public table: StaticComp | Button,
     inColumn?: boolean
   ) {
-    super(fc, comp, getTemplateName(comp));
+    super(fc, table, getTemplateName(table));
     /**
      * no labels inside grids
      */

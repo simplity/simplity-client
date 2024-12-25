@@ -6,7 +6,7 @@ import { BaseElement } from './baseElement';
  * This is the base class for all the fields.
  */
 export declare class FieldElement extends BaseElement implements FieldView {
-    readonly comp: DataField;
+    readonly field: DataField;
     /**
      * we have implemented only HTMl client as of now.
      * value being string fits that quite well.
@@ -53,11 +53,10 @@ export declare class FieldElement extends BaseElement implements FieldView {
     private fieldEle;
     private errorEle?;
     private fieldRendering;
-    private dataField;
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc: FormController | undefined, comp: DataField, value?: Value, inColumn?: boolean);
+    constructor(fc: FormController | undefined, field: DataField, value?: Value, inColumn?: boolean);
     setValue(value: Value): void;
     /**
      * wire 'change' and 'changing' events.

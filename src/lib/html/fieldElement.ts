@@ -76,20 +76,19 @@ export class FieldElement extends BaseElement implements FieldView {
   private fieldEle: HTMLElement;
   private errorEle?: HTMLElement;
   private fieldRendering: FieldRendering = 'hidden';
-  private dataField: DataField;
 
   /**
    * to be called from the concrete class after rendering itself in the constructor
    */
   constructor(
     fc: FormController | undefined,
-    public readonly comp: DataField,
+    public readonly field: DataField,
     value?: Value,
     inColumn?: boolean
   ) {
-    super(fc, comp, comp.renderAs);
-    this.dataField = comp;
-    this.fieldRendering = comp.renderAs;
+    super(fc, field, field.renderAs);
+
+    this.fieldRendering = field.renderAs;
 
     this.fieldEle = htmlUtil.getChildElement(this.root, 'field')!;
     /**
@@ -106,9 +105,9 @@ export class FieldElement extends BaseElement implements FieldView {
       this.labelEle = undefined;
     }
 
-    this.fieldEle.setAttribute('name', comp.name);
+    this.fieldEle.setAttribute('name', field.name);
 
-    if (NO_VALIDATION.indexOf(this.dataField.renderAs) === -1) {
+    if (NO_VALIDATION.indexOf(field.renderAs) === -1) {
       this.errorEle = htmlUtil.getOptionalElement(this.root, 'error');
     }
 
@@ -122,8 +121,8 @@ export class FieldElement extends BaseElement implements FieldView {
       }
     }
 
-    if (comp.listOptions) {
-      this.setList(comp.listOptions);
+    if (field.listOptions) {
+      this.setList(field.listOptions);
     }
 
     this.wireEvents();
@@ -226,8 +225,8 @@ export class FieldElement extends BaseElement implements FieldView {
   }
 
   private valueIsChanging(newValue: string) {
-    if (this.comp.onBeingChanged) {
-      this.pc.act(this.comp.onBeingChanged, this.fc, { value: newValue });
+    if (this.field.onBeingChanged) {
+      this.pc.act(this.field.onBeingChanged, this.fc, { value: newValue });
     }
 
     /**
@@ -247,8 +246,8 @@ export class FieldElement extends BaseElement implements FieldView {
       return;
     }
 
-    if (this.comp.onChange) {
-      this.pc.act(this.comp.onChange, this.fc, { value: newValue });
+    if (this.field.onChange) {
+      this.pc.act(this.field.onChange, this.fc, { value: newValue });
     }
 
     const newValidity = wasOk ? undefined : isOk;
@@ -276,14 +275,14 @@ export class FieldElement extends BaseElement implements FieldView {
     let msgs: DetailedMessage[] | undefined;
     if (!this.textValue) {
       this.value = '';
-      if (this.comp.isRequired) {
+      if (this.field.isRequired) {
         msgs = [this.createMessage(systemResources.messages._valueRequired)];
       }
     } else {
-      const vs = this.comp.valueSchema;
+      const vs = this.field.valueSchema;
       const r = vs
         ? this.ac.validateValue(vs, this.textValue)
-        : this.ac.validateType(this.comp.valueType, this.textValue);
+        : this.ac.validateType(this.field.valueType, this.textValue);
 
       //set the values
       if (r.value !== undefined) {
@@ -323,15 +322,15 @@ export class FieldElement extends BaseElement implements FieldView {
   }
 
   private getDefaultValue(): [Value, string] {
-    const text = this.comp.defaultValue;
+    const text = this.field.defaultValue;
     if (!text) {
       return ['', ''];
     }
 
-    const vs = this.comp.valueSchema;
+    const vs = this.field.valueSchema;
     const r = vs
       ? this.ac.validateValue(vs, text)
-      : this.ac.validateType(this.comp.valueType, text);
+      : this.ac.validateType(this.field.valueType, text);
     if (r.messages) {
       this.logger.warn(
         `Field ${this.name} has an invalid default value of ${text}. Value ignored`
@@ -395,7 +394,7 @@ export class FieldElement extends BaseElement implements FieldView {
     htmlUtil.removeChildren(this.fieldEle);
     const sel = this.fieldEle as HTMLSelectElement;
     const option: HTMLOptionElement = document.createElement('option');
-    if (!this.comp.isRequired) {
+    if (!this.field.isRequired) {
       //add an empty option
       const op = option.cloneNode(true) as HTMLOptionElement;
       op.innerText = 'Select A Value';
@@ -419,7 +418,7 @@ export class FieldElement extends BaseElement implements FieldView {
       sel.appendChild(opt);
     }
 
-    if (this.comp.isRequired && gotSelected === false && firstOption) {
+    if (this.field.isRequired && gotSelected === false && firstOption) {
       //either this.value is undefined or is not valid
       const val = list[0].value;
       firstOption.setAttribute('selected', '');
