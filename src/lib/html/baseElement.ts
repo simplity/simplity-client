@@ -39,10 +39,10 @@ export class BaseElement implements BaseView {
    */
   constructor(
     public readonly fc: FormController | undefined,
-    public readonly table: BaseComponent,
+    public readonly comp: BaseComponent,
     templateName?: string
   ) {
-    this.name = table.name;
+    this.name = comp.name;
     if (fc) {
       this.pc = fc.pc;
       this.ac = this.pc.ac;
@@ -51,7 +51,7 @@ export class BaseElement implements BaseView {
       this.pc = app.getCurrentPc();
     }
     this.root = htmlUtil.newHtmlElement(
-      this.table.customHtml || 'template' + '-' + templateName
+      comp.customHtml || 'template' + '-' + templateName
     );
     if (fc) {
       fc.registerChild(this);
@@ -65,13 +65,13 @@ export class BaseElement implements BaseView {
      */
     this.inputEle = this.root.querySelector('input') || undefined;
 
-    if (table.label) {
+    if (comp.label) {
       this.labelEle = htmlUtil.getOptionalElement(this.root, 'label');
       if (this.labelEle) {
-        this.labelEle.innerText = table.label;
+        this.labelEle.innerText = comp.label;
       } else {
         this.logger.info(
-          `node ${table.name} has a label value of "${table.label}" bot the html has no element with data-id="label"`
+          `node ${comp.name} has a label value of "${comp.label}" bot the html has no element with data-id="label"`
         );
       }
     }
@@ -83,7 +83,7 @@ export class BaseElement implements BaseView {
    */
   protected setError(msg: unknown): void {
     this.logger.warn(
-      `component type ${this.table.compType} has not implemented setError(), but a request is received with value="${msg}"`
+      `component type ${this.comp.compType} has not implemented setError(), but a request is received with value="${msg}"`
     );
     this.setDataAttr('error', msg === undefined ? undefined : '' + msg);
   }
@@ -111,7 +111,7 @@ export class BaseElement implements BaseView {
   }
 
   clicked() {
-    const action = this.table.onClick;
+    const action = this.comp.onClick;
     if (action) {
       if (this.fc) {
         this.fc.act(action);

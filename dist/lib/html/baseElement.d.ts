@@ -9,7 +9,7 @@ import { AppController, BaseComponent, BaseView, DisplaySettings, FormController
  */
 export declare class BaseElement implements BaseView {
     readonly fc: FormController | undefined;
-    readonly table: BaseComponent;
+    readonly comp: BaseComponent;
     protected readonly logger: import("simplity-types").Logger;
     protected readonly ac: AppController;
     protected readonly pc: PageController;
@@ -26,7 +26,7 @@ export declare class BaseElement implements BaseView {
      * @param templateName to be used to create the HTML element. ignored if root is provided
      * @param template instance to be cloned as HTML element
      */
-    constructor(fc: FormController | undefined, table: BaseComponent, templateName?: string);
+    constructor(fc: FormController | undefined, comp: BaseComponent, templateName?: string);
     /**
      * concrete classes should implement this if error is relevant
      * @param msg

@@ -40,7 +40,6 @@ export const loggerStub = {
    * Logs are swallowed in case the console is not provided in the run-time context
    */
   getLogger: () => {
-    console.info('worker is:', worker);
     return logger;
   },
   /**

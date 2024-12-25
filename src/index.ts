@@ -28,7 +28,7 @@ export const simplityClient = {
     return;
   },
   startHtmlClient: (appRuntime: AppRuntime, root: HTMLElement) => {
-    const appEle: AppElement = new AppElement(appRuntime, root);
-    return app.newAc(appRuntime, appEle);
+    new AppElement(appRuntime, root);
+    return app.getCurrentAc();
   },
 };

@@ -117,11 +117,11 @@ export class FC implements FormController {
     }
 
     this.children[name] = view;
-    const typ = view.table.compType;
+    const typ = view.comp.compType;
     if (typ === 'field') {
       this.fieldViews[name] = view as FieldView;
     } else if (typ === 'panel') {
-      if ((view.table as Tab).tabLabel !== undefined) {
+      if ((view.comp as Tab).tabLabel !== undefined) {
         this.beginTab(name);
       }
     } else if (typ === 'tabs') {
