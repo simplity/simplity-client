@@ -2,7 +2,7 @@ import { LayoutElement } from './layoutElement';
 import {
   Alert,
   AppController,
-  AppRuntime,
+  ClientRuntime,
   AppView,
   Logger,
   NavigationAction,
@@ -26,20 +26,20 @@ export class AppElement implements AppView {
 
   /**
    *
-   * @param appRuntime
+   * @param runtime
    * @param appEle container element to which the app-view is to be appended to
    */
-  constructor(appRuntime: AppRuntime, appEle: HTMLElement) {
+  constructor(runtime: ClientRuntime, appEle: HTMLElement) {
     this.logger = loggerStub.getLogger();
 
     this.root = appEle;
 
     //create the all important and all powerful controller of controllers!!!
-    this.ac = app.newAc(appRuntime, this);
+    this.ac = app.newAc(runtime, this);
 
     //render the default layout
-    this.renderLayout(appRuntime.startingLayout, {
-      module: appRuntime.startingModule,
+    this.renderLayout(runtime.startingLayout, {
+      module: runtime.startingModule,
     });
   }
 

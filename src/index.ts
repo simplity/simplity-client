@@ -1,4 +1,4 @@
-import { Logger, AppRuntime } from 'simplity-types';
+import { Logger, ClientRuntime } from 'simplity-types';
 import { app } from './lib/controller/app';
 import { AppElement } from './lib/html/appElement';
 import { loggerStub } from './lib/logger-stub/logger';
@@ -27,8 +27,8 @@ export const simplityClient = {
     }
     return;
   },
-  startHtmlClient: (appRuntime: AppRuntime, root: HTMLElement) => {
-    new AppElement(appRuntime, root);
+  startHtmlClient: (runtime: ClientRuntime, root: HTMLElement) => {
+    new AppElement(runtime, root);
     return app.getCurrentAc();
   },
 };

@@ -3,7 +3,7 @@ import {
   AppView,
   PageController,
   PageView,
-  AppRuntime,
+  ClientRuntime,
   systemResources,
 } from 'simplity-types';
 import { PC } from './pageController';
@@ -60,18 +60,18 @@ export const app = {
    * create an App Controller.
    * This instance is the return-value for subsequent calls to getController()
 
-   * @param appRuntime
+   * @param runtime
    * @param appView
    * @returns
    */
-  newAc: (appRuntime: AppRuntime, appView: AppView) => {
+  newAc: (runtime: ClientRuntime, appView: AppView) => {
     if (ac) {
       logger.warn(
-        `The controller for app ${appRuntime.name} exists, but a new one being created. This is an ERROR in production mode`
+        `The controller for app ${runtime.name} exists, but a new one being created. This is an ERROR in production mode`
       );
     }
 
-    ac = new AC(appRuntime, appView);
+    ac = new AC(runtime, appView);
     return ac;
   },
 
