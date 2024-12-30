@@ -1,4 +1,4 @@
-import { DataField, DetailedMessage, FieldView, SimpleList, Value, FormController } from 'simplity-types';
+import { DataField, DetailedMessage, FieldView, SimpleList, Value, FormController, NbrCols } from 'simplity-types';
 import { BaseElement } from './baseElement';
 /**
  * Field is an element that has to render the value that it is given at run time.
@@ -56,7 +56,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc: FormController | undefined, field: DataField, value?: Value, inColumn?: boolean);
+    constructor(fc: FormController | undefined, field: DataField, maxWidth: NbrCols, value?: Value);
     setValue(value: Value): void;
     /**
      * wire 'change' and 'changing' events.

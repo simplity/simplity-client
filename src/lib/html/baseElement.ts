@@ -8,9 +8,11 @@ import {
   DisplaySettings,
   FormController,
   KnownDisplaySettings,
+  NbrCols,
   PageController,
 } from 'simplity-types';
 
+const DEFAULT_WIDTH = 4;
 /**
  * Base class to be extended by all view components
  * As of now, it is NOT a WebComponent, but a controller that is bound to the root html element.
@@ -23,8 +25,17 @@ export class BaseElement implements BaseView {
   protected readonly logger = loggerStub.getLogger();
   protected readonly ac: AppController;
   protected readonly pc: PageController;
+  /**
+   * If this is an input
+   */
   protected readonly inputEle?: HTMLInputElement;
+
   protected labelEle?: HTMLElement;
+  /**
+   * if this is a container-type of element, like a panel, or tab
+   */
+  protected readonly containerEle?: HTMLElement;
+
   public readonly name: string;
   /**
    * root of the html element that this controller manages.
@@ -40,7 +51,15 @@ export class BaseElement implements BaseView {
   constructor(
     public readonly fc: FormController | undefined,
     public readonly comp: BaseComponent,
-    templateName?: string
+    /**
+     * mandatory. comp.customHtml, if specified,  will override this.
+     */
+    templateName: string,
+    /**
+     * width of the parent in number of columns.
+     * 0 means this is inside a column of a row of a table
+     */
+    protected maxWidth: NbrCols
   ) {
     this.name = comp.name;
     if (fc) {
@@ -53,6 +72,31 @@ export class BaseElement implements BaseView {
     this.root = htmlUtil.newHtmlElement(
       comp.customHtml || 'template' + '-' + templateName
     );
+
+    this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
+
+    if (maxWidth !== 0) {
+      /**
+       * colSpan for this element. Default for container is full
+       */
+      let colSpan =
+        comp.width || (this.containerEle ? maxWidth : DEFAULT_WIDTH);
+      if (colSpan > maxWidth) {
+        this.logger
+          .error(`Page element '${this.name}' specifies a width of ${colSpan} but the max possible width is only ${maxWidth};
+        Page may not render properly`);
+        colSpan = maxWidth;
+      }
+      htmlUtil.setColSpan(this.root, colSpan);
+    }
+
+    /**
+     * set the number of columns same as colSpan, if this is a container
+     */
+    if (this.containerEle) {
+      htmlUtil.setAsGrid(this.containerEle);
+    }
+
     if (fc) {
       fc.registerChild(this);
       this.root.addEventListener('click', () => {

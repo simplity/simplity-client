@@ -7,6 +7,7 @@ import {
   systemResources,
   Value,
   FormController,
+  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
@@ -83,10 +84,10 @@ export class FieldElement extends BaseElement implements FieldView {
   constructor(
     fc: FormController | undefined,
     public readonly field: DataField,
-    value?: Value,
-    inColumn?: boolean
+    maxWidth: NbrCols,
+    value?: Value
   ) {
-    super(fc, field, field.renderAs);
+    super(fc, field, field.renderAs, maxWidth);
 
     this.fieldRendering = field.renderAs;
 
@@ -100,7 +101,7 @@ export class FieldElement extends BaseElement implements FieldView {
     /**
      * no labels inside grids
      */
-    if (inColumn && this.labelEle) {
+    if (maxWidth === 0 && this.labelEle) {
       this.labelEle.remove();
       this.labelEle = undefined;
     }

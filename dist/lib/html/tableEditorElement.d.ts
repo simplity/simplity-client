@@ -1,4 +1,4 @@
-import { TableEditor, TableEditorView, Values, FormController } from 'simplity-types';
+import { TableEditor, TableEditorView, Values, FormController, NbrCols } from 'simplity-types';
 import { BaseElement } from './baseElement';
 export declare class TableEditorElement extends BaseElement implements TableEditorView {
     readonly fc: FormController;
@@ -10,7 +10,7 @@ export declare class TableEditorElement extends BaseElement implements TableEdit
     private dataRowEle;
     private headerCellEle;
     private dataCellEle;
-    constructor(fc: FormController, table: TableEditor);
+    constructor(fc: FormController, table: TableEditor, maxWidth: NbrCols);
     /**
      * remove all rows that are rendered
      */

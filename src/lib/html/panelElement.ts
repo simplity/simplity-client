@@ -1,10 +1,13 @@
-import { Form, FormController, Panel, PanelView } from 'simplity-types';
+import {
+  Form,
+  FormController,
+  Panel,
+  PanelView,
+  NbrCols,
+} from 'simplity-types';
 import { BaseElement } from './baseElement';
-import { htmlUtil } from './htmlUtil';
 import { elementFactory } from './elementFactory';
-
 export class PanelElement extends BaseElement implements PanelView {
-  private readonly contentEle: HTMLElement;
   /**
    * in case this panel is associated with a child-form
    */
@@ -12,12 +15,10 @@ export class PanelElement extends BaseElement implements PanelView {
 
   constructor(
     fc: FormController | undefined,
-    public readonly panel: Panel
+    public readonly panel: Panel,
+    maxWidth: NbrCols
   ) {
-    super(fc, panel, 'panel');
-
-    const ele = htmlUtil.getOptionalElement(this.root, 'container');
-    this.contentEle = ele || this.root;
+    super(fc, panel, 'panel', maxWidth);
 
     let childFc = fc;
 
@@ -43,8 +44,8 @@ export class PanelElement extends BaseElement implements PanelView {
      * render children
      */
     for (const child of this.panel.children) {
-      const ele = elementFactory.newElement(fc, child);
-      this.contentEle.appendChild(ele.root);
+      const ele = elementFactory.newElement(fc, child, maxWidth);
+      this.containerEle!.appendChild(ele.root);
     }
   }
 }

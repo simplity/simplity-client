@@ -3,6 +3,7 @@ import {
   DisplaySettings,
   FormController,
   StaticComp,
+  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 
@@ -24,14 +25,14 @@ export class LeafElement extends BaseElement {
    */
   constructor(
     fc: FormController | undefined,
-    public table: StaticComp | Button,
-    inColumn?: boolean
+    public comp: StaticComp | Button,
+    maxWidth: NbrCols
   ) {
-    super(fc, table, getTemplateName(table));
+    super(fc, comp, getTemplateName(comp), maxWidth);
     /**
      * no labels inside grids
      */
-    if (inColumn && this.labelEle) {
+    if (maxWidth === 0 && this.labelEle) {
       this.labelEle.remove();
       this.labelEle = undefined;
     }

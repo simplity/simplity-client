@@ -1,4 +1,4 @@
-import { Value, ValueFormatter } from 'simplity-types';
+import { NbrCols, Value, ValueFormatter } from 'simplity-types';
 export declare const htmlUtil: {
     /**
      * removes all children of an html element using child.remove() method
@@ -54,6 +54,9 @@ export declare const htmlUtil: {
      * @returns formatted string
      */
     formatValue: typeof formatValue;
+    setAsGrid: typeof setAsGrid;
+    setColSpan: typeof setColSpan;
+    newPageContainer: typeof newPageContainer;
 };
 declare function getOptionalElement(rootEle: HTMLElement, id: string): HTMLElement | undefined;
 declare function getChildElement(rootEle: HTMLElement, id: string): HTMLElement;
@@ -63,4 +66,21 @@ declare function appendText(ele: HTMLElement, text: string): void;
 declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
 declare function formatValue(value: Value, formatter: ValueFormatter): string;
+/**
+ *
+ * @param ele child element whose width is to be specified in terms of number of columns
+ * @param n number of columns
+ */
+declare function setColSpan(ele: HTMLElement, n: NbrCols): void;
+/**
+ * mark this as a subgrid.
+ * @param ele
+ */
+declare function setAsGrid(ele: HTMLElement): void;
+/**
+ * We use a grid-layout concept with 12 columns for the page.
+ * Create the page container as a grid with 12 columns.
+ * Every container element will now be a subgrid
+ */
+declare function newPageContainer(): HTMLDivElement;
 export {};

@@ -1,4 +1,4 @@
-import { AppController, BaseComponent, BaseView, DisplaySettings, FormController, PageController } from 'simplity-types';
+import { AppController, BaseComponent, BaseView, DisplaySettings, FormController, NbrCols, PageController } from 'simplity-types';
 /**
  * Base class to be extended by all view components
  * As of now, it is NOT a WebComponent, but a controller that is bound to the root html element.
@@ -10,11 +10,23 @@ import { AppController, BaseComponent, BaseView, DisplaySettings, FormController
 export declare class BaseElement implements BaseView {
     readonly fc: FormController | undefined;
     readonly comp: BaseComponent;
+    /**
+     * width of the parent in number of columns.
+     * 0 means this is inside a column of a row of a table
+     */
+    protected maxWidth: NbrCols;
     protected readonly logger: import("simplity-types").Logger;
     protected readonly ac: AppController;
     protected readonly pc: PageController;
+    /**
+     * If this is an input
+     */
     protected readonly inputEle?: HTMLInputElement;
     protected labelEle?: HTMLElement;
+    /**
+     * if this is a container-type of element, like a panel, or tab
+     */
+    protected readonly containerEle?: HTMLElement;
     readonly name: string;
     /**
      * root of the html element that this controller manages.
@@ -26,7 +38,16 @@ export declare class BaseElement implements BaseView {
      * @param templateName to be used to create the HTML element. ignored if root is provided
      * @param template instance to be cloned as HTML element
      */
-    constructor(fc: FormController | undefined, comp: BaseComponent, templateName?: string);
+    constructor(fc: FormController | undefined, comp: BaseComponent, 
+    /**
+     * mandatory. comp.customHtml, if specified,  will override this.
+     */
+    templateName: string, 
+    /**
+     * width of the parent in number of columns.
+     * 0 means this is inside a column of a row of a table
+     */
+    maxWidth: NbrCols);
     /**
      * concrete classes should implement this if error is relevant
      * @param msg

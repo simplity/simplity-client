@@ -4,6 +4,7 @@ import {
   Values,
   TableEditorController,
   FormController,
+  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
@@ -23,9 +24,10 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
 
   constructor(
     public readonly fc: FormController,
-    public readonly table: TableEditor
+    public readonly table: TableEditor,
+    maxWidth: NbrCols
   ) {
-    super(fc, table, 'grid');
+    super(fc, table, 'grid', maxWidth);
 
     /**
      * typically <Table>
@@ -99,7 +101,7 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
       const cellEle = this.dataCellEle.cloneNode(true) as HTMLElement;
       let value = values && values[column.name];
       if (this.table.editable) {
-        const field = elementFactory.newElement(fc, column, value, true);
+        const field = elementFactory.newElement(fc, column, 0, value);
         cellEle.appendChild(field.root);
       } else {
         if (value === undefined) {

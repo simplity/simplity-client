@@ -9,6 +9,7 @@ import {
   DataField,
   Value,
   FormController,
+  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { LeafElement } from './leafElement';
@@ -31,22 +32,22 @@ export const elementFactory = {
   newElement(
     fc: FormController | undefined,
     comp: BaseComponent,
-    value?: Value,
-    inColumn?: boolean
+    maxWidth: NbrCols,
+    value?: Value
   ): BaseElement {
     switch (comp.compType) {
       case 'button':
       case 'static':
-        return new LeafElement(fc, comp as Button | StaticComp, inColumn);
+        return new LeafElement(fc, comp as Button | StaticComp, maxWidth);
 
       case 'field':
-        return new FieldElement(fc, comp as DataField, value, inColumn);
+        return new FieldElement(fc, comp as DataField, maxWidth, value);
 
       case 'panel':
-        return new PanelElement(fc, comp as Panel);
+        return new PanelElement(fc, comp as Panel, maxWidth);
 
       case 'tabs':
-        return new TabsElement(fc, comp as Tabs);
+        return new TabsElement(fc, comp as Tabs, maxWidth);
 
       case 'table':
         if (!fc) {
@@ -54,10 +55,18 @@ export const elementFactory = {
             `A table element named ${comp.name} is embedded inside another table. This feature is not supported`
           );
         }
-        if ((comp as TableEditor | TableViewer).editable) {
-          return new TableEditorElement(fc, comp as TableEditor);
+        /**
+         * for a non-container, default is 4, but it should be 'full' for tables.
+         * In a way, table is neither a leaf nor a container
+         * TODO: This is the ONLY place where we are changing the attribute of component!!!
+         */
+        if (!comp.width) {
+          comp.width = maxWidth;
         }
-        return new TableViewerElement(fc, comp as TableViewer);
+        if ((comp as TableEditor | TableViewer).editable) {
+          return new TableEditorElement(fc, comp as TableEditor, maxWidth);
+        }
+        return new TableViewerElement(fc, comp as TableViewer, maxWidth);
       default:
         throw new Error(
           `Component ${comp.name} has an invalid compType of  ${comp.compType}`

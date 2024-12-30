@@ -11,6 +11,7 @@ import {
   FormController,
   Value,
   Markups,
+  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
@@ -62,9 +63,10 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
 
   constructor(
     public readonly fc: FormController,
-    public readonly table: TableViewer
+    public readonly table: TableViewer,
+    maxWidth: NbrCols
   ) {
-    super(fc, table, 'table');
+    super(fc, table, 'table', maxWidth);
 
     this.sortable = !!table.sortable;
     this.searchable = !!table.searchable;
@@ -252,7 +254,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
         const value = row[column.name];
         const cellEle = this.dataCellEle.cloneNode(true) as HTMLElement;
 
-        const field = elementFactory.newElement(undefined, column, value, true);
+        const field = elementFactory.newElement(undefined, column, 0, value);
         cellEle.appendChild(field.root);
         rowEle.appendChild(cellEle);
         if (value !== undefined && value !== '') {
@@ -366,7 +368,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
       return;
     }
     const { panel, fc } = this.twc.createConfig();
-    const configEle = elementFactory.newElement(fc, panel);
+    const configEle = elementFactory.newElement(fc, panel, this.maxWidth);
     this.configEle.appendChild(configEle.root);
     this.twc.configRendered();
     return;

@@ -12,6 +12,8 @@ import { app } from '../controller/app';
 import { LeafElement } from './leafElement';
 //import { loggerStub } from '../logger-stub/logger';
 //const logger = loggerStub.getLogger();
+const NBR_COLS_IN_GRID = 12;
+
 export class PageElement implements PageView {
   private readonly titleEle?: HTMLElement;
   private readonly panelEle: HTMLElement;
@@ -40,9 +42,15 @@ export class PageElement implements PageView {
     this.pc = app.newPc(this);
     this.fc = this.pc.fc;
 
-    const panel = new PanelElement(this.pc.fc, this.page.dataPanel);
+    const container = htmlUtil.newPageContainer();
+    this.panelEle.appendChild(container);
 
-    this.panelEle.appendChild(panel.root);
+    const panel = new PanelElement(
+      this.pc.fc,
+      this.page.dataPanel,
+      NBR_COLS_IN_GRID
+    );
+    container.appendChild(panel.root);
 
     if (this.titleEle) {
       let title = this.page.titlePrefix || '';
@@ -65,7 +73,7 @@ export class PageElement implements PageView {
     ];
     if (buttons.length) {
       for (const button of buttons) {
-        const ele = new LeafElement(this.fc, button);
+        const ele = new LeafElement(this.fc, button, NBR_COLS_IN_GRID);
         this.buttonsEle.appendChild(ele.root);
       }
     }

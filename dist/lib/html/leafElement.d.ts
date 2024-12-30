@@ -1,4 +1,4 @@
-import { Button, DisplaySettings, FormController, StaticComp } from 'simplity-types';
+import { Button, DisplaySettings, FormController, StaticComp, NbrCols } from 'simplity-types';
 import { BaseElement } from './baseElement';
 /**
  * base class for elements and buttons. These are elements with no children.
@@ -6,10 +6,10 @@ import { BaseElement } from './baseElement';
  * This base class handles that part.
  */
 export declare class LeafElement extends BaseElement {
-    table: StaticComp | Button;
+    comp: StaticComp | Button;
     /**
      * to be called if this view component is to be available for any run-time changes lik enable/disable
      */
-    constructor(fc: FormController | undefined, table: StaticComp | Button, inColumn?: boolean);
+    constructor(fc: FormController | undefined, comp: StaticComp | Button, maxWidth: NbrCols);
     setDisplay(settings: DisplaySettings): void;
 }

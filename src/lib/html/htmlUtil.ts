@@ -1,6 +1,6 @@
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
-import { Value, ValueFormatter } from 'simplity-types';
+import { NbrCols, Value, ValueFormatter } from 'simplity-types';
 
 /**
  * caching the templates that are already created
@@ -68,6 +68,9 @@ export const htmlUtil = {
    */
 
   formatValue,
+  setAsGrid,
+  setColSpan,
+  newPageContainer,
 };
 
 function getOptionalElement(
@@ -194,4 +197,32 @@ function formatValue(value: Value, formatter: ValueFormatter): string {
   formatter;
   //TODO: Design and implement this concept
   return text;
+}
+
+/**
+ *
+ * @param ele child element whose width is to be specified in terms of number of columns
+ * @param n number of columns
+ */
+function setColSpan(ele: HTMLElement, n: NbrCols) {
+  ele.classList.add('col-span-' + n);
+}
+
+/**
+ * mark this as a subgrid.
+ * @param ele
+ */
+function setAsGrid(ele: HTMLElement) {
+  ele.classList.add('grid', 'grid-cols-subgrid');
+}
+
+/**
+ * We use a grid-layout concept with 12 columns for the page.
+ * Create the page container as a grid with 12 columns.
+ * Every container element will now be a subgrid
+ */
+function newPageContainer(): HTMLDivElement {
+  const ele = document.createElement('div');
+  ele.classList.add('grid', 'grid-cols-12', 'gap-4');
+  return ele;
 }

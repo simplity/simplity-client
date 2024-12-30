@@ -1,4 +1,4 @@
-import { TableViewer, Values, TableViewerView, LeafComponent, ValueRenderingDetails, FormController } from 'simplity-types';
+import { TableViewer, Values, TableViewerView, LeafComponent, ValueRenderingDetails, FormController, NbrCols } from 'simplity-types';
 import { BaseElement } from './baseElement';
 export declare class TableViewerElement extends BaseElement implements TableViewerView {
     readonly fc: FormController;
@@ -40,7 +40,7 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private sortedOn;
     private sortedRows;
     private sortedAscending;
-    constructor(fc: FormController, table: TableViewer);
+    constructor(fc: FormController, table: TableViewer, maxWidth: NbrCols);
     showData(data: Values[]): void;
     private addTd;
     renderData(data: Values[], columns: ValueRenderingDetails[]): void;
