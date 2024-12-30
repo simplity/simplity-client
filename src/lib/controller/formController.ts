@@ -228,13 +228,26 @@ export class FC implements FormController {
        */
       this.addEventListener(keyControl.name, 'change', (evt) => {
         const newValue = evt.newValue;
-        let value: number | string | undefined;
-        if (newValue !== undefined) {
-          if (typeof value === 'number') {
-            value = newValue as number;
-          } else {
-            value = newValue.toString();
-          }
+        console.info(
+          `Triggering getList() for field '${field.name}' because field '${field.listKeyFieldName}' changed it's value to '${newValue}' `
+        );
+        /**
+         * empty list when key has no value,
+         */
+        if (
+          newValue === undefined ||
+          newValue === '' ||
+          evt.newValidity === false
+        ) {
+          fieldView.setList([]);
+          return;
+        }
+
+        let value: number | string;
+        if (typeof newValue === 'number') {
+          value = newValue as number;
+        } else {
+          value = newValue.toString();
         }
 
         this.pc.getList(fieldView, value);
@@ -278,6 +291,9 @@ export class FC implements FormController {
     eventName: EventName,
     eventFn: EventHandler
   ): void {
+    console.info(
+      `adding a listener to field ${viewName} for event ${eventName}`
+    );
     let viewListeners = this.listeners[viewName];
     if (!viewListeners) {
       viewListeners = {};
@@ -607,7 +623,7 @@ export class FC implements FormController {
     if (!eventListeners) {
       return;
     }
-
+    console.info(`eventListeners:`, eventListeners);
     for (const handler of eventListeners) {
       if (typeof handler === 'string') {
         this.act(handler, evt.params);

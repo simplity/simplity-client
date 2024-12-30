@@ -115,7 +115,11 @@ export class FieldElement extends BaseElement implements FieldView {
     //important to set the default value before wiring the events
     if (value !== undefined) {
       this.setValue(value);
-    } else {
+    }
+
+    this.wireEvents();
+
+    if (value === undefined) {
       [this.value, this.textValue] = this.getDefaultValue();
       if (this.value !== '' && this.fc) {
         this.fc.valueHasChanged(this.name, this.value);
@@ -125,8 +129,6 @@ export class FieldElement extends BaseElement implements FieldView {
     if (field.listOptions) {
       this.setList(field.listOptions);
     }
-
-    this.wireEvents();
   }
 
   public setValue(value: Value): void {
@@ -393,24 +395,42 @@ export class FieldElement extends BaseElement implements FieldView {
     }
 
     htmlUtil.removeChildren(this.fieldEle);
-    const sel = this.fieldEle as HTMLSelectElement;
-    const option: HTMLOptionElement = document.createElement('option');
-    if (!this.field.isRequired) {
-      //add an empty option
-      const op = option.cloneNode(true) as HTMLOptionElement;
-      op.innerText = 'Select A Value';
-      sel.appendChild(op);
+
+    if (!list || list.length === 0) {
+      /**
+       * this is a reset;
+       */
+      if (this.textValue) {
+        /**
+         * this selection is no more valid/relevant
+         */
+        this.value = '';
+        this.valueHasChanged('');
+      }
+      return;
     }
 
+    /**
+     * render the options
+     */
+    const sel = this.fieldEle as HTMLSelectElement;
+    const option: HTMLOptionElement = document.createElement('option');
+
+    //add an empty option
+    const firstOpt = option.cloneNode(true) as HTMLOptionElement;
+    firstOpt.value = '';
+    firstOpt.innerText = '-- Select One --';
+    if (this.field.isRequired) {
+      firstOpt.disabled = true;
+      firstOpt.hidden = true;
+    }
+    sel.appendChild(firstOpt);
+
     let gotSelected = false;
-    let firstOption: HTMLOptionElement | undefined;
     for (const pair of list) {
       const opt = option.cloneNode(true) as HTMLOptionElement;
-      if (!firstOption) {
-        firstOption = opt;
-      }
       const val = pair.value.toString();
-      opt.setAttribute('value', val);
+      opt.value = val;
       if (this.textValue === val) {
         opt.setAttribute('selected', '');
         gotSelected = true;
@@ -419,11 +439,33 @@ export class FieldElement extends BaseElement implements FieldView {
       sel.appendChild(opt);
     }
 
-    if (this.field.isRequired && gotSelected === false && firstOption) {
-      //either this.value is undefined or is not valid
-      const val = list[0].value;
-      firstOption.setAttribute('selected', '');
-      this.valueHasChanged(val.toString());
+    if (gotSelected) {
+      return;
+    }
+
+    /**
+     * if user has no choice but to select the only one option, why ask them to do that?
+     */
+    if (this.field.isRequired && list.length === 1) {
+      sel.options[1].selected = true;
+      const v = list[0].value;
+      if (v != this.value) {
+        this.value = v;
+        this.textValue = v.toString();
+        this.valueHasChanged(this.textValue);
+      }
+      return;
+    }
+
+    firstOpt.selected = true;
+    /**
+     * any existing value is not relevant anymore
+     */
+    if (this.textValue) {
+      this.value = '';
+      this.textValue = '';
+      this.valueHasChanged('');
+      return;
     }
   }
 

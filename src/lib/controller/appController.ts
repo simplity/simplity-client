@@ -478,7 +478,7 @@ export class AC implements AppController {
     }
 
     const serviceName = app.Conventions.listServiceName;
-    const data: Vo = key ? { listName, key } : { listName };
+    const data: Vo = key ? { list: listName, key } : { list: listName };
     //request the server
     const resp = await this.serve(serviceName, data);
     const list = resp.data?.list as SimpleList;

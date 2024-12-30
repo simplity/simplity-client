@@ -223,6 +223,6 @@ function setAsGrid(ele: HTMLElement) {
  */
 function newPageContainer(): HTMLDivElement {
   const ele = document.createElement('div');
-  ele.classList.add('grid', 'grid-cols-12', 'gap-4');
+  ele.classList.add('grid', 'grid-cols-12', 'gap-4', 'w-full');
   return ele;
 }
