@@ -226,7 +226,7 @@ export class ReportConfigurator {
     const serviceName = 'filter_' + this.table.reportName;
     const options: ServiceRequestOptions = {
       payload,
-      targetChildName: this.name,
+      targetPanelName: this.name,
     };
     this.pc.requestService(serviceName, options);
   }

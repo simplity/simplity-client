@@ -35,6 +35,7 @@ import {
   KeyedList,
   FormOperation,
   ServiceRequestOptions,
+  DataController,
 } from 'simplity-types';
 import { FC } from './formController';
 import { app } from './app';
@@ -138,6 +139,7 @@ export class PC implements PageController {
   }
 
   pageLoaded(): void {
+    logger.info('page loaded', this);
     /**
      * do we have input data for this page?
      */
@@ -417,7 +419,7 @@ export class PC implements PageController {
       if (options.callback) {
         options.callback(data);
       } else {
-        controller.receiveData(data, options.targetChildName);
+        controller.receiveData(data, options.targetPanelName);
       }
     });
   }
@@ -687,7 +689,7 @@ export class PC implements PageController {
 
       case 'form':
         //request the form action as an async, chain the call back, and return.
-        this.doFormAction(action as FormAction, p, (ok) => {
+        this.doFormAction(action as FormAction | FilterAction, p, (ok) => {
           this.actionReturned(action, ok, p);
         });
         return;
@@ -699,10 +701,22 @@ export class PC implements PageController {
       case 'service':
         const a = action as ServiceAction;
         let values: Vo | undefined;
-        if (a.submitForm) {
+        if (a.submitAllData || a.panelToSubmit) {
+          let controllerToUse: DataController | undefined;
+          if (a.submitAllData) {
+            controllerToUse = this.fc;
+          } else {
+            controllerToUse = this.fc.searchChildController(a.panelToSubmit!);
+          }
+          if (!controllerToUse) {
+            throw new Error(
+              `Design Error. Action '${a.name}' on page '${this.name}' specifies panelToSubmit='${a.panelToSubmit}' but that form is not used on this page `
+            );
+          }
+
           //let us validate the form again
-          if (controller.validate()) {
-            values = controller.getData() as Vo;
+          if (controllerToUse.validate()) {
+            values = controllerToUse.getData() as Vo;
           } else {
             addMessage('Please fix the errors on this page', p.msgs);
             errorFound = true;
@@ -735,7 +749,7 @@ export class PC implements PageController {
           a.toDisableUx || false,
           controller,
           values,
-          a.targetChildName,
+          a.targetPanelName,
           a.fnAfterResponse
         ).then((ok: boolean) => {
           this.actionReturned(action, ok, p);
@@ -865,7 +879,7 @@ export class PC implements PageController {
   }
 
   private doFormAction(
-    action: FormAction,
+    action: FormAction | FilterAction,
     actionParams: ActionParameters,
     callback: (ok: boolean) => void
   ): void {
@@ -920,7 +934,7 @@ export class PC implements PageController {
 
       default:
         addMessage(
-          `Form operation ${action.formOperation} is not valid`,
+          `Form operation ${(action as any).formOperation} is not valid`,
           actionParams.msgs
         );
         callback(false);

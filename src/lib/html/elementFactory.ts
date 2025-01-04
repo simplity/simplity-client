@@ -18,6 +18,7 @@ import { PanelElement } from './panelElement';
 import { TabsElement } from './tabsElement';
 import { TableViewerElement } from './tableViewerElement';
 import { TableEditorElement } from './tableEditorElement';
+import { HiddenField } from './hiddenField';
 
 export const elementFactory = {
   /**
@@ -41,7 +42,11 @@ export const elementFactory = {
         return new LeafElement(fc, comp as Button | StaticComp, maxWidth);
 
       case 'field':
-        return new FieldElement(fc, comp as DataField, maxWidth, value);
+        const field = comp as DataField;
+        if (field.renderAs === 'hidden') {
+          return new HiddenField(fc, field, maxWidth, value);
+        }
+        return new FieldElement(fc, field, maxWidth, value);
 
       case 'panel':
         return new PanelElement(fc, comp as Panel, maxWidth);

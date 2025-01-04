@@ -77,6 +77,7 @@ export declare class FC implements FormController {
     newTableEditorController(view: TableEditorView): TableEditorController;
     newFormController(name: string, form?: Form, data?: Vo): FormController;
     getController(name: string): DataController | undefined;
+    searchChildController(name: string): DataController | undefined;
     addEventListener(viewName: string, eventName: EventName, eventFn: EventHandler): void;
     receiveData(vo: Vo | Vo[], childName?: string): void;
     setData(data: Vo): void;

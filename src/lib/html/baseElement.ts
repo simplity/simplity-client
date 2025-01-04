@@ -69,6 +69,12 @@ export class BaseElement implements BaseView {
       this.ac = app.getCurrentAc();
       this.pc = app.getCurrentPc();
     }
+
+    if (templateName === '') {
+      this.root = document.createElement('div');
+      return;
+    }
+
     this.root = htmlUtil.newHtmlElement(
       comp.customHtml || 'template' + '-' + templateName
     );

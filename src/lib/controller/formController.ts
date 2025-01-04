@@ -286,6 +286,20 @@ export class FC implements FormController {
     return this.controllers[name];
   }
 
+  searchChildController(name: string): DataController | undefined {
+    for (const [panelName, c] of Object.entries(this.controllers)) {
+      if (panelName === name) {
+        return c;
+      }
+      if (c.type === 'form') {
+        const f = (c as FormController).searchChildController(name);
+        if (f) {
+          return f;
+        }
+      }
+    }
+    return undefined;
+  }
   public addEventListener(
     viewName: string,
     eventName: EventName,

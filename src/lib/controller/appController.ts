@@ -426,7 +426,6 @@ export class AC implements AppController {
     const hasKey = key !== undefined;
     let entry = this.listSources[listName];
     if (!entry) {
-      logger.warn(`${listName} is not a pre-defined list source!!`);
       entry = {
         name: listName,
         okToCache: false,
@@ -512,7 +511,6 @@ export class AC implements AppController {
   ): Promise<KeyedList> {
     let entry = this.listSources[listName];
     if (!entry) {
-      logger.warn(`${listName} is not a pre-defined list source!!`);
       entry = {
         name: listName,
         okToCache: false,

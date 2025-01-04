@@ -11,6 +11,7 @@ import {
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
+import { parseToValue } from '../validation/validation';
 
 const NO_VALIDATION: FieldRendering[] = ['output', 'select-output'];
 /**
@@ -112,17 +113,16 @@ export class FieldElement extends BaseElement implements FieldView {
       this.errorEle = htmlUtil.getOptionalElement(this.root, 'error');
     }
 
-    //important to set the default value before wiring the events
-    if (value !== undefined) {
-      this.setValue(value);
-    }
-
     this.wireEvents();
 
-    if (value === undefined) {
-      [this.value, this.textValue] = this.getDefaultValue();
-      if (this.value !== '' && this.fc) {
-        this.fc.valueHasChanged(this.name, this.value);
+    let val = value;
+    if (val === undefined) {
+      val = this.getDefaultValue();
+    }
+    if (val !== undefined) {
+      this.setValue(val);
+      if (this.fc) {
+        this.fc.valueHasChanged(this.name, val);
       }
     }
 
@@ -324,23 +324,12 @@ export class FieldElement extends BaseElement implements FieldView {
     return { id, text, type: 'error', fieldName: this.name };
   }
 
-  private getDefaultValue(): [Value, string] {
+  private getDefaultValue(): Value | undefined {
     const text = this.field.defaultValue;
     if (!text) {
-      return ['', ''];
+      return undefined;
     }
-
-    const vs = this.field.valueSchema;
-    const r = vs
-      ? this.ac.validateValue(vs, text)
-      : this.ac.validateType(this.field.valueType, text);
-    if (r.messages) {
-      this.logger.warn(
-        `Field ${this.name} has an invalid default value of ${text}. Value ignored`
-      );
-      return ['', ''];
-    }
-    return [r.value!, '' + r.value];
+    return parseToValue(text, this.field.valueType);
   }
 
   getValue(): Value {
@@ -449,11 +438,10 @@ export class FieldElement extends BaseElement implements FieldView {
     if (this.field.isRequired && list.length === 1) {
       sel.options[1].selected = true;
       const v = list[0].value;
-      if (v != this.value) {
-        this.value = v;
-        this.textValue = v.toString();
-        this.valueHasChanged(this.textValue);
-      }
+      //        this.value = v;
+      //        this.textValue = v.toString();
+      this.valueHasChanged('' + v);
+
       return;
     }
 
