@@ -717,6 +717,8 @@ export class PC implements PageController {
           //let us validate the form again
           if (controllerToUse.validate()) {
             values = controllerToUse.getData() as Vo;
+            console.info('values are ready:', values);
+            console.info(this);
           } else {
             addMessage('Please fix the errors on this page', p.msgs);
             errorFound = true;

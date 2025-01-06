@@ -340,7 +340,17 @@ export class FC implements FormController {
         return;
       }
 
-      //list is the default name under which some generic services are designed to serve rows of data
+      /**
+       * is this a form or a table?
+       */
+      if (controller.type === 'form') {
+        controller.setData(vo);
+        return;
+      }
+
+      /**
+       * this is data for a table/grid
+       */
       const rows = data[childName] || data.list;
       if (!rows) {
         logger.error(
@@ -360,6 +370,9 @@ export class FC implements FormController {
       return;
     }
 
+    /**
+     * Ok. Data is for this form. It must be an object that has data for fields/sub-forms in this form
+     */
     if (Array.isArray(data)) {
       logger.error(
         `An Array is being received as data for the form ${this.name}. It should be a Vo`

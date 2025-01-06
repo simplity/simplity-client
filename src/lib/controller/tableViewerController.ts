@@ -9,9 +9,6 @@ import {
   Vo,
   TableViewerController,
   Panel,
-  StringMap,
-  LeafComponent,
-  ValueRenderingDetails,
   FormController,
 } from 'simplity-types';
 import { ReportConfigurator } from './reportConfigurator';
@@ -63,14 +60,6 @@ export class TWC implements TableViewerController {
    * selected columns, if user has chosen a subset of columns
    */
   private selectedNames?: string[];
-
-  /**
-   * retain the child maps for re-use once it is built
-   */
-  private childrenMap?: StringMap<LeafComponent>;
-  private columnsMap?: StringMap<ValueRenderingDetails>;
-  private selectedChildren?: LeafComponent[];
-  private selectedColumns?: ValueRenderingDetails[];
 
   //private currentIdx: number = -1;
   /**
@@ -129,9 +118,6 @@ export class TWC implements TableViewerController {
     } else {
       this.selectedNames = undefined;
     }
-    //reset cached arrays as well
-    this.selectedChildren = undefined;
-    this.selectedColumns = undefined;
   }
 
   quickSearch(text: string): void {
@@ -156,26 +142,8 @@ export class TWC implements TableViewerController {
     }
     this.data = data;
     this.info.reset(data);
-    this.view.reset();
 
-    if (data.length == 0) {
-      return;
-    }
-
-    if (this.table.children) {
-      /**
-       * ensure that the child elements are not registered with any DC
-       */
-      this.view.renderChildren(data, this.getChildrenList());
-      return;
-    }
-
-    if (this.table.columns) {
-      this.view.renderData(data, this.getColumnList());
-      return;
-    }
-    //dynamic columns
-    this.view.showData(data);
+    this.view.renderData(data, this.selectedNames);
   }
 
   public getData(): Values[] {
@@ -257,83 +225,6 @@ export class TWC implements TableViewerController {
     if (idx !== undefined) {
       this.info.currentRowIdx = rowIdx;
     }
-  }
-
-  private getChildrenList(): LeafComponent[] {
-    /**
-     * if user has not selected a sub-set, the original array will do
-     */
-    if (!this.selectedNames) {
-      return this.table.children || [];
-    }
-
-    /**
-     * is the list ready?
-     */
-    if (this.selectedChildren) {
-      return this.selectedChildren;
-    }
-
-    /**
-     * get the map if we have not done it earlier
-     */
-    if (!this.childrenMap) {
-      this.childrenMap = {};
-      for (const child of this.table.children || []) {
-        this.childrenMap[child.name] = child;
-      }
-    }
-    this.selectedChildren = [];
-    for (const name of this.selectedNames) {
-      const child = this.childrenMap[name];
-      if (child) {
-        this.selectedChildren.push(child);
-      } else {
-        logger.error(
-          `${name} is not defined as a child-column in the table-panel ${this.name} but is being selected as a column to be rendered. Ignored`
-        );
-      }
-    }
-    return this.selectedChildren;
-  }
-
-  private getColumnList(): ValueRenderingDetails[] {
-    /**
-     * if user has not selected a sub-set, the original array will do
-     */
-    if (!this.selectedNames) {
-      return this.table.columns || [];
-    }
-
-    /**
-     * is the list ready?
-     */
-    if (this.selectedColumns) {
-      return this.selectedColumns;
-    }
-
-    /**
-     * get the map if we have not done it earlier
-     */
-    if (!this.columnsMap) {
-      this.columnsMap = {};
-      for (const column of this.table.columns || []) {
-        this.columnsMap[column.name] = column;
-      }
-    }
-
-    this.selectedColumns = [];
-    for (const name of this.selectedNames) {
-      const column = this.columnsMap[name];
-      if (column) {
-        this.selectedColumns.push(column);
-      } else {
-        logger.error(
-          `${name} is not defined as a child-column in the table-panel ${this.name} but is being selected as a column to be rendered. Ignored`
-        );
-      }
-    }
-    return this.selectedColumns;
   }
 }
 

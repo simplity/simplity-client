@@ -16,9 +16,11 @@ import {
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
 import { elementFactory } from './elementFactory';
+import { LeafElement } from './leafElement';
+import { FieldElement } from './fieldElement';
 
 type SortedRow = { idx: number; value: Value };
-
+type HeaderDetails = ValueRenderingDetails & { comp?: LeafComponent };
 export class TableViewerElement extends BaseElement implements TableViewerView {
   private twc: TableViewerController;
   /**
@@ -32,6 +34,16 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
   private readonly headerCellEle: HTMLElement;
   private readonly dataCellEle: HTMLElement;
   private allTrs: HTMLElement[] = [];
+
+  /**
+   * how to render the column headers and column Values?
+   */
+  private columnDetails?: HeaderDetails[];
+
+  /**
+   * populated if headerDetails is added. Else will remain empty
+   */
+  private readonly columnDetailsMap: StringMap<HeaderDetails> = {};
 
   /**
    * what features are enabled?
@@ -127,14 +139,103 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
 
     this.initSearch();
     this.initConfig();
+    this.initHeaderDetails();
+    if (this.columnDetails) {
+      this.renderHeaders(this.columnDetails);
+    }
   }
 
   /////////////////// methods to render rows
-  showData(data: Values[]): void {
-    this.reset();
-    this.data = data;
 
-    const fields = this.renderDynamicHeaders(data);
+  private initHeaderDetails() {
+    //readily available on a platter?
+    if (this.table.columns) {
+      this.columnDetails = this.table.columns;
+    } else if (this.table.children) {
+      //infer from child components
+      this.columnDetails = [];
+      for (const child of this.table.children) {
+        this.columnDetails.push({
+          name: child.name,
+          label: child.label || htmlUtil.toLabel(child.name),
+          valueType:
+            child.compType === 'field'
+              ? (child as DataField).valueType
+              : 'text',
+          comp: child,
+        });
+      }
+    } else if (this.table.formName) {
+      //if form is given, we assume all the fields in the form
+      this.columnDetails = [];
+      const form = this.ac.getForm(this.table.formName);
+      for (const name of form.fieldNames) {
+        const field = form.fields[name]!;
+
+        if (field.renderAs === 'hidden') {
+          continue;
+        }
+
+        this.columnDetails.push({
+          name,
+          label: field.label || htmlUtil.toLabel(field.name),
+          valueType: field.valueType,
+        });
+      }
+    } else {
+      this.logger.info(
+        `Table ${this.name} has no design-time columns. 
+        Hence the header row is not rendered onload.
+        columns will be rendered as and when data is received`
+      );
+      return;
+    }
+
+    /**
+     * populate the map for look-up purpose for dynamic columns
+     */
+    for (const col of this.columnDetails) {
+      this.columnDetailsMap[col.name] = col;
+    }
+  }
+
+  private renderHeaders(cols: HeaderDetails[]): void {
+    for (const col of cols) {
+      const isNumeric =
+        col.valueType === 'integer' || col.valueType === 'decimal';
+      this.addTh(col.name, isNumeric, col.label);
+    }
+  }
+
+  /**
+   *
+   * @param data
+   * @param columnNames is specified, we are to render these columns, in that order
+   */
+  renderData(data: Values[], columnNames?: string[]): void {
+    this.data = data;
+    /**
+     * header has to be re-rendered if it is not specified at design-time or we are to render a subset of the columns
+     */
+    const reRenderHeader =
+      columnNames !== undefined || this.columnDetails === undefined;
+    this.reset(reRenderHeader);
+
+    /**
+     * If headers are ready, and no dynamic columns, it's simple
+     */
+
+    if (this.columnDetails && columnNames === undefined) {
+      this.renderRows(data, this.columnDetails!);
+      return;
+    }
+
+    const cols = this.getDynamicHeader(data, columnNames);
+    this.renderHeaders(cols);
+    this.renderRows(data, cols);
+  }
+
+  private renderRows(data: Values[], cols: HeaderDetails[]): void {
     let idx = -1;
     for (const row of data) {
       idx++;
@@ -144,15 +245,30 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
       const searchRow: string[] = [];
       const rowEle = this.addTr(idx);
 
-      for (const [name, isNumeric] of Object.entries(fields)) {
-        let value = row[name];
-        if (value === undefined) {
-          value = '';
-        } else {
-          value = '' + value;
+      for (const col of cols) {
+        const value = row[col.name];
+        const textValue = this.formatColumnValue(value, col, row);
+
+        if (col.comp) {
+          this.addTdForComp(textValue, col.comp, rowEle, searchRow);
+          continue;
         }
-        this.addTd(value, isNumeric, rowEle, searchRow);
+
+        const isNumeric =
+          col.valueType === 'integer' || col.valueType === 'decimal';
+        const td = this.addTd(textValue, isNumeric, rowEle, searchRow);
+        if (col.valueFormatterFn) {
+          const fn = this.ac.getFn(col.valueFormatterFn, 'format')
+            .fn as FormatterFunction;
+          const fd = fn(value, row);
+          if (fd.markups) {
+            for (const [name, attr] of Object.entries(fd.markups as Markups)) {
+              td.setAttribute('data-' + name, attr);
+            }
+          }
+        }
       }
+
       this.searchData.push(searchRow.join('\n'));
       this.rowsEle.appendChild(rowEle);
     }
@@ -169,55 +285,40 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     if (isNumeric) {
       td.setAttribute('data-align', 'right');
     }
+
     rowEle.appendChild(td);
     if (value) {
       searchRow.push(value.toLowerCase());
     }
+
     return td;
   }
 
-  renderData(data: Values[], columns: ValueRenderingDetails[]): void {
-    this.data = data;
-    this.reset();
+  private addTdForComp(
+    value: string,
+    leafComp: LeafComponent,
+    rowEle: HTMLElement,
+    searchRow: string[]
+  ): void {
+    const td = this.dataCellEle.cloneNode(true) as HTMLElement;
+    let ele: BaseElement | undefined;
 
-    this.renderHeaderForColumns(columns);
+    if (leafComp.compType === 'field') {
+      ele = new FieldElement(undefined, leafComp as DataField, 0);
+    } else {
+      ele = new LeafElement(undefined, leafComp, 0);
+    }
+    td.appendChild(ele.root);
 
-    let idx = -1;
-    for (const row of data) {
-      idx++;
-      /**
-       * search row has  all the column values joined in it as a string
-       */
-      const searchRow: string[] = [];
-      const rowEle = this.addTr(idx);
-
-      for (const col of columns) {
-        const value = row[col.name];
-        const textValue = this.formatColumnValue(value, col, row);
-        const isNumeric =
-          col.valueType === 'integer' || col.valueType === 'decimal';
-        const td = this.addTd(textValue, isNumeric, rowEle, searchRow);
-
-        if (col.valueFormatterFn) {
-          const fn = this.ac.getFn(col.valueFormatterFn, 'format')
-            .fn as FormatterFunction;
-          const fd = fn(value, row);
-          if (fd.markups) {
-            for (const [name, attr] of Object.entries(fd.markups as Markups)) {
-              td.setAttribute('data-' + name, attr);
-            }
-          }
-        }
-      }
-
-      this.rowsEle.appendChild(rowEle);
-      this.searchData.push(searchRow.join('\n'));
+    rowEle.appendChild(td);
+    if (value) {
+      searchRow.push(value.toLowerCase());
     }
   }
 
   private formatColumnValue(
     value: Value,
-    vrd: ValueRenderingDetails,
+    vrd: HeaderDetails,
     row: Values
   ): string {
     if (vrd.valueFormatterFn) {
@@ -235,48 +336,22 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     return '' + value;
   }
 
-  renderChildren(data: Values[], columns: LeafComponent[]): void {
-    this.data = data;
-    this.reset();
-    this.renderHeaderForChildren(columns);
-    this.searchData.length = 0;
-
-    let idx = -1;
-    for (const row of data) {
-      idx++;
-
-      /**
-       * search row has  all the column values joined in it as a string
-       */
-      const searchRow: string[] = [];
-      const rowEle = this.addTr(idx);
-      for (const column of columns) {
-        const value = row[column.name];
-        const cellEle = this.dataCellEle.cloneNode(true) as HTMLElement;
-
-        const field = elementFactory.newElement(undefined, column, 0, value);
-        cellEle.appendChild(field.root);
-        rowEle.appendChild(cellEle);
-        if (value !== undefined && value !== '') {
-          searchRow.push(value.toString());
-        }
-      }
-
-      this.searchData.push(searchRow.join('\n'));
-      this.rowsEle.appendChild(rowEle);
-    }
-  }
-
   /**
-   * remove all rows that are rendered. Remove the header as well
+   * remove all rows that are rendered. Remove the header if it is dynamic
    */
-  public reset() {
+  public reset(headerAsWell?: boolean) {
     this.rowsEle.innerHTML = '';
-    this.headerRowEle.innerHTML = '';
     this.allTrs = [];
     this.sortedRows = [];
-    this.columnHeaders = {};
     this.searchData.length = 0;
+
+    /**
+     * header row is also reset if this is a configurable table
+     */
+    if (headerAsWell) {
+      this.columnHeaders = {};
+      this.headerRowEle.innerHTML = '';
+    }
   }
 
   private addTr(idx: number): HTMLElement {
@@ -311,44 +386,34 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     return ele;
   }
 
-  private renderHeaderForChildren(children: LeafComponent[]) {
-    for (const node of children) {
-      let isNumeric = false;
-      if (node.compType === 'field') {
-        const vt = (node as DataField).valueType;
-        if (vt === 'decimal' || vt === 'integer') {
-          isNumeric = true;
-        }
-      }
-      this.addTh(node.name, isNumeric, node.label || '');
-    }
-  }
-
   /**
    * we assume that all the rows have the same set of fields/columns
    * @param data
    */
-  private renderDynamicHeaders(data: Values[]): StringMap<boolean> {
-    const fields: StringMap<boolean> = {};
-    for (const [name, value] of Object.entries(data[0])) {
-      const isNumeric = typeof value === 'number';
-      this.addTh(name, isNumeric, htmlUtil.toLabel(name));
-      fields[name] = isNumeric;
-    }
-    return fields;
-  }
-
-  private renderHeaderForColumns(cols: ValueRenderingDetails[]) {
-    for (const col of cols) {
-      const isNumeric =
-        col.valueType === 'integer' || col.valueType === 'decimal';
-      const ele = this.addTh(col.name, isNumeric, col.label || '');
-      if (col.labelAttributes) {
-        for (const [attr, value] of Object.entries(col.labelAttributes)) {
-          ele.setAttribute('data-' + attr, value);
-        }
+  private getDynamicHeader(data: Values[], names?: string[]): HeaderDetails[] {
+    let allCols = this.columnDetails;
+    if (!allCols) {
+      allCols = [];
+      for (const [name, value] of Object.entries(data[0])) {
+        allCols.push({
+          name,
+          valueType: typeof value === 'number' ? 'integer' : 'text',
+          label: htmlUtil.toLabel(name),
+        });
       }
     }
+
+    if (!names) {
+      return allCols;
+    }
+
+    const cols: HeaderDetails[] = [];
+
+    for (const name of names) {
+      cols.push(this.columnDetailsMap![name]);
+    }
+
+    return cols;
   }
 
   private initConfig() {

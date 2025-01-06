@@ -1,4 +1,4 @@
-import { TableViewer, Values, TableViewerView, LeafComponent, ValueRenderingDetails, FormController, NbrCols } from 'simplity-types';
+import { TableViewer, Values, TableViewerView, FormController, NbrCols } from 'simplity-types';
 import { BaseElement } from './baseElement';
 export declare class TableViewerElement extends BaseElement implements TableViewerView {
     readonly fc: FormController;
@@ -15,6 +15,14 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private readonly headerCellEle;
     private readonly dataCellEle;
     private allTrs;
+    /**
+     * how to render the column headers and column Values?
+     */
+    private columnDetails?;
+    /**
+     * populated if headerDetails is added. Else will remain empty
+     */
+    private readonly columnDetailsMap;
     /**
      * what features are enabled?
      */
@@ -41,24 +49,29 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private sortedRows;
     private sortedAscending;
     constructor(fc: FormController, table: TableViewer, maxWidth: NbrCols);
-    showData(data: Values[]): void;
-    private addTd;
-    renderData(data: Values[], columns: ValueRenderingDetails[]): void;
-    private formatColumnValue;
-    renderChildren(data: Values[], columns: LeafComponent[]): void;
+    private initHeaderDetails;
+    private renderHeaders;
     /**
-     * remove all rows that are rendered. Remove the header as well
+     *
+     * @param data
+     * @param columnNames is specified, we are to render these columns, in that order
      */
-    reset(): void;
+    renderData(data: Values[], columnNames?: string[]): void;
+    private renderRows;
+    private addTd;
+    private addTdForComp;
+    private formatColumnValue;
+    /**
+     * remove all rows that are rendered. Remove the header if it is dynamic
+     */
+    reset(headerAsWell?: boolean): void;
     private addTr;
     private addTh;
-    private renderHeaderForChildren;
     /**
      * we assume that all the rows have the same set of fields/columns
      * @param data
      */
-    private renderDynamicHeaders;
-    private renderHeaderForColumns;
+    private getDynamicHeader;
     private initConfig;
     private initSearch;
     /**

@@ -76,7 +76,7 @@ class BaseElement {
         }
         /**
          *
-         * we will handle input control specific aspects in the base element itself
+         * input element is quite common. adding this simple line to the base itself
          */
         this.inputEle = this.root.querySelector('input') || undefined;
         if (comp.label) {

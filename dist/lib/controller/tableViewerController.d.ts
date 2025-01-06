@@ -42,13 +42,6 @@ export declare class TWC implements TableViewerController {
      */
     private selectedNames?;
     /**
-     * retain the child maps for re-use once it is built
-     */
-    private childrenMap?;
-    private columnsMap?;
-    private selectedChildren?;
-    private selectedColumns?;
-    /**
      * important to note that this constructor is called from the constructor of tableView.
      * TableView MAY NOT be rendered fully. Hence instance of tableView should not be used to invoke any of its methods inside this constructor
      * @param fc form controller that manages this table
@@ -74,8 +67,6 @@ export declare class TWC implements TableViewerController {
     selectAllRows(toSelect: boolean): TableInfo;
     columnClicked(row: Vo, action: string): void;
     setCurrentRowIdx(rowIdx: number): void;
-    private getChildrenList;
-    private getColumnList;
 }
 export declare class TableInfo {
     /**
