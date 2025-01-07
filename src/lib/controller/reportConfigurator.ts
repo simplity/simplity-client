@@ -3,7 +3,7 @@ import {
   Button,
   DataField,
   FieldView,
-  FilterRequestVo,
+  FilterParams,
   FormController,
   PageController,
   Panel,
@@ -219,7 +219,7 @@ export class ReportConfigurator {
     /**
      * prepare the payload
      */
-    const payload = { fields, filters, sorts } as FilterRequestVo;
+    const payload = { fields, filters, sorts } as FilterParams;
     if (maxRows) {
       payload[MAX_ROWS] = maxRows;
     }

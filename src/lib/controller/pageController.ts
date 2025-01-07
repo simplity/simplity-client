@@ -30,12 +30,12 @@ import {
   RequestFunction,
   ResponseFunction,
   AnyValue,
-  FilterParameters,
   SimpleList,
   KeyedList,
   FormOperation,
   ServiceRequestOptions,
   DataController,
+  FilterFields,
 } from 'simplity-types';
 import { FC } from './formController';
 import { app } from './app';
@@ -980,10 +980,10 @@ export class PC implements PageController {
       vo.maxRows = action.maxRows;
     }
 
-    if (action.filterParams) {
+    if (action.filterFields) {
       const filters = getConditions(
         fc.getData(),
-        action.filterParams,
+        action.filterFields,
         messages
       );
 
@@ -1002,7 +1002,7 @@ function addMessage(text: string, msgs: DetailedMessage[]) {
 
 function getConditions(
   rootData: Vo,
-  params: FilterParameters,
+  params: FilterFields,
   msgs: DetailedMessage[]
 ): FilterCondition[] | undefined {
   const filters: FilterCondition[] = [];
