@@ -18,8 +18,9 @@ export declare class FieldElement extends BaseElement implements FieldView {
     private textValue;
     /**
      * value as seen by the external world.
+     * It contains either a valid value, or an empty string.
      * if the entered value is invalid, say a numeric field has a textValue of "abcd", this field is ""
-     * this approach is to avoid having undefined as a value, leaving that to detect "irrelevant" or "not-used" fields
+     * this approach is to avoid having undefined as a value.
      */
     private value;
     private valueIsValid;
@@ -56,8 +57,8 @@ export declare class FieldElement extends BaseElement implements FieldView {
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc: FormController | undefined, field: DataField, maxWidth: NbrCols, value?: Value);
-    setValue(value: Value): void;
+    constructor(fc: FormController | undefined, field: DataField, maxWidth: NbrCols, initialValue?: Value);
+    setValue(newValue: Value): void;
     /**
      * wire 'change' and 'changing' events.
      * Thanks to standardization, 'input' event now serves as 'changing'.

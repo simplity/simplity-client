@@ -32,8 +32,9 @@ export class FieldElement extends BaseElement implements FieldView {
 
   /**
    * value as seen by the external world.
+   * It contains either a valid value, or an empty string.
    * if the entered value is invalid, say a numeric field has a textValue of "abcd", this field is ""
-   * this approach is to avoid having undefined as a value, leaving that to detect "irrelevant" or "not-used" fields
+   * this approach is to avoid having undefined as a value.
    */
   private value: Value = '';
 
@@ -86,7 +87,7 @@ export class FieldElement extends BaseElement implements FieldView {
     fc: FormController | undefined,
     public readonly field: DataField,
     maxWidth: NbrCols,
-    value?: Value
+    initialValue?: Value
   ) {
     super(fc, field, field.renderAs, maxWidth);
 
@@ -115,7 +116,7 @@ export class FieldElement extends BaseElement implements FieldView {
 
     this.wireEvents();
 
-    let val = value;
+    let val = initialValue;
     if (val === undefined) {
       val = this.getDefaultValue();
     }
@@ -131,13 +132,13 @@ export class FieldElement extends BaseElement implements FieldView {
     }
   }
 
-  public setValue(value: Value): void {
-    if (value === undefined) {
-      value = '';
+  public setValue(newValue: Value): void {
+    if (newValue === undefined) {
+      newValue = '';
     }
 
-    this.value = value;
-    const text = value.toString();
+    this.value = newValue;
+    const text = newValue.toString();
     this.textValue = text;
     switch (this.fieldRendering) {
       case 'text-field':
@@ -159,7 +160,7 @@ export class FieldElement extends BaseElement implements FieldView {
         return;
 
       case 'check-box':
-        (this.fieldEle as HTMLInputElement).checked = !!value;
+        (this.fieldEle as HTMLInputElement).checked = !!newValue;
         return;
 
       case 'image':
@@ -242,22 +243,24 @@ export class FieldElement extends BaseElement implements FieldView {
     this.textValue = newValue.trim();
     const wasOk = this.valueIsValid;
     const oldValue = this.value;
-    const isOk = this.validate();
 
-    if (!this.fc) {
-      //this is not controlled...
-      return;
-    }
+    //validate() sets value to this.value after validation)
+    const isOk = this.validate();
 
     if (this.field.onChange) {
       this.pc.act(this.field.onChange, this.fc, { value: newValue });
     }
 
-    const newValidity = wasOk ? undefined : isOk;
-    if (oldValue !== this.value) {
-      //events are wired only if dc is present
-      this.fc!.valueHasChanged(this.name, this.value, newValidity);
+    if (oldValue === this.value || !this.fc) {
+      //value has not actually changed, or there is NO controller
+      return;
     }
+
+    /**
+     * new validity is undefined if the validity is unchanged
+     */
+    const newValidity = wasOk === isOk ? undefined : isOk;
+    this.fc.valueHasChanged(this.name, this.value, newValidity);
 
     this.fc.eventOccurred({
       eventName: 'change',
@@ -315,7 +318,7 @@ export class FieldElement extends BaseElement implements FieldView {
     }
 
     this.resetAlerts();
-    this.valueIsValid = false;
+    this.valueIsValid = true;
     return true;
   }
 
@@ -379,6 +382,7 @@ export class FieldElement extends BaseElement implements FieldView {
    */
   public setList(list: SimpleList): void {
     this.list = list;
+
     if (!this.fieldEle) {
       return;
     }
@@ -391,9 +395,9 @@ export class FieldElement extends BaseElement implements FieldView {
        */
       if (this.textValue) {
         /**
-         * this selection is no more valid/relevant
+         * this selection is no more valid/relevant.
+         * simulate as if user changed this to ''
          */
-        this.value = '';
         this.valueHasChanged('');
       }
       return;
@@ -408,7 +412,7 @@ export class FieldElement extends BaseElement implements FieldView {
     //add an empty option
     const firstOpt = option.cloneNode(true) as HTMLOptionElement;
     firstOpt.value = '';
-    firstOpt.innerText = '-- Select One --';
+    firstOpt.innerText = '';
     if (this.field.isRequired) {
       firstOpt.disabled = true;
       firstOpt.hidden = true;
@@ -523,7 +527,7 @@ export class FieldElement extends BaseElement implements FieldView {
       this.logger.info(
         `field ${this.name} is invalid with an error message="${this.errorMessage}". The field rendering has no provision to show error message`
       );
-      this.setDataAttr('data-error', text);
+      this.setDataAttr('error', text);
     }
   }
 }

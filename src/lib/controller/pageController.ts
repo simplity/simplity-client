@@ -252,6 +252,7 @@ export class PC implements PageController {
       );
       return;
     }
+
     let localList = this.lists[listName];
     if (localList) {
       const isSimple = Array.isArray(localList);
@@ -599,12 +600,14 @@ export class PC implements PageController {
       //disable ux now
     }
 
+    const reqAt = new Date().getTime();
     const resp = await this.ac.serve(serviceName, data);
+    const respAt = new Date().getTime();
+    logger.info(`Service '${serviceName}' returned after  ${respAt - reqAt}ms`),
+      resp;
     if (disableUx) {
       //enable ux now
     }
-
-    logger.info(`Service ${serviceName} returned.`, resp);
 
     if (onResponseFn) {
       logger.info(`Function ${onResponseFn} invoked to process the response`);
@@ -626,6 +629,10 @@ export class PC implements PageController {
       fc.receiveData(resp.data as Vo, targetChild);
     }
 
+    const completedAt = new Date().getTime();
+    logger.info(
+      `It took ${completedAt - respAt}ms to render the data received from the service '${serviceName}' `
+    );
     return true;
   }
 

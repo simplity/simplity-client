@@ -228,7 +228,7 @@ export class FC implements FormController {
        */
       this.addEventListener(keyControl.name, 'change', (evt) => {
         const newValue = evt.newValue;
-        console.info(
+        console.log(
           `Triggering getList() for field '${field.name}' because field '${field.listKeyFieldName}' changed it's value to '${newValue}' `
         );
         /**
@@ -239,6 +239,7 @@ export class FC implements FormController {
           newValue === '' ||
           evt.newValidity === false
         ) {
+          console.log(`Triggering ${fieldView.name}.setList([])`);
           fieldView.setList([]);
           return;
         }
@@ -250,6 +251,7 @@ export class FC implements FormController {
           value = newValue.toString();
         }
 
+        console.log(`Triggering pc.getList([])`);
         this.pc.getList(fieldView, value);
       });
     }
@@ -300,6 +302,7 @@ export class FC implements FormController {
     }
     return undefined;
   }
+
   public addEventListener(
     viewName: string,
     eventName: EventName,
@@ -617,13 +620,13 @@ export class FC implements FormController {
     console.info(
       `valueHasChanged() triggered for field "${fieldName}" with new value ="${newValue}" and new validity=${newValidity}`
     );
-    if (newValidity !== undefined) {
-      //it got changed
-      if (!newValidity) {
-        this.allOk = false;
-      }
+
+    //if this validity has changed to false, then we have to set allOk to false
+    if (newValidity !== undefined && newValidity === false) {
+      this.allOk = false;
     }
   }
+
   valueIsChanging(
     _fieldName: string,
     _newValue: Value,
@@ -650,8 +653,9 @@ export class FC implements FormController {
     if (!eventListeners) {
       return;
     }
-    console.info(`eventListeners:`, eventListeners);
+
     for (const handler of eventListeners) {
+      console.log(`Triggering Event '${evt.eventName}' : `, handler);
       if (typeof handler === 'string') {
         this.act(handler, evt.params);
       } else {
