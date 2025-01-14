@@ -16,7 +16,6 @@ const NBR_COLS_IN_GRID = 12;
 
 export class PageElement implements PageView {
   private readonly titleEle?: HTMLElement;
-  private readonly panelEle: HTMLElement;
   private readonly buttonsEle: HTMLElement;
   private readonly pc: PageController;
   private readonly fc: FormController;
@@ -26,31 +25,32 @@ export class PageElement implements PageView {
     public readonly page: Page,
     public readonly params: Values
   ) {
-    this.root = htmlUtil.newHtmlElement('template-page');
+    this.root = htmlUtil.newHtmlElement('page');
 
     this.titleEle = htmlUtil.getOptionalElement(this.root, 'title');
-    this.panelEle = htmlUtil.getChildElement(this.root, 'panel');
+    const dataContainer = htmlUtil.getChildElement(this.root, 'data');
     this.buttonsEle = htmlUtil.getChildElement(this.root, 'buttons');
     /**
      * are we to put buttons above data-panel?
      */
     if (page.renderButtonsBeforeData) {
       this.buttonsEle.remove();
-      this.panelEle.parentElement?.insertBefore(this.buttonsEle, this.panelEle);
+      const ele = dataContainer.parentElement!;
+      ele.insertBefore(this.buttonsEle, ele.firstChild);
     }
 
     this.pc = app.newPc(this);
     this.fc = this.pc.fc;
 
-    const container = htmlUtil.newPageContainer();
-    this.panelEle.appendChild(container);
-
-    const panel = new PanelElement(
+    const dataPanel = new PanelElement(
       this.pc.fc,
       this.page.dataPanel,
       NBR_COLS_IN_GRID
     );
-    container.appendChild(panel.root);
+    /**
+     * dataPanel is the main container that defines the width units
+     */
+    dataContainer.appendChild(dataPanel.root);
 
     if (this.titleEle) {
       let title = this.page.titlePrefix || '';

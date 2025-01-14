@@ -3,7 +3,6 @@ import {
   FieldView,
   StringMap,
   FormController,
-  DisplaySettings,
   Value,
   PageController,
   Form,
@@ -634,12 +633,15 @@ export class FC implements FormController {
   ): void {
     // feature not yet designed
   }
-  setDisplay(names: string[], settings: DisplaySettings): void {
-    for (const name of names) {
-      const f = this.children[name];
-      if (f) {
-        f.setDisplay(settings);
-      }
+
+  setDisplayState(
+    fieldName: string,
+    stateName: string,
+    stateValue: string | number | boolean
+  ): void {
+    const f = this.children[fieldName];
+    if (f) {
+      f.setDisplayState(stateName, stateValue);
     }
   }
 
@@ -675,7 +677,7 @@ export class FC implements FormController {
     for (const msg of msgs) {
       const fieldView = this.fieldViews[msg.fieldName];
       if (fieldView) {
-        fieldView.setDisplay({ error: msg.message });
+        fieldView.setError(msg.message);
       } else {
         logger.error(
           `${msg.fieldName} is not a valid field, but it is reported with a validation error: "${msg.message}"`

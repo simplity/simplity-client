@@ -53,7 +53,7 @@ export class LayoutElement implements LayoutView {
     this.logger = loggerStub.getLogger();
     this.ac = app.getCurrentAc();
 
-    this.root = htmlUtil.newHtmlElement('template-layout');
+    this.root = htmlUtil.newHtmlElement('layout');
 
     /*
      * modules are mandatory. however, during development, it could be an empty array

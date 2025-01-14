@@ -1,14 +1,11 @@
 import { loggerStub } from '../logger-stub/logger';
 import { app } from '../controller/app';
-import { htmlUtil } from './htmlUtil';
+import { HtmlTemplateName, htmlUtil } from './htmlUtil';
 import {
   AppController,
   BaseComponent,
   BaseView,
-  DisplaySettings,
   FormController,
-  KnownDisplaySettings,
-  NbrCols,
   PageController,
 } from 'simplity-types';
 
@@ -54,12 +51,12 @@ export class BaseElement implements BaseView {
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
      */
-    templateName: string,
+    templateName: HtmlTemplateName | '',
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table
      */
-    protected maxWidth: NbrCols
+    protected maxWidth: number
   ) {
     this.name = comp.name;
     if (fc) {
@@ -70,14 +67,14 @@ export class BaseElement implements BaseView {
       this.pc = app.getCurrentPc();
     }
 
-    if (templateName === '') {
+    if (comp.customHtml) {
+      this.root = htmlUtil.newCustomElement(comp.customHtml);
+    } else if (templateName === '') {
       this.root = document.createElement('div');
       return;
+    } else {
+      this.root = htmlUtil.newHtmlElement(templateName);
     }
-
-    this.root = htmlUtil.newHtmlElement(
-      comp.customHtml || 'template' + '-' + templateName
-    );
 
     this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
 
@@ -85,22 +82,14 @@ export class BaseElement implements BaseView {
       /**
        * colSpan for this element. Default for container is full
        */
-      let colSpan =
-        comp.width || (this.containerEle ? maxWidth : DEFAULT_WIDTH);
-      if (colSpan > maxWidth) {
+      let width = comp.width || (this.containerEle ? maxWidth : DEFAULT_WIDTH);
+      if (width > maxWidth) {
         this.logger
-          .error(`Page element '${this.name}' specifies a width of ${colSpan} but the max possible width is only ${maxWidth};
+          .error(`Page element '${this.name}' specifies a width of ${width} but the max possible width is only ${maxWidth};
         Page may not render properly`);
-        colSpan = maxWidth;
+        width = maxWidth;
       }
-      htmlUtil.setColSpan(this.root, colSpan);
-    }
-
-    /**
-     * set the number of columns same as colSpan, if this is a container
-     */
-    if (this.containerEle) {
-      htmlUtil.setAsGrid(this.containerEle);
+      htmlUtil.setDisplayState(this.root, 'width', width);
     }
 
     if (fc) {
@@ -131,33 +120,24 @@ export class BaseElement implements BaseView {
    * concrete classes should implement this if error is relevant
    * @param msg
    */
-  protected setError(msg: unknown): void {
+  public setError(msg: unknown): void {
     this.logger.warn(
       `component type ${this.comp.compType} has not implemented setError(), but a request is received with value="${msg}"`
     );
-    this.setDataAttr('error', msg === undefined ? undefined : '' + msg);
+    htmlUtil.setDisplayState(this.root, 'error', msg !== undefined);
   }
 
-  setDisplay(settings: DisplaySettings): void {
-    for (const [setting, value] of Object.entries(settings)) {
-      switch (setting as KnownDisplaySettings | string) {
-        case 'error':
-          this.setError(value);
-          return;
-
-        case 'disabled':
-          if (this.inputEle) {
-            this.inputEle.disabled = !!value;
-            return;
-          }
-          this.setDataAttr('disabled', value);
-          return;
-
-        case 'hidden':
-        default:
-          this.setDataAttr(setting, value);
-      }
+  setDisplayState(
+    stateName: string,
+    stateValue: string | number | boolean
+  ): void {
+    /**
+     * we have one special case with inputElement where disabled is a pre-defined attribute to be set/reset
+     */
+    if (stateName === 'disabled' && this.inputEle) {
+      this.inputEle.disabled = !!stateValue;
     }
+    htmlUtil.setDisplayState(this.root, stateName, stateValue);
   }
 
   clicked() {
@@ -180,19 +160,5 @@ export class BaseElement implements BaseView {
         fc: this.fc,
       });
     }
-  }
-  /**
-   *
-   * @param attr name of the attribute, (without the data-prefix)
-   * @param value undefined to remove the attribute. String, including empty string, to set the value
-   * @returns
-   */
-  protected setDataAttr(attr: string, value: string | undefined): void {
-    const att = 'data-' + attr;
-    if (value === undefined) {
-      this.root.removeAttribute(att);
-      return;
-    }
-    this.root.setAttribute(att, value);
   }
 }

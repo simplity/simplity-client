@@ -1,4 +1,4 @@
-import { AppController, Form, PageController, TableEditorView, Values, DisplaySettings, TableEditorController, Vo, FormController } from 'simplity-types';
+import { AppController, Form, PageController, TableEditorView, Values, TableEditorController, Vo, FormController } from 'simplity-types';
 /**
  * controls a tabular data (rows and columns)
  */
@@ -57,6 +57,6 @@ export declare class TEC implements TableEditorController {
      */
     validate(): boolean;
     private sanitizeIdx;
-    changeColumnSettings(_names: string[], _settings: DisplaySettings, _rowId?: number): void;
-    changeCellSettings(_columnNames: string[], _settings: DisplaySettings, _rowId?: number): void;
+    setColumnDisplayState(_columnName: string, _stateName: string, _stateValue: string | number | boolean): void;
+    setCellDisplayState(_columnName: string, _stateName: string, _stateValue: string | number | boolean, _rowId?: number): void;
 }

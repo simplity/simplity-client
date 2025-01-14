@@ -1,4 +1,9 @@
-import { NbrCols, Value, ValueFormatter } from 'simplity-types';
+import { Value, ValueFormatter } from 'simplity-types';
+/**
+ * to be used only by design-time utilities to check if all the required templates are supplied or not
+ */
+export declare const predefinedHtmlTemplates: readonly ["button", "check-box", "content", "dialog", "image-field", "image", "layout", "line", "list", "menu-group", "menu-item", "output", "page", "page-panel", "panel-grid", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
+export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 export declare const htmlUtil: {
     /**
      * removes all children of an html element using child.remove() method
@@ -9,6 +14,11 @@ export declare const htmlUtil: {
      * @param name template name
      */
     newHtmlElement: typeof newHtmlElement;
+    /**
+     * create a new instance of an app-specific custom element that is not part of standard simplity library
+     * @param name template name
+     */
+    newCustomElement: typeof newElement;
     /**
      * templates are designed to have unique values for data-id within their innerHTML.
      * this function gets the element within the template with the specified id
@@ -54,33 +64,24 @@ export declare const htmlUtil: {
      * @returns formatted string
      */
     formatValue: typeof formatValue;
-    setAsGrid: typeof setAsGrid;
-    setColSpan: typeof setColSpan;
-    newPageContainer: typeof newPageContainer;
+    /**
+     * Set the display-state of this element to the desired value.
+     *
+     * @param ele
+     * @param stateName  must be a valid name as per the design specification for the app
+     *
+     * @param value    value as per the design of this attribute.
+     */
+    setDisplayState: typeof setDisplayState;
 };
 declare function getOptionalElement(rootEle: HTMLElement, id: string): HTMLElement | undefined;
 declare function getChildElement(rootEle: HTMLElement, id: string): HTMLElement;
-declare function newHtmlElement(name: string): HTMLElement;
+declare function newHtmlElement(name: HtmlTemplateName): HTMLElement;
+declare function newElement(name: string): HTMLElement;
 declare function removeChildren(ele: HTMLElement): void;
 declare function appendText(ele: HTMLElement, text: string): void;
 declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
 declare function formatValue(value: Value, formatter: ValueFormatter): string;
-/**
- *
- * @param ele child element whose width is to be specified in terms of number of columns
- * @param n number of columns
- */
-declare function setColSpan(ele: HTMLElement, n: NbrCols): void;
-/**
- * mark this as a subgrid.
- * @param ele
- */
-declare function setAsGrid(ele: HTMLElement): void;
-/**
- * We use a grid-layout concept with 12 columns for the page.
- * Create the page container as a grid with 12 columns.
- * Every container element will now be a subgrid
- */
-declare function newPageContainer(): HTMLDivElement;
+declare function setDisplayState(ele: HTMLElement, stateName: string, stateValue: string | number | boolean): void;
 export {};

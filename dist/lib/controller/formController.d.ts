@@ -1,4 +1,4 @@
-import { StringMap, FormController, DisplaySettings, Value, PageController, Form, AppController, DetailedMessage, EventDetails, EventHandler, EventName, TableEditorController, TableEditorView, TableViewerController, TableViewerView, Vo, DataController, BaseView, Values } from 'simplity-types';
+import { StringMap, FormController, Value, PageController, Form, AppController, DetailedMessage, EventDetails, EventHandler, EventName, TableEditorController, TableEditorView, TableViewerController, TableViewerView, Vo, DataController, BaseView, Values } from 'simplity-types';
 /**
  * controls a row in a table or the root fields in a page.
  */
@@ -94,7 +94,7 @@ export declare class FC implements FormController {
     hasKeyValues(): boolean;
     valueHasChanged(fieldName: string, newValue: Value, newValidity?: boolean): void;
     valueIsChanging(_fieldName: string, _newValue: Value, _newValidity?: boolean): void;
-    setDisplay(names: string[], settings: DisplaySettings): void;
+    setDisplayState(fieldName: string, stateName: string, stateValue: string | number | boolean): void;
     eventOccurred(evt: EventDetails): void;
     act(actionName: string, params: unknown): void;
     private reportFieldErrors;

@@ -4,7 +4,6 @@ import {
   Values,
   TableEditorController,
   FormController,
-  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
@@ -25,9 +24,9 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
   constructor(
     public readonly fc: FormController,
     public readonly table: TableEditor,
-    maxWidth: NbrCols
+    maxWidth: number
   ) {
-    super(fc, table, 'grid', maxWidth);
+    super(fc, table, 'table-editable', maxWidth);
 
     /**
      * typically <Table>

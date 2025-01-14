@@ -1,10 +1,4 @@
-import {
-  Form,
-  FormController,
-  Panel,
-  PanelView,
-  NbrCols,
-} from 'simplity-types';
+import { Form, FormController, Panel, PanelView } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { elementFactory } from './elementFactory';
 export class PanelElement extends BaseElement implements PanelView {
@@ -16,7 +10,7 @@ export class PanelElement extends BaseElement implements PanelView {
   constructor(
     fc: FormController | undefined,
     public readonly panel: Panel,
-    maxWidth: NbrCols
+    maxWidth: number
   ) {
     super(fc, panel, 'panel', maxWidth);
 

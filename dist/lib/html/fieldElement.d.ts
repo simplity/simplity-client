@@ -1,4 +1,4 @@
-import { DataField, DetailedMessage, FieldView, SimpleList, Value, FormController, NbrCols } from 'simplity-types';
+import { DataField, DetailedMessage, FieldView, SimpleList, Value, FormController } from 'simplity-types';
 import { BaseElement } from './baseElement';
 /**
  * Field is an element that has to render the value that it is given at run time.
@@ -57,7 +57,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc: FormController | undefined, field: DataField, maxWidth: NbrCols, initialValue?: Value);
+    constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value);
     setValue(newValue: Value): void;
     /**
      * wire 'change' and 'changing' events.
@@ -80,11 +80,12 @@ export declare class FieldElement extends BaseElement implements FieldView {
     getValue(): Value;
     private getSelectValue;
     /**
-     * alerts associated with this field are to be reset
+     * alerts associated with this field are to be reset.
      */
     resetAlerts(): void;
     /**
      * show an error message for this field
+     * typically when there is an error message from the server for this field
      */
     setAlerts(messages: DetailedMessage[]): void;
     isValid(): boolean;
@@ -95,5 +96,5 @@ export declare class FieldElement extends BaseElement implements FieldView {
     setList(list: SimpleList): void;
     private setValueToSelect;
     able(enabled: boolean): void;
-    protected setError(text: string | undefined): void;
+    setError(text: string | undefined): void;
 }

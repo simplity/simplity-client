@@ -9,7 +9,7 @@ export class MenuGroupElement {
   private readonly menuItems: StringMap<MenuItemElement> = {};
   private readonly menuEle: HTMLElement;
   constructor(private readonly module: Module) {
-    this.root = htmlUtil.newHtmlElement('template-menu-group');
+    this.root = htmlUtil.newHtmlElement('menu-group');
     this.menuEle = htmlUtil.getChildElement(this.root, 'menu-item');
     this.ac = app.getCurrentAc();
 

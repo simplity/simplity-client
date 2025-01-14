@@ -7,12 +7,18 @@ import {
   systemResources,
   Value,
   FormController,
-  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
-import { htmlUtil } from './htmlUtil';
+import { HtmlTemplateName, htmlUtil } from './htmlUtil';
 import { parseToValue } from '../validation/validation';
 
+function getTemplateName(field: DataField): HtmlTemplateName | '' {
+  const name = field.renderAs;
+  if (name === 'hidden' || name === 'custom') {
+    return '';
+  }
+  return name;
+}
 const NO_VALIDATION: FieldRendering[] = ['output', 'select-output'];
 /**
  * Field is an element that has to render the value that it is given at run time.
@@ -86,10 +92,10 @@ export class FieldElement extends BaseElement implements FieldView {
   constructor(
     fc: FormController | undefined,
     public readonly field: DataField,
-    maxWidth: NbrCols,
+    maxWidth: number,
     initialValue?: Value
   ) {
-    super(fc, field, field.renderAs, maxWidth);
+    super(fc, field, getTemplateName(field), maxWidth);
 
     this.fieldRendering = field.renderAs;
 
@@ -351,7 +357,7 @@ export class FieldElement extends BaseElement implements FieldView {
   }
 
   /**
-   * alerts associated with this field are to be reset
+   * alerts associated with this field are to be reset.
    */
   public resetAlerts(): void {
     this.setError(undefined);
@@ -359,6 +365,7 @@ export class FieldElement extends BaseElement implements FieldView {
 
   /**
    * show an error message for this field
+   * typically when there is an error message from the server for this field
    */
   public setAlerts(messages: DetailedMessage[]): void {
     let text = '';
@@ -500,7 +507,7 @@ export class FieldElement extends BaseElement implements FieldView {
     }
   }
 
-  protected setError(text: string | undefined): void {
+  public setError(text: string | undefined): void {
     if (!text) {
       if (!this.errorMessage) {
         return;
@@ -511,7 +518,7 @@ export class FieldElement extends BaseElement implements FieldView {
         this.errorEle.removeAttribute('data-error');
         return;
       }
-      this.setDataAttr('error', undefined);
+      this.setDisplayState('error', false);
       return;
     }
 
@@ -527,7 +534,7 @@ export class FieldElement extends BaseElement implements FieldView {
       this.logger.info(
         `field ${this.name} is invalid with an error message="${this.errorMessage}". The field rendering has no provision to show error message`
       );
-      this.setDataAttr('error', text);
+      this.setDisplayState('error', true);
     }
   }
 }

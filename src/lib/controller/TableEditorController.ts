@@ -6,7 +6,6 @@ import {
   TableEditor,
   TableEditorView,
   Values,
-  DisplaySettings,
   TableEditorController,
   Vo,
   FormController,
@@ -225,16 +224,17 @@ export class TEC implements TableEditorController {
     return undefined;
   }
 
-  changeColumnSettings(
-    _names: string[],
-    _settings: DisplaySettings,
-    _rowId?: number
+  setColumnDisplayState(
+    _columnName: string,
+    _stateName: string,
+    _stateValue: string | number | boolean
   ): void {
     throw new Error('Method not implemented.');
   }
-  changeCellSettings(
-    _columnNames: string[],
-    _settings: DisplaySettings,
+  setCellDisplayState(
+    _columnName: string,
+    _stateName: string,
+    _stateValue: string | number | boolean,
     _rowId?: number
   ): void {
     throw new Error('Method not implemented.');

@@ -1,4 +1,5 @@
-import { AppController, BaseComponent, BaseView, DisplaySettings, FormController, NbrCols, PageController } from 'simplity-types';
+import { HtmlTemplateName } from './htmlUtil';
+import { AppController, BaseComponent, BaseView, FormController, PageController } from 'simplity-types';
 /**
  * Base class to be extended by all view components
  * As of now, it is NOT a WebComponent, but a controller that is bound to the root html element.
@@ -14,7 +15,7 @@ export declare class BaseElement implements BaseView {
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table
      */
-    protected maxWidth: NbrCols;
+    protected maxWidth: number;
     protected readonly logger: import("simplity-types").Logger;
     protected readonly ac: AppController;
     protected readonly pc: PageController;
@@ -42,24 +43,17 @@ export declare class BaseElement implements BaseView {
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
      */
-    templateName: string, 
+    templateName: HtmlTemplateName | '', 
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table
      */
-    maxWidth: NbrCols);
+    maxWidth: number);
     /**
      * concrete classes should implement this if error is relevant
      * @param msg
      */
-    protected setError(msg: unknown): void;
-    setDisplay(settings: DisplaySettings): void;
+    setError(msg: unknown): void;
+    setDisplayState(stateName: string, stateValue: string | number | boolean): void;
     clicked(): void;
-    /**
-     *
-     * @param attr name of the attribute, (without the data-prefix)
-     * @param value undefined to remove the attribute. String, including empty string, to set the value
-     * @returns
-     */
-    protected setDataAttr(attr: string, value: string | undefined): void;
 }

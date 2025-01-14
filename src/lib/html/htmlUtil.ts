@@ -1,6 +1,55 @@
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
-import { NbrCols, Value, ValueFormatter } from 'simplity-types';
+import { Value, ValueFormatter } from 'simplity-types';
+
+/**
+ * display states that are designed by simplity
+ */
+const designedDisplayStates: { [name: string]: string } = {
+  hidden: 'boolean',
+  disabled: 'boolean',
+  inError: 'boolean',
+  /**
+   * width of this element as per column-width design for this app.
+   * for example, in a standard grid-layout design, full-width is 12.
+   */
+  width: 'number',
+};
+
+/**
+ * to be used only by design-time utilities to check if all the required templates are supplied or not
+ */
+export const predefinedHtmlTemplates = [
+  'button',
+  'check-box',
+  'content',
+  'dialog',
+  'image-field',
+  'image',
+  'layout',
+  'line',
+  'list',
+  'menu-group',
+  'menu-item',
+  'output',
+  'page',
+  'page-panel',
+  'panel-grid',
+  'panel',
+  'password',
+  'select-output',
+  'select',
+  'snack-bar',
+  'sortable-header',
+  'tab',
+  'table-editable',
+  'table',
+  'tabs',
+  'text-area',
+  'text-field',
+] as const;
+
+export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 
 /**
  * caching the templates that are already created
@@ -13,11 +62,18 @@ export const htmlUtil = {
    * removes all children of an html element using child.remove() method
    */
   removeChildren,
+
   /**
    * create a new instance of this template html element
    * @param name template name
    */
   newHtmlElement,
+
+  /**
+   * create a new instance of an app-specific custom element that is not part of standard simplity library
+   * @param name template name
+   */
+  newCustomElement: newElement,
   /**
    * templates are designed to have unique values for data-id within their innerHTML.
    * this function gets the element within the template with the specified id
@@ -66,11 +122,17 @@ export const htmlUtil = {
    * @param formatter
    * @returns formatted string
    */
-
   formatValue,
-  setAsGrid,
-  setColSpan,
-  newPageContainer,
+
+  /**
+   * Set the display-state of this element to the desired value.
+   *
+   * @param ele
+   * @param stateName  must be a valid name as per the design specification for the app
+   *
+   * @param value    value as per the design of this attribute.
+   */
+  setDisplayState,
 };
 
 function getOptionalElement(
@@ -100,7 +162,11 @@ function getChildElement(rootEle: HTMLElement, id: string): HTMLElement {
   );
 }
 
-function newHtmlElement(name: string): HTMLElement {
+function newHtmlElement(name: HtmlTemplateName): HTMLElement {
+  return newElement('template-' + name);
+}
+
+function newElement(name: string): HTMLElement {
   let ele = allTemplates[name];
   if (!ele) {
     let html = app.getCurrentAc().getHtml(name);
@@ -129,6 +195,7 @@ function removeChildren(ele: HTMLElement): void {
 function appendText(ele: HTMLElement, text: string): void {
   ele.appendChild(document.createTextNode(text));
 }
+
 function appendIcon(ele: HTMLElement, icon: string, alt?: string): void {
   if (icon.endsWith('.html')) {
     const s = icon.substring(0, icon.length - 5);
@@ -199,30 +266,35 @@ function formatValue(value: Value, formatter: ValueFormatter): string {
   return text;
 }
 
-/**
- *
- * @param ele child element whose width is to be specified in terms of number of columns
- * @param n number of columns
- */
-function setColSpan(ele: HTMLElement, n: NbrCols) {
-  ele.classList.add('col-span-' + n);
-}
+function setDisplayState(
+  ele: HTMLElement,
+  stateName: string,
+  stateValue: string | number | boolean
+): void {
+  const vt = typeof stateValue;
+  const knownOne = designedDisplayStates[stateName];
+  if (knownOne) {
+    if (knownOne !== vt) {
+      logger.error(`displayState '${stateName}' takes a ${knownOne} value but ${stateValue} is being set.
+      state value not to the view-component   `);
+      return;
+    }
+  }
 
-/**
- * mark this as a subgrid.
- * @param ele
- */
-function setAsGrid(ele: HTMLElement) {
-  ele.classList.add('grid', 'grid-cols-subgrid');
-}
+  const attName = 'data-' + stateName;
+  if (vt === 'boolean') {
+    if (stateValue) {
+      ele.setAttribute(attName, '');
+    } else {
+      ele.removeAttribute(attName);
+    }
+    return;
+  }
 
-/**
- * We use a grid-layout concept with 12 columns for the page.
- * Create the page container as a grid with 12 columns.
- * Every container element will now be a subgrid
- */
-function newPageContainer(): HTMLDivElement {
-  const ele = document.createElement('div');
-  ele.classList.add('grid', 'grid-cols-12', 'gap-4', 'w-full');
-  return ele;
+  const val = '' + stateValue; //playing it safe
+  if (val) {
+    ele.setAttribute(attName, val);
+  } else {
+    ele.removeAttribute(attName);
+  }
 }

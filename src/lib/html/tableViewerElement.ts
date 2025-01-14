@@ -11,7 +11,6 @@ import {
   FormController,
   Value,
   Markups,
-  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
@@ -76,7 +75,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
   constructor(
     public readonly fc: FormController,
     public readonly table: TableViewer,
-    maxWidth: NbrCols
+    maxWidth: number
   ) {
     super(fc, table, 'table', maxWidth);
 
@@ -117,8 +116,12 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     /**
      * we expect the header row to have just one cell. We use that for cloning
      */
-    this.headerCellEle = this.headerRowEle.children[0] as HTMLElement;
-    this.headerCellEle.remove();
+    let ele = this.headerRowEle.children[0] as HTMLElement;
+    ele.remove();
+    if (table.sortable) {
+      ele = htmlUtil.newHtmlElement('sortable-header');
+    }
+    this.headerCellEle = ele;
 
     /**
      * we expect only one cell in the only row. We use both the row and the cell for cloning
@@ -376,12 +379,12 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
       ele.setAttribute('data-align', 'right');
     }
     if (this.sortable) {
-      ele.setAttribute('data-sortable', '');
       ele.addEventListener('click', () => {
         this.sort(name);
       });
     }
-    htmlUtil.appendText(ele, label);
+    const labelEle = htmlUtil.getOptionalElement(ele, 'label') || ele;
+    htmlUtil.appendText(labelEle, label);
     this.headerRowEle.appendChild(ele);
     return ele;
   }

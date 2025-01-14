@@ -1,17 +1,16 @@
-import {
-  Button,
-  DisplaySettings,
-  FormController,
-  StaticComp,
-  NbrCols,
-} from 'simplity-types';
+import { Button, FormController, StaticComp } from 'simplity-types';
 import { BaseElement } from './baseElement';
+import { HtmlTemplateName } from './htmlUtil';
 
-const getTemplateName = (comp: StaticComp | Button): string => {
+const getTemplateName = (comp: StaticComp | Button): HtmlTemplateName | '' => {
   if (comp.compType == 'button') {
     return 'button';
   }
-  return (comp as StaticComp).compType;
+  const name = (comp as StaticComp).staticType;
+  if (name === 'custom') {
+    return '';
+  }
+  return name;
 };
 
 /**
@@ -26,7 +25,7 @@ export class LeafElement extends BaseElement {
   constructor(
     fc: FormController | undefined,
     public comp: StaticComp | Button,
-    maxWidth: NbrCols
+    maxWidth: number
   ) {
     super(fc, comp, getTemplateName(comp), maxWidth);
     /**
@@ -36,9 +35,5 @@ export class LeafElement extends BaseElement {
       this.labelEle.remove();
       this.labelEle = undefined;
     }
-  }
-
-  setDisplay(settings: DisplaySettings): void {
-    settings;
   }
 }

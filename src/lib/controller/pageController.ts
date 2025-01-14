@@ -170,7 +170,8 @@ export class PC implements PageController {
       this.fc.setData(inputValues);
       if (this.page.inputIsForUpdate) {
         this.forSave = true;
-        this.fc.setDisplay(inputNames, { isHidden: true });
+        for (const fieldName of inputNames)
+          this.fc.setDisplayState(fieldName, 'hidden', true);
         /**
          * it is possible that some parent field is also sent along with key fields.
          * in such a case, it is update if all fields are recd.

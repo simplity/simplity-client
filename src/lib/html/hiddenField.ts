@@ -1,4 +1,4 @@
-import { DataField, FormController, NbrCols, Value } from 'simplity-types';
+import { DataField, FormController, Value } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { parseToValue } from '../validation/validation';
 
@@ -6,7 +6,7 @@ export class HiddenField extends BaseElement {
   constructor(
     fc: FormController | undefined,
     public readonly field: DataField,
-    maxWidth: NbrCols,
+    maxWidth: number,
     value?: Value
   ) {
     super(fc, field, '', maxWidth);

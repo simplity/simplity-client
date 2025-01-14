@@ -9,7 +9,6 @@ import {
   DataField,
   Value,
   FormController,
-  NbrCols,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { LeafElement } from './leafElement';
@@ -23,17 +22,17 @@ import { HiddenField } from './hiddenField';
 export const elementFactory = {
   /**
    * returns an instance of the right view component, or throws an error
+   * @param fc
    * @param comp
+   * @param maxWidth max width units that the parent can accommodate. This is the actual width of the parent.
    * @param value used as the initial value if this is a field
-   * @param isColumn if true, label is not rendered for this element
-   * @param isDisabled if true for a field, the field is rendered as disabled
    * @returns view-component instance
    * @throws Error in case the type of the supplied component is not recognized
    */
   newElement(
     fc: FormController | undefined,
     comp: BaseComponent,
-    maxWidth: NbrCols,
+    maxWidth: number,
     value?: Value
   ): BaseElement {
     switch (comp.compType) {
