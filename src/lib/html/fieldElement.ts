@@ -17,6 +17,9 @@ function getTemplateName(field: DataField): HtmlTemplateName | '' {
   if (name === 'hidden' || name === 'custom') {
     return '';
   }
+  if (name === 'text-field' && field.valueType === 'date') {
+    return 'date-field';
+  }
   return name;
 }
 const NO_VALIDATION: FieldRendering[] = ['output', 'select-output'];
@@ -127,6 +130,7 @@ export class FieldElement extends BaseElement implements FieldView {
       val = this.getDefaultValue();
     }
     if (val !== undefined) {
+      console.info(`Setting default value of ${val} to field ${this.name}`);
       this.setValue(val);
       if (this.fc) {
         this.fc.valueHasChanged(this.name, val);
@@ -253,6 +257,10 @@ export class FieldElement extends BaseElement implements FieldView {
     //validate() sets value to this.value after validation)
     const isOk = this.validate();
 
+    //validation could modify the text value, in which we case we have to sync that with the view
+    if (this.textValue && this.textValue !== newValue) {
+      this.setValue(this.value);
+    }
     if (this.field.onChange) {
       this.pc.act(this.field.onChange, this.fc, { value: newValue });
     }

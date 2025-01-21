@@ -1,6 +1,7 @@
 import { Form, FormController, Panel, PanelView } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { elementFactory } from './elementFactory';
+import { htmlUtil } from './htmlUtil';
 export class PanelElement extends BaseElement implements PanelView {
   /**
    * in case this panel is associated with a child-form
@@ -37,12 +38,17 @@ export class PanelElement extends BaseElement implements PanelView {
       this.childFc = fcForChildren;
     }
 
+    if (!panel.children) {
+      this.logger.warn(`panel '${this.name}' is empty`);
+      return;
+    }
     /**
      * render children
      */
-    for (const child of this.panel.children) {
+    const container = htmlUtil.getChildElement(this.root, 'container');
+    for (const child of panel.children) {
       const ele = elementFactory.newElement(fcForChildren, child, maxWidth);
-      this.containerEle!.appendChild(ele.root);
+      container.appendChild(ele.root);
     }
     if (this.childFc) {
       this.childFc.formRendered();

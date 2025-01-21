@@ -36,7 +36,7 @@ class AppElement {
     }
     navigate(action) {
         const p = {
-            menuItem: action.menuName,
+            menuItem: action.menuItem,
             module: action.module,
             params: action.params,
         };
@@ -48,12 +48,12 @@ class AppElement {
             this.layoutEle.renderModule(p);
             return;
         }
-        if (!action.menuName) {
+        if (!action.menuItem) {
             throw this.ac.newError(`Navigation action ${action.name} has no layout/module/menu specified. navigation aborted`);
         }
-        const menu = this.ac.getMenu(action.menuName);
+        const menu = this.ac.getMenu(action.menuItem);
         if (!menu.pageName) {
-            throw this.ac.newError(`Navigation action ${action.name} specifies ${action.menuName} but that menu has not specified pageName. Navigation aborted`);
+            throw this.ac.newError(`Navigation action ${action.name} specifies ${action.menuItem} but that menu has not specified pageName. Navigation aborted`);
         }
         console.info(`requesting layout to go to page ${menu.pageName} with params:`, action.params);
         this.layoutEle.renderPage(menu.pageName, action.params);

@@ -16,3 +16,4 @@ export declare const simplityClient: {
     setLogger: (logger: Logger | undefined) => void;
     startHtmlClient: (runtime: ClientRuntime, root: HTMLElement) => import("simplity-types").AppController;
 };
+export * from './lib/html/htmlUtil';

@@ -1,9 +1,38 @@
-import { Value, ValueFormatter } from 'simplity-types';
+import { StringMap, Value, ValueFormatter } from 'simplity-types';
+import { BaseElement } from './baseElement';
+export type InitFunction = (ele: HTMLElement, view: BaseElement) => void;
+export type InitFunctions = StringMap<InitFunction>;
+/**
+ * global variable name under which the init functions are made available
+ */
+export declare const HTML_INIT_FUNCTIONS: string;
+/**
+ * display states that are designed by simplity
+ */
+declare const designedDisplayStates: {
+    readonly hidden: "boolean";
+    readonly disabled: "boolean";
+    readonly inError: "boolean";
+    /**
+     * width of this element as per column-width design for this app.
+     * for example, in a standard grid-layout design, full-width is 12.
+     *
+     */
+    readonly width: "number";
+    /**
+     * initialization function for this element
+     */
+    readonly init: "string";
+};
+type DisplayState = keyof typeof designedDisplayStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
-export declare const predefinedHtmlTemplates: readonly ["button", "check-box", "content", "dialog", "image-field", "image", "layout", "line", "list", "menu-group", "menu-item", "output", "page", "page-panel", "panel-grid", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
+export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "date-field", "dialog", "image-field", "image", "layout", "line", "list", "menu-group", "menu-item", "output", "page", "page-panel", "panel-grid", "panel-flex", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
+export declare const dataAttributeNames: readonly ["full", "id"];
+export declare const childElementIds: readonly ["add-button", "buttons", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "middle", "page", "right", "row", "rows", "search", "table", "title"];
+export type ChildElementId = (typeof childElementIds)[number];
 export declare const htmlUtil: {
     /**
      * removes all children of an html element using child.remove() method
@@ -73,8 +102,19 @@ export declare const htmlUtil: {
      * @param value    value as per the design of this attribute.
      */
     setDisplayState: typeof setDisplayState;
+    /**
+     * get the value of a display state.
+     * @returns undefined if the state is not set at all,
+     *  true if the attribute is set, but with no value, or ="" or with the the name of the attribute itself
+     * string otherwise
+     */
+    getDisplayState: typeof getDisplayState;
+    /**
+     * initialize an html element
+     */
+    initHtmlEle: typeof initHtmlEle;
 };
-declare function getOptionalElement(rootEle: HTMLElement, id: string): HTMLElement | undefined;
+declare function getOptionalElement(rootEle: HTMLElement, id: ChildElementId | string): HTMLElement | undefined;
 declare function getChildElement(rootEle: HTMLElement, id: string): HTMLElement;
 declare function newHtmlElement(name: HtmlTemplateName): HTMLElement;
 declare function newElement(name: string): HTMLElement;
@@ -83,5 +123,7 @@ declare function appendText(ele: HTMLElement, text: string): void;
 declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
 declare function formatValue(value: Value, formatter: ValueFormatter): string;
-declare function setDisplayState(ele: HTMLElement, stateName: string, stateValue: string | number | boolean): void;
+declare function getDisplayState(ele: HTMLElement, stateName: string): string | boolean | undefined;
+declare function setDisplayState(ele: HTMLElement, stateName: DisplayState | string, stateValue: string | number | boolean): void;
+declare function initHtmlEle(ele: HTMLElement, view: BaseElement): void;
 export {};

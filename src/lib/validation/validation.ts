@@ -11,7 +11,7 @@ export const DEFAULT_MAX_NUMBER = Number.MAX_SAFE_INTEGER;
 export const DEFAULT_NBR_DECIMALS = 2;
 
 const DEFAULT_FACTOR = 10 ** DEFAULT_NBR_DECIMALS;
-const NUMBER_REGEX = /^-?\d*\.?\d*$/;
+const NUMBER_REGEX = /^[+-]?(\d+(\.\d*)?|\.\d+)$/;
 const DATE_REGEX = /^\d\d\d\d-\d\d-\d\d$/;
 const TIME_REGEX = /^T\d\d:\d\d:\d\d\.\d\d\dZ$/;
 
@@ -66,10 +66,11 @@ export function parseToValue(
       return parseBoolean(text);
 
     case 'date':
-      if (parseDate(text) === undefined) {
-        return undefined;
+      const d = parseDate(text);
+      if (d) {
+        return d.toISOString().substring(0, 10);
       }
-      return text;
+      return undefined;
 
     case 'decimal':
     case 'integer':
@@ -327,35 +328,41 @@ function validateBoolean(value: string): ValueValidationResult {
 
 function validateDate(
   schema: SchemaForDate,
-  value: Value
+  value: string
 ): ValueValidationResult {
-  const str = (value + '').trim();
-  if (!DATE_REGEX.test(str)) {
+  /**
+   * Design Note:
+   * For a data-type = 'date', time zone is not applicable.
+   * Unfortunately, both Java and Javascript created huge confusion with the definition of Date as  number of milliseconds
+   * For all we care, it could have been number of days from 1960-jan-01.
+   * Java fixed it later, but JS still has the same issue.
+   *
+   * We follow this simple convention for "pure dates":
+   * 1. Today means the date as per local time zone, not the date as per UTC.
+   * 2. Date object should always be in UTC, and not in local time zone.
+   * 3. If we have to render the date, we ensure that we get YYYY-MM-DD from the UTC and render the date part accordingly.
+   *  This looks like an unnecessary complexity, but it is worth it.
+   *
+   * e.g.
+   * if it is 2 AM IST on 20-Jan-25 (+5:30), the date Object to be created is "2025-01-20T00.00.00.000Z".
+   * Similarly, if the date object is "2025-01-20T00.00.00.000Z", the date-part to be rendered is "2025-01-20",
+   * Of course it could be 20/01/2025, 20-Jan-2025 etc... But we do not render anything about time, or time zone.
+   *
+   *
+   */
+  const date = parseDate(value);
+  if (date === undefined) {
     return DATE_ERROR;
   }
-  const yyyy = Number.parseInt(str.substring(0, 4), 10);
-  const mm = Number.parseInt(str.substring(5, 7), 10) - 1; //month index
-  const dd = Number.parseInt(str.substring(8, 10), 10);
-  const dateMs = Date.UTC(yyyy, mm, dd);
-  const date = new Date(dateMs);
 
-  if (
-    dd !== date.getDate() ||
-    mm !== date.getMonth() ||
-    yyyy !== date.getFullYear()
-  ) {
-    return DATE_ERROR;
-  }
-
-  //get local date
+  const ms = date.valueOf();
   const now = new Date();
-  const nowYear = now.getFullYear();
-  const nowMon = now.getMonth();
-  const nowDate = now.getDate();
-
+  const localY = now.getFullYear();
+  const localM = now.getMonth();
+  const localD = now.getDate();
   //Date constructor allows us to just add days to get the desired date object
-  let refMs = Date.UTC(nowYear, nowMon, nowDate + schema.minValue);
-  if (dateMs < refMs) {
+  let refMs = Date.UTC(localY, localM, localD + schema.minValue);
+  if (ms < refMs) {
     return {
       messages: [
         {
@@ -367,8 +374,8 @@ function validateDate(
     };
   }
 
-  refMs = Date.UTC(nowYear, nowMon, nowDate + schema.maxValue);
-  if (dateMs > refMs) {
+  refMs = Date.UTC(localY, localM, localD + schema.maxValue);
+  if (ms > refMs) {
     return {
       messages: [
         {
@@ -380,13 +387,21 @@ function validateDate(
     };
   }
   // note that we use date-string as the value for date fields
-  return { value: str };
+  return { value: date.toISOString().substring(0, 10) };
 }
 
 function validateTimestamp(
   schema: SchemaForDate,
   value: Value
 ): ValueValidationResult {
+  /**
+   * time-stamp is ALWAYS in UTC, and treated that way.
+   * For rendering, we will use local-date-time formatting.
+   * VERY IMPORTANT: We try our best to avoid rendering a time-stamp as just date.
+   * We try and push the server to send us the date as a separate field, if that makes sense from the business perspective.
+   * However, if it is really required, we very clearly document the meaning of the date as
+   *  1. As per local time-zone or 2. as per UTC.
+   */
   const valueStr = (value + '').trim();
   if (valueStr.length !== 24) {
     return STAMP_ERROR;
@@ -447,15 +462,29 @@ function parseNumber(text: string): number | undefined {
 }
 
 function parseDate(text: string): Date | undefined {
-  const str = (text + '').trim();
+  const str = text.trim();
+  if (NUMBER_REGEX.test(str)) {
+    //date is given as number of days relative to today
+    let nbr = Number.parseFloat(str);
+    if (Number.isNaN(nbr)) {
+      return undefined;
+    }
+    nbr = Math.round(nbr);
+    //get local year, month and date, and construct a date relative to these
+    //get the local-date object as per our standard
+    const now = new Date();
+    return new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + nbr)
+    );
+  }
+
   if (!DATE_REGEX.test(str)) {
     return undefined;
   }
   const yyyy = Number.parseInt(str.substring(0, 4), 10);
   const mm = Number.parseInt(str.substring(5, 7), 10) - 1; //month index
   const dd = Number.parseInt(str.substring(8, 10), 10);
-  const dateMs = Date.UTC(yyyy, mm, dd);
-  const date = new Date(dateMs);
+  const date = new Date(Date.UTC(yyyy, mm, dd));
 
   if (
     dd === date.getDate() &&

@@ -402,9 +402,9 @@ export class ReportConfigurator {
     }; /* as Panel */
 
     //add the listOptions to the two fields
-    let field = (panel.children[2] as Panel).children[0] as DataField;
+    let field = (panel.children![2] as Panel).children![0] as DataField;
     field.listOptions = this.fieldsList;
-    field = (panel.children[3] as Panel).children[0] as DataField;
+    field = (panel.children![3] as Panel).children![0] as DataField;
     field.listOptions = this.fieldsList;
     if (this.table.reportName) {
       const variantField = {

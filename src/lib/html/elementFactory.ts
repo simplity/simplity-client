@@ -9,6 +9,7 @@ import {
   DataField,
   Value,
   FormController,
+  ButtonPanel,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { LeafElement } from './leafElement';
@@ -18,6 +19,7 @@ import { TabsElement } from './tabsElement';
 import { TableViewerElement } from './tableViewerElement';
 import { TableEditorElement } from './tableEditorElement';
 import { HiddenField } from './hiddenField';
+import { ButtonPanelElement } from './buttonPanel';
 
 export const elementFactory = {
   /**
@@ -49,6 +51,9 @@ export const elementFactory = {
 
       case 'panel':
         return new PanelElement(fc, comp as Panel, maxWidth);
+
+      case 'buttonPanel':
+        return new ButtonPanelElement(fc, comp as ButtonPanel, maxWidth);
 
       case 'tabs':
         return new TabsElement(fc, comp as Tabs, maxWidth);

@@ -1,4 +1,4 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, NavigationAction, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType } from 'simplity-types';
+import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, NavigationAction, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, FormController, PageController } from 'simplity-types';
 export declare class AC implements AppController {
     /**
      * This is the root html element for this app.
@@ -34,6 +34,8 @@ export declare class AC implements AppController {
      * can be a dummy for testing/demo version
      */
     private readonly agent;
+    private readonly onPageLoadFn?;
+    private readonly onFormRenderFn?;
     /**
      * all parameters are assumed to be valid.
      * No error handling for any possible invalid parameters
@@ -47,6 +49,8 @@ export declare class AC implements AppController {
      * This is the root html element for this app.
      */
     appView: AppView);
+    pageLoaded(pc: PageController): void;
+    formRendered(fc: FormController): void;
     private createValidationFns;
     newWindow(url: string): void;
     closePopup(): void;

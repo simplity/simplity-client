@@ -72,7 +72,7 @@ export declare class FC implements FormController {
     endOfTab(): void;
     endOfTabGroup(): void;
     formRendered(): void;
-    getChild(name: string): BaseView | undefined;
+    getChildren(): StringMap<BaseView>;
     newTableViewerController(view: TableViewerView): TableViewerController;
     newTableEditorController(view: TableEditorView): TableEditorController;
     newFormController(name: string, form?: Form, data?: Vo): FormController;
@@ -87,7 +87,7 @@ export declare class FC implements FormController {
     private setValueToChild;
     setFieldValue(fieldName: string, value: Value): void;
     getFieldValue(fieldName: string): Value | undefined;
-    getChildView(name: string): BaseView | undefined;
+    getChild(name: string): BaseView | undefined;
     isValid(): boolean;
     validate(): boolean;
     setModifiedStatus(isModified: boolean): void;

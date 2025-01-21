@@ -7,6 +7,7 @@ import {
   BaseView,
   FormController,
   PageController,
+  Panel,
 } from 'simplity-types';
 
 const DEFAULT_WIDTH = 4;
@@ -28,10 +29,6 @@ export class BaseElement implements BaseView {
   protected readonly inputEle?: HTMLInputElement;
 
   protected labelEle?: HTMLElement;
-  /**
-   * if this is a container-type of element, like a panel, or tab
-   */
-  protected readonly containerEle?: HTMLElement;
 
   public readonly name: string;
   /**
@@ -76,13 +73,26 @@ export class BaseElement implements BaseView {
       this.root = htmlUtil.newHtmlElement(templateName);
     }
 
-    this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
-
+    /**
+     * set colSpan if maxWidth if parent has specified max-width
+     */
     if (maxWidth !== 0) {
-      /**
-       * colSpan for this element. Default for container is full
-       */
-      let width = comp.width || (this.containerEle ? maxWidth : DEFAULT_WIDTH);
+      let width = comp.width;
+      if (width === undefined) {
+        //default for a normal panel is 'full'
+        if (
+          comp.compType === 'panel' &&
+          (comp as Panel).panelType === undefined
+        ) {
+          width = maxWidth;
+        } else if (htmlUtil.getDisplayState(this.root, 'full') !== undefined) {
+          //the html root has signalled that it wants full width
+          width = maxWidth;
+        } else {
+          width = DEFAULT_WIDTH;
+        }
+      }
+
       if (width > maxWidth) {
         this.logger
           .error(`Page element '${this.name}' specifies a width of ${width} but the max possible width is only ${maxWidth};
@@ -114,6 +124,7 @@ export class BaseElement implements BaseView {
         );
       }
     }
+    htmlUtil.initHtmlEle(this.root, this);
   }
 
   /**

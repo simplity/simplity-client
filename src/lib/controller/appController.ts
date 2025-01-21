@@ -24,6 +24,10 @@ import {
   ValueType,
   FunctionType,
   ValueSchema,
+  FormController,
+  PageController,
+  PageFunction,
+  FormFunction,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
@@ -99,6 +103,9 @@ export class AC implements AppController {
    * can be a dummy for testing/demo version
    */
   private readonly agent: ServiceAgent;
+
+  private readonly onPageLoadFn?: PageFunction;
+  private readonly onFormRenderFn?: FormFunction;
   /**
    * all parameters are assumed to be valid.
    * No error handling for any possible invalid parameters
@@ -143,6 +150,28 @@ export class AC implements AppController {
 
     this.allMenus = runtime.menuItems || {};
     this.validationFns = this.createValidationFns(runtime.valueSchemas);
+
+    if (runtime.onPageLoadAction) {
+      this.onPageLoadFn = this.getFn(runtime.onPageLoadAction, 'page')
+        .fn as PageFunction;
+    }
+
+    if (runtime.onFormRenderAction) {
+      this.onFormRenderFn = this.getFn(runtime.onFormRenderAction, 'form')
+        .fn as FormFunction;
+    }
+  }
+
+  pageLoaded(pc: PageController): void {
+    if (this.onPageLoadFn) {
+      this.onPageLoadFn(pc, undefined, []);
+    }
+  }
+
+  formRendered(fc: FormController): void {
+    if (this.onFormRenderFn) {
+      this.onFormRenderFn(fc, undefined, []);
+    }
   }
 
   private createValidationFns(

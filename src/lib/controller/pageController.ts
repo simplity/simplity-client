@@ -180,6 +180,11 @@ export class PC implements PageController {
       }
     }
 
+    /**
+     * any global init function ?
+     */
+    this.ac.pageLoaded(this);
+
     if (this.page.onLoadActions) {
       if (this.page.inputIsForUpdate && inputNames.length === 0) {
         // onload is meant only for update mode. onload not triggered if this is not for update but "save" or "new"
@@ -553,7 +558,7 @@ export class PC implements PageController {
       if (!enable) {
         continue;
       }
-      const control = this.fc.getChildView(btn.name);
+      const control = this.fc.getChild(btn.name);
       if (!control) {
         continue;
       }
@@ -675,6 +680,9 @@ export class PC implements PageController {
     p.activeActions[actionName] = true;
 
     switch (action.type) {
+      case 'close':
+        throw new Error('Close action is not implemented yet');
+
       case 'function':
         const functionName = (action as FunctionAction).functionName;
         /**
@@ -829,7 +837,7 @@ export class PC implements PageController {
     }
 
     if (action.retainCurrentPage) {
-      if (!action.menuName) {
+      if (!action.menuItem) {
         addMessage(
           `Action ${action.name} requires that the current page be retained,
             but does not specify the menu item to be used to open a new page`,

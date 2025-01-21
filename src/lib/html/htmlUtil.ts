@@ -1,28 +1,47 @@
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
-import { Value, ValueFormatter } from 'simplity-types';
+import { StringMap, Value, ValueFormatter } from 'simplity-types';
+import { BaseElement } from './baseElement';
 
+export type InitFunction = (ele: HTMLElement, view: BaseElement) => void;
+export type InitFunctions = StringMap<InitFunction>;
+
+/**
+ * name under which global init functions are available in the window
+ */
+declare const _html_init_functions: InitFunctions;
+/**
+ * global variable name under which the init functions are made available
+ */
+export const HTML_INIT_FUNCTIONS: string = '_html_init_functions';
 /**
  * display states that are designed by simplity
  */
-const designedDisplayStates: { [name: string]: string } = {
+const designedDisplayStates = {
   hidden: 'boolean',
   disabled: 'boolean',
   inError: 'boolean',
   /**
    * width of this element as per column-width design for this app.
    * for example, in a standard grid-layout design, full-width is 12.
+   *
    */
   width: 'number',
-};
-
+  /**
+   * initialization function for this element
+   */
+  init: 'string',
+} as const;
+type DisplayState = keyof typeof designedDisplayStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
 export const predefinedHtmlTemplates = [
   'button',
+  'button-panel',
   'check-box',
   'content',
+  'date-field',
   'dialog',
   'image-field',
   'image',
@@ -35,6 +54,7 @@ export const predefinedHtmlTemplates = [
   'page',
   'page-panel',
   'panel-grid',
+  'panel-flex',
   'panel',
   'password',
   'select-output',
@@ -51,6 +71,30 @@ export const predefinedHtmlTemplates = [
 
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 
+export const dataAttributeNames = ['full', 'id'] as const;
+export const childElementIds = [
+  'add-button',
+  'buttons',
+  'data',
+  'container',
+  'error',
+  'field',
+  'full',
+  'header',
+  'label',
+  'left',
+  'list-config',
+  'menu-bar',
+  'middle',
+  'page',
+  'right',
+  'row',
+  'rows',
+  'search',
+  'table',
+  'title',
+] as const;
+export type ChildElementId = (typeof childElementIds)[number];
 /**
  * caching the templates that are already created
  */
@@ -133,11 +177,24 @@ export const htmlUtil = {
    * @param value    value as per the design of this attribute.
    */
   setDisplayState,
+
+  /**
+   * get the value of a display state.
+   * @returns undefined if the state is not set at all,
+   *  true if the attribute is set, but with no value, or ="" or with the the name of the attribute itself
+   * string otherwise
+   */
+  getDisplayState,
+
+  /**
+   * initialize an html element
+   */
+  initHtmlEle,
 };
 
 function getOptionalElement(
   rootEle: HTMLElement,
-  id: string
+  id: ChildElementId | string
 ): HTMLElement | undefined {
   const ele = rootEle.querySelector(`[data-id="${id}"]`) as HTMLElement;
   if (ele) {
@@ -266,13 +323,29 @@ function formatValue(value: Value, formatter: ValueFormatter): string {
   return text;
 }
 
+function getDisplayState(
+  ele: HTMLElement,
+  stateName: string
+): string | boolean | undefined {
+  const attr = 'data-' + stateName;
+  const val = ele.getAttribute(attr);
+  if (val === null) {
+    return undefined;
+  }
+  //booleans could be set with no value, or to the name of the attribute itself!!
+  if (val === '' || val === attr) {
+    return true;
+  }
+  return val;
+}
+
 function setDisplayState(
   ele: HTMLElement,
-  stateName: string,
+  stateName: DisplayState | string,
   stateValue: string | number | boolean
 ): void {
   const vt = typeof stateValue;
-  const knownOne = designedDisplayStates[stateName];
+  const knownOne = designedDisplayStates[stateName as DisplayState];
   if (knownOne) {
     if (knownOne !== vt) {
       logger.error(`displayState '${stateName}' takes a ${knownOne} value but ${stateValue} is being set.
@@ -296,5 +369,23 @@ function setDisplayState(
     ele.setAttribute(attName, val);
   } else {
     ele.removeAttribute(attName);
+  }
+}
+
+function initHtmlEle(ele: HTMLElement, view: BaseElement) {
+  if (!_html_init_functions) {
+    return;
+  }
+  /**
+   * does this html require custom initialization?
+   */
+  const att = htmlUtil.getDisplayState(ele, 'init');
+  if (!att) {
+    return;
+  }
+
+  const fn = _html_init_functions['' + att];
+  if (fn) {
+    fn(ele, view);
   }
 }

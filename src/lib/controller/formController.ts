@@ -254,10 +254,15 @@ export class FC implements FormController {
         this.pc.getList(fieldView, value);
       });
     }
+
+    /**
+     * all app-specific hook onFormRender
+     */
+    this.ac.formRendered(this);
   }
 
-  getChild(name: string): BaseView | undefined {
-    return this.children[name];
+  getChildren(): StringMap<BaseView> {
+    return this.children;
   }
 
   newTableViewerController(view: TableViewerView): TableViewerController {
@@ -307,9 +312,6 @@ export class FC implements FormController {
     eventName: EventName,
     eventFn: EventHandler
   ): void {
-    console.info(
-      `adding a listener to field ${viewName} for event ${eventName}`
-    );
     let viewListeners = this.listeners[viewName];
     if (!viewListeners) {
       viewListeners = {};
@@ -403,9 +405,6 @@ export class FC implements FormController {
         value = '';
       }
       this.data[name] = value;
-      if (name === 'comparator') {
-        console.info(`comparator set to ${value}`);
-      }
       this.setValueToChild(name, value);
     }
   }
@@ -513,9 +512,6 @@ export class FC implements FormController {
       value = '';
     }
     this.data[fieldName] = value;
-    if (fieldName === 'comparator') {
-      console.info(`setFieldValue for comparator = ${value}`);
-    }
     const fieldView = this.fieldViews[fieldName];
     if (fieldView) {
       (fieldView as FieldView).setValue(value);
@@ -526,7 +522,7 @@ export class FC implements FormController {
     return this.data[fieldName] as Value;
   }
 
-  getChildView(name: string): BaseView | undefined {
+  getChild(name: string): BaseView | undefined {
     return this.children[name];
   }
 
@@ -616,9 +612,6 @@ export class FC implements FormController {
     newValidity?: boolean
   ): void {
     this.data[fieldName] = newValue;
-    console.info(
-      `valueHasChanged() triggered for field "${fieldName}" with new value ="${newValue}" and new validity=${newValidity}`
-    );
 
     //if this validity has changed to false, then we have to set allOk to false
     if (newValidity !== undefined && newValidity === false) {

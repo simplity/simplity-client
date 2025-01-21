@@ -1,5 +1,6 @@
 import {
   Alert,
+  ButtonPanel,
   FormController,
   Page,
   PageController,
@@ -9,14 +10,14 @@ import {
 import { htmlUtil } from './htmlUtil';
 import { PanelElement } from './panelElement';
 import { app } from '../controller/app';
-import { LeafElement } from './leafElement';
+import { elementFactory } from './elementFactory';
 //import { loggerStub } from '../logger-stub/logger';
 //const logger = loggerStub.getLogger();
 const NBR_COLS_IN_GRID = 12;
 
 export class PageElement implements PageView {
   private readonly titleEle?: HTMLElement;
-  private readonly buttonsEle: HTMLElement;
+  // private readonly buttonsEle: HTMLElement;
   private readonly pc: PageController;
   private readonly fc: FormController;
   public readonly root: HTMLElement;
@@ -29,14 +30,14 @@ export class PageElement implements PageView {
 
     this.titleEle = htmlUtil.getOptionalElement(this.root, 'title');
     const dataContainer = htmlUtil.getChildElement(this.root, 'data');
-    this.buttonsEle = htmlUtil.getChildElement(this.root, 'buttons');
+    const buttonsEle = htmlUtil.getChildElement(this.root, 'buttons');
     /**
      * are we to put buttons above data-panel?
      */
     if (page.renderButtonsBeforeData) {
-      this.buttonsEle.remove();
+      buttonsEle.remove();
       const ele = dataContainer.parentElement!;
-      ele.insertBefore(this.buttonsEle, ele.firstChild);
+      ele.insertBefore(buttonsEle, ele.firstChild);
     }
 
     this.pc = app.newPc(this);
@@ -63,25 +64,28 @@ export class PageElement implements PageView {
       this.titleEle.textContent = title + (this.page.titleSuffix || '');
     }
 
-    /**
-     * we are yet to design left-centre-right buttons. We merge them into one group
-     */
-    const buttons = [
-      ...(page.leftButtons || []),
-      ...(page.middleButtons || []),
-      ...(page.rightButtons || []),
-    ];
-    if (buttons.length) {
-      for (const button of buttons) {
-        const ele = new LeafElement(this.fc, button, NBR_COLS_IN_GRID);
-        this.buttonsEle.appendChild(ele.root);
-      }
+    if (page.leftButtons || page.middleButtons || page.rightButtons) {
+      const buttonPanel: ButtonPanel = {
+        name: page.name + '_Buttons',
+        compType: 'buttonPanel',
+        leftButtons: page.leftButtons,
+        middleButtons: page.middleButtons,
+        rightButtons: page.rightButtons,
+      };
+      const ele = elementFactory.newElement(
+        this.fc,
+        buttonPanel,
+        NBR_COLS_IN_GRID
+      );
+      buttonsEle.appendChild(ele.root);
     }
 
     this.pc.pageRendered();
-    this.pc.pageLoaded();
   }
 
+  pageLoaded(): void {
+    this.pc.pageLoaded();
+  }
   showButtons(toShow: boolean): void {
     toShow;
   }

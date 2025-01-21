@@ -24,10 +24,6 @@ export declare class BaseElement implements BaseView {
      */
     protected readonly inputEle?: HTMLInputElement;
     protected labelEle?: HTMLElement;
-    /**
-     * if this is a container-type of element, like a panel, or tab
-     */
-    protected readonly containerEle?: HTMLElement;
     readonly name: string;
     /**
      * root of the html element that this controller manages.

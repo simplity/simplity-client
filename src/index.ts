@@ -32,3 +32,5 @@ export const simplityClient = {
     return app.getCurrentAc();
   },
 };
+
+export * from './lib/html/htmlUtil';
