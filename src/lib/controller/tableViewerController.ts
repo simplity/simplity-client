@@ -61,7 +61,7 @@ export class TWC implements TableViewerController {
    */
   private selectedNames?: string[];
 
-  //private currentIdx: number = -1;
+  private currentIdx: number = -1;
   /**
    * important to note that this constructor is called from the constructor of tableView.
    * TableView MAY NOT be rendered fully. Hence instance of tableView should not be used to invoke any of its methods inside this constructor
@@ -83,6 +83,13 @@ export class TWC implements TableViewerController {
       this.form = this.ac.getForm(formName);
     }
     this.info = new TableInfo(this.table);
+  }
+
+  getRowData(rowIdx?: number): Vo | undefined {
+    if (rowIdx === undefined) {
+      rowIdx = this.currentIdx === -1 ? 0 : this.currentIdx;
+    }
+    return this.data[rowIdx];
   }
 
   public getFormName() {
@@ -155,10 +162,13 @@ export class TWC implements TableViewerController {
     if (idx === undefined) {
       return;
     }
-    //this.currentIdx = idx;
+    this.currentIdx = idx;
 
     this.info.currentRowIdx = idx;
     if (this.table.onRowClick) {
+      console.info(
+        `row ${idx} clicked. Going to act on ${this.table.onRowClick}`
+      );
       this.pc.act(this.table.onRowClick, undefined, this.data[idx]);
     }
   }

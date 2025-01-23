@@ -85,7 +85,7 @@ export class BaseElement implements BaseView {
           (comp as Panel).panelType === undefined
         ) {
           width = maxWidth;
-        } else if (htmlUtil.getDisplayState(this.root, 'full') !== undefined) {
+        } else if (htmlUtil.getViewState(this.root, 'full') !== undefined) {
           //the html root has signalled that it wants full width
           width = maxWidth;
         } else {
@@ -99,7 +99,7 @@ export class BaseElement implements BaseView {
         Page may not render properly`);
         width = maxWidth;
       }
-      htmlUtil.setDisplayState(this.root, 'width', width);
+      htmlUtil.setViewState(this.root, 'width', width);
     }
 
     if (fc) {
@@ -135,7 +135,7 @@ export class BaseElement implements BaseView {
     this.logger.warn(
       `component type ${this.comp.compType} has not implemented setError(), but a request is received with value="${msg}"`
     );
-    htmlUtil.setDisplayState(this.root, 'error', msg !== undefined);
+    htmlUtil.setViewState(this.root, 'error', msg !== undefined);
   }
 
   setDisplayState(
@@ -148,7 +148,7 @@ export class BaseElement implements BaseView {
     if (stateName === 'disabled' && this.inputEle) {
       this.inputEle.disabled = !!stateValue;
     }
-    htmlUtil.setDisplayState(this.root, stateName, stateValue);
+    htmlUtil.setViewState(this.root, stateName, stateValue);
   }
 
   clicked() {

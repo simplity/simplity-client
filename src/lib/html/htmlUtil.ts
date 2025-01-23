@@ -17,22 +17,53 @@ export const HTML_INIT_FUNCTIONS: string = '_html_init_functions';
 /**
  * display states that are designed by simplity
  */
-const designedDisplayStates = {
-  hidden: 'boolean',
+const viewStates = {
+  /**
+   * true/false. Generally used for input fields.
+   * However, we should be able to use it for wrapper elements that contain input fields
+   */
   disabled: 'boolean',
+
+  /**
+   * used by the template to mark that the element would like to set its width to all it can
+   */
+  full: 'boolean',
+
+  /**
+   * id is meant for the template to identify sub-elements
+   * e.g. data-id="row" for a tr element etc..
+   */
+  id: 'string',
+
+  /**
+   * generally meant for input field, but may be used for a wrapper that contain input fields
+   */
   inError: 'boolean',
+
+  /**
+   * index of the element within its parent array.
+   * e.g. for a tr-element, this is the idx into the data-array that this tr is rendering from
+   */
+  idx: 'number',
+
+  /**
+   * true/false to show/hide an element
+   */
+  hidden: 'boolean',
+
   /**
    * width of this element as per column-width design for this app.
    * for example, in a standard grid-layout design, full-width is 12.
    *
    */
   width: 'number',
+
   /**
    * initialization function for this element
    */
   init: 'string',
 } as const;
-type DisplayState = keyof typeof designedDisplayStates;
+type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
@@ -71,6 +102,9 @@ export const predefinedHtmlTemplates = [
 
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 
+/**
+ * data-* attribute used by our app
+ */
 export const dataAttributeNames = ['full', 'id'] as const;
 export const childElementIds = [
   'add-button',
@@ -169,14 +203,14 @@ export const htmlUtil = {
   formatValue,
 
   /**
-   * Set the display-state of this element to the desired value.
+   * Set the View-state of this element to the desired value.
    *
    * @param ele
    * @param stateName  must be a valid name as per the design specification for the app
    *
    * @param value    value as per the design of this attribute.
    */
-  setDisplayState,
+  setViewState,
 
   /**
    * get the value of a display state.
@@ -184,7 +218,7 @@ export const htmlUtil = {
    *  true if the attribute is set, but with no value, or ="" or with the the name of the attribute itself
    * string otherwise
    */
-  getDisplayState,
+  getViewState,
 
   /**
    * initialize an html element
@@ -323,7 +357,7 @@ function formatValue(value: Value, formatter: ValueFormatter): string {
   return text;
 }
 
-function getDisplayState(
+function getViewState(
   ele: HTMLElement,
   stateName: string
 ): string | boolean | undefined {
@@ -339,13 +373,13 @@ function getDisplayState(
   return val;
 }
 
-function setDisplayState(
+function setViewState(
   ele: HTMLElement,
-  stateName: DisplayState | string,
+  stateName: ViewState | string,
   stateValue: string | number | boolean
 ): void {
   const vt = typeof stateValue;
-  const knownOne = designedDisplayStates[stateName as DisplayState];
+  const knownOne = viewStates[stateName as ViewState];
   if (knownOne) {
     if (knownOne !== vt) {
       logger.error(`displayState '${stateName}' takes a ${knownOne} value but ${stateValue} is being set.
@@ -379,7 +413,7 @@ function initHtmlEle(ele: HTMLElement, view: BaseElement) {
   /**
    * does this html require custom initialization?
    */
-  const att = htmlUtil.getDisplayState(ele, 'init');
+  const att = htmlUtil.getViewState(ele, 'init');
   if (!att) {
     return;
   }

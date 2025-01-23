@@ -650,7 +650,6 @@ export class FC implements FormController {
     }
 
     for (const handler of eventListeners) {
-      console.log(`Triggering Event '${evt.eventName}' : `, handler);
       if (typeof handler === 'string') {
         this.act(handler, evt.params);
       } else {
