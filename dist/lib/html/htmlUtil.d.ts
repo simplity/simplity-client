@@ -9,10 +9,34 @@ export declare const HTML_INIT_FUNCTIONS: string;
 /**
  * display states that are designed by simplity
  */
-declare const designedDisplayStates: {
-    readonly hidden: "boolean";
+declare const viewStates: {
+    /**
+     * true/false. Generally used for input fields.
+     * However, we should be able to use it for wrapper elements that contain input fields
+     */
     readonly disabled: "boolean";
+    /**
+     * used by the template to mark that the element would like to set its width to all it can
+     */
+    readonly full: "boolean";
+    /**
+     * id is meant for the template to identify sub-elements
+     * e.g. data-id="row" for a tr element etc..
+     */
+    readonly id: "string";
+    /**
+     * generally meant for input field, but may be used for a wrapper that contain input fields
+     */
     readonly inError: "boolean";
+    /**
+     * index of the element within its parent array.
+     * e.g. for a tr-element, this is the idx into the data-array that this tr is rendering from
+     */
+    readonly idx: "number";
+    /**
+     * true/false to show/hide an element
+     */
+    readonly hidden: "boolean";
     /**
      * width of this element as per column-width design for this app.
      * for example, in a standard grid-layout design, full-width is 12.
@@ -24,12 +48,15 @@ declare const designedDisplayStates: {
      */
     readonly init: "string";
 };
-type DisplayState = keyof typeof designedDisplayStates;
+type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
 export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "date-field", "dialog", "image-field", "image", "layout", "line", "list", "menu-group", "menu-item", "output", "page", "page-panel", "panel-grid", "panel-flex", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
+/**
+ * data-* attribute used by our app
+ */
 export declare const dataAttributeNames: readonly ["full", "id"];
 export declare const childElementIds: readonly ["add-button", "buttons", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "middle", "page", "right", "row", "rows", "search", "table", "title"];
 export type ChildElementId = (typeof childElementIds)[number];
@@ -94,21 +121,21 @@ export declare const htmlUtil: {
      */
     formatValue: typeof formatValue;
     /**
-     * Set the display-state of this element to the desired value.
+     * Set the View-state of this element to the desired value.
      *
      * @param ele
      * @param stateName  must be a valid name as per the design specification for the app
      *
      * @param value    value as per the design of this attribute.
      */
-    setDisplayState: typeof setDisplayState;
+    setViewState: typeof setViewState;
     /**
      * get the value of a display state.
      * @returns undefined if the state is not set at all,
      *  true if the attribute is set, but with no value, or ="" or with the the name of the attribute itself
      * string otherwise
      */
-    getDisplayState: typeof getDisplayState;
+    getViewState: typeof getViewState;
     /**
      * initialize an html element
      */
@@ -123,7 +150,7 @@ declare function appendText(ele: HTMLElement, text: string): void;
 declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
 declare function formatValue(value: Value, formatter: ValueFormatter): string;
-declare function getDisplayState(ele: HTMLElement, stateName: string): string | boolean | undefined;
-declare function setDisplayState(ele: HTMLElement, stateName: DisplayState | string, stateValue: string | number | boolean): void;
+declare function getViewState(ele: HTMLElement, stateName: string): string | boolean | undefined;
+declare function setViewState(ele: HTMLElement, stateName: ViewState | string, stateValue: string | number | boolean): void;
 declare function initHtmlEle(ele: HTMLElement, view: BaseElement): void;
 export {};

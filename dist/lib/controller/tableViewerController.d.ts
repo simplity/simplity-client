@@ -41,6 +41,7 @@ export declare class TWC implements TableViewerController {
      * selected columns, if user has chosen a subset of columns
      */
     private selectedNames?;
+    private currentIdx;
     /**
      * important to note that this constructor is called from the constructor of tableView.
      * TableView MAY NOT be rendered fully. Hence instance of tableView should not be used to invoke any of its methods inside this constructor
@@ -48,6 +49,7 @@ export declare class TWC implements TableViewerController {
      * @param view
      */
     constructor(fc: FormController, view: TableViewerView);
+    getRowData(rowIdx?: number): Vo | undefined;
     getFormName(): string | undefined;
     createConfig(): {
         panel: Panel;

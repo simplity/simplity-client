@@ -93,7 +93,7 @@ export class LayoutElement implements LayoutView {
     const module = this.getInitialModule(mn);
     const menu = this.getInitialMenu(module, params.menuItem);
     if (menu.pageName) {
-      this.renderPage(menu.pageName);
+      this.renderPage(menu.pageName, params.params);
     } else {
       throw new Error(
         this.reportError(

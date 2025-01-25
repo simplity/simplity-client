@@ -103,23 +103,6 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
      */
     this.dataRowEle = htmlUtil.getChildElement(this.root, 'row');
 
-    /**
-     * Controller needs to know WHENEVER a row is clicked.
-     * as a minimum, the controller has to track "current row"
-     */
-    this.dataRowEle.addEventListener('click', (evt) => {
-      const str = htmlUtil.getViewState(evt.target as HTMLElement, 'idx');
-      const idx = +('' + str);
-      if (Number.isNaN(idx)) {
-        this.logger.error(
-          `Design error. data-idx for tr is non-numeric`,
-          evt.target
-        );
-        return;
-      }
-      this.twc.rowClicked(idx);
-    });
-
     this.searchEle = htmlUtil.getOptionalElement(
       this.root,
       'search'
@@ -377,6 +360,23 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
   private addTr(idx: number): HTMLElement {
     const ele = this.dataRowEle.cloneNode(true) as HTMLElement;
     ele.setAttribute('data-idx', idx.toString());
+    /**
+     * Controller needs to know WHENEVER a row is clicked.
+     * as a minimum, the controller has to track "current row"
+     */
+
+    ele.addEventListener('click', (evt) => {
+      const str = htmlUtil.getViewState(ele, 'idx');
+      const idx = +('' + str);
+      if (Number.isNaN(idx)) {
+        this.logger.error(
+          `Design error. data-idx for tr is non-numeric`,
+          evt.target
+        );
+        return;
+      }
+      this.twc.rowClicked(idx);
+    });
 
     this.allTrs.push(ele);
     return ele;

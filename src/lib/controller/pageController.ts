@@ -139,7 +139,7 @@ export class PC implements PageController {
   }
 
   pageLoaded(): void {
-    logger.info('page loaded', this);
+    logger.info(`page ${this.name}loaded`, this);
     /**
      * do we have input data for this page?
      */
@@ -170,14 +170,12 @@ export class PC implements PageController {
       this.fc.setData(inputValues);
       if (this.page.inputIsForUpdate) {
         this.forSave = true;
-        for (const fieldName of inputNames)
-          this.fc.setDisplayState(fieldName, 'hidden', true);
-        /**
-         * it is possible that some parent field is also sent along with key fields.
-         * in such a case, it is update if all fields are recd.
-         */
-        this.saveIsUpdate = this.fc.hasKeyValues();
       }
+      /**
+       * it is possible that some parent field is also sent along with key fields.
+       * in such a case, it is update if all fields are recd.
+       */
+      this.saveIsUpdate = this.fc.hasKeyValues();
     }
 
     /**
@@ -190,6 +188,7 @@ export class PC implements PageController {
         // onload is meant only for update mode. onload not triggered if this is not for update but "save" or "new"
       } else {
         for (const actionName of this.page.onLoadActions) {
+          console.info(`Onload action ${actionName} being initiated`);
           this.act(actionName, this.fc, undefined);
         }
       }
@@ -827,10 +826,7 @@ export class PC implements PageController {
       );
 
       if (newParams) {
-        const newAction: any = {};
-        for (const a of Object.keys(action)) {
-          newAction[a] = (action as any)[a];
-        }
+        const newAction = { ...action };
         (newAction as NavigationAction).params = newParams;
         action = newAction as NavigationAction;
       }
@@ -847,10 +843,12 @@ export class PC implements PageController {
       }
 
       if (action.module) {
-        logger.warn(
+        addMessage(
           `Action ${action.name} requires that the current page be retained.
-            It should not specify moduleName in this case. current main menu assumed`
+            It should not specify moduleName in this case. current module assumed`,
+          p.msgs
         );
+        return false;
       }
       this.ac.navigate(action);
       return true;

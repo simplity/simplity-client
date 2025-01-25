@@ -81,6 +81,8 @@ export class PageElement implements PageView {
     }
 
     this.pc.pageRendered();
+    //we want to ensure that any event that would have triggered should complete before we proceed with pageLoaded
+    this.pc.pageLoaded();
   }
 
   pageLoaded(): void {
