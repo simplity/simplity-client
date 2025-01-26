@@ -1,25 +1,24 @@
 import {
   AppController,
   Layout,
-  LayoutView,
   Logger,
   MenuItem,
   Module,
-  NavigationParams,
+  NavigationOptions,
   StringMap,
-  Values,
 } from 'simplity-types';
 import { PageElement } from './pageElement';
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
 import { htmlUtil } from './htmlUtil';
-import { MenuGroupElement } from './menuGroupElement';
+import { ModuleElement } from './moduleElement';
 
+type PageOnStack = { ele: PageElement; scrollTop: number };
 const PAGE_TITLE = 'page-title';
 /**
  * Only child of AppElement. Defines the over-all layout
  */
-export class LayoutElement implements LayoutView {
+export class LayoutElement {
   public readonly root: HTMLElement;
   private readonly ac: AppController;
   private readonly logger: Logger;
@@ -39,16 +38,16 @@ export class LayoutElement implements LayoutView {
    * module names mapped to their indexes in the modules[] array
    */
   private readonly moduleMap: { [key: string]: number } = {};
-  private readonly menuGroups: StringMap<MenuGroupElement> = {};
+  private readonly menuGroups: StringMap<ModuleElement> = {};
 
   /**
-   * undefined before the first page rendered.
+   * keeps track of active pages. Current one is on the top.
    */
-  //private currentPageView?: PageElement;
+  private readonly pageStack: PageOnStack[] = [];
 
   constructor(
     public readonly layout: Layout,
-    params: NavigationParams
+    options: NavigationOptions
   ) {
     this.logger = loggerStub.getLogger();
     this.ac = app.getCurrentAc();
@@ -82,18 +81,18 @@ export class LayoutElement implements LayoutView {
     }
 
     this.pageEle = htmlUtil.getChildElement(this.root, 'page');
-    this.renderModule(params);
+    this.renderModule(options);
   }
 
   /**
    *
    */
-  renderModule(params: NavigationParams): void {
-    const mn = params.module || this.layout.modules[0];
+  renderModule(options: NavigationOptions): void {
+    const mn = options.module || this.layout.modules[0];
     const module = this.getInitialModule(mn);
-    const menu = this.getInitialMenu(module, params.menuItem);
+    const menu = this.getInitialMenu(module, options.menuItem);
     if (menu.pageName) {
-      this.renderPage(menu.pageName, params.params);
+      this.renderPage(menu.pageName, options);
     } else {
       throw new Error(
         this.reportError(
@@ -103,12 +102,34 @@ export class LayoutElement implements LayoutView {
     }
   }
 
-  renderPage(pageName: string, params?: Values): void {
-    const page = this.ac.getPage(pageName!);
+  renderPage(pageName: string, options: NavigationOptions): void {
+    const page = this.ac.getPage(pageName);
 
-    const pageView = new PageElement(page, params || {});
+    if (options.purgePageStack) {
+      this.purgeStack();
+    } else {
+      const lastEntry = this.pageStack.pop();
+      if (lastEntry) {
+        if (options.asModal || options.retainCurrentPage) {
+          //save the scroll position for us to get back to
+          lastEntry.scrollTop = document.documentElement.scrollTop;
+          this.pageStack.push(lastEntry); //retain the current page.
 
-    //    this.currentPageView = pageView;
+          if (!options.asModal) {
+            //hide it if not modal
+            htmlUtil.setViewState(lastEntry.ele.root, 'hidden', true);
+          }
+        } else {
+          lastEntry.ele.root.remove();
+        }
+      }
+    }
+
+    const pageView = new PageElement(page, options.params || {});
+    this.pageStack.push({
+      ele: pageView,
+      scrollTop: 0,
+    });
 
     if (this.menuBarEle) {
       if (page.hideModules) {
@@ -117,8 +138,38 @@ export class LayoutElement implements LayoutView {
         this.menuBarEle.removeAttribute('data-hidden');
       }
     }
-    htmlUtil.removeChildren(this.pageEle);
     this.pageEle.appendChild(pageView.root);
+  }
+
+  /**
+   * to be called if the page was opened after retaining the earlier page
+   */
+  public closeCurrentPage(): void {
+    let entry = this.pageStack.pop();
+    if (!entry) {
+      this.logger.error(
+        `layout.closeCurrentPage() invoked but there is no page open!!`
+      );
+      return;
+    }
+    if (this.pageStack.length === 0) {
+      this.logger.error(
+        `page '${entry.ele.page.name}' cannot be closed because there is no active page to render. Error in page navigation design`
+      );
+      return;
+    }
+    entry.ele.root.remove();
+
+    //show the last page
+    entry = this.pageStack[this.pageStack.length - 1];
+    htmlUtil.setViewState(entry.ele.root, 'hidden', false);
+    window.scrollTo({ top: entry.scrollTop, behavior: 'instant' });
+  }
+
+  private purgeStack() {
+    for (const entry of this.pageStack) {
+      entry.ele.root.remove();
+    }
   }
 
   private getInitialModule(startWith?: string): Module {
@@ -203,7 +254,7 @@ export class LayoutElement implements LayoutView {
 
     for (const moduleName of this.layout.modules) {
       const module = this.ac.getModule(moduleName);
-      const mg = new MenuGroupElement(module);
+      const mg = new ModuleElement(this.ac, module);
       this.menuGroups[moduleName] = mg;
       const label = htmlUtil.getChildElement(mg.root, 'label');
       if (module.icon) {

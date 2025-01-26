@@ -52,7 +52,7 @@ type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
-export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "date-field", "dialog", "image-field", "image", "layout", "line", "list", "menu-group", "menu-item", "output", "page", "page-panel", "panel-grid", "panel-flex", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
+export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "date-field", "dialog", "image-field", "image", "layout", "line", "list", "module", "menu-item", "output", "page", "page-panel", "panel-grid", "panel-flex", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 /**
  * data-* attribute used by our app

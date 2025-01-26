@@ -14,7 +14,6 @@ import {
   ValueValidationResult,
   Values,
   Vo,
-  NavigationAction,
   AppView,
   PanelView,
   Module,
@@ -28,6 +27,7 @@ import {
   PageController,
   PageFunction,
   FormFunction,
+  NavigationOptions,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
@@ -62,38 +62,33 @@ const simulatedSession: Session = {
 };
 
 export class AC implements AppController {
+  // app components
   private readonly allForms: StringMap<Form>;
   private readonly allPages: StringMap<Page>;
   private readonly functionDetails: StringMap<FunctionDetails>;
   private readonly validationFns: StringMap<ValueValidationFn> = {};
   private readonly allHtmls: StringMap<string>;
-
   private readonly allModules: StringMap<Module>;
   private readonly allMenus: StringMap<MenuItem>;
   private readonly allLayouts: StringMap<Layout>;
+  private readonly listSources: StringMap<ListSource>;
 
-  /**
-   * prefix for all image names
-   */
-  private readonly imageBasePath;
-
+  // app level parameters
   private readonly allMessages: StringMap<string>;
   private readonly loginServiceName;
   private readonly logoutServiceName;
-  private readonly listSources: StringMap<ListSource>;
+  private readonly imageBasePath;
 
   /*
    * context for the logged-in user
    */
-  /**
-   * session id as set by the server
-   */
   private sessionId?: string;
-
   private readonly context: Session;
-  //private validPages: StringMap<boolean> = {};
-  private validPagesArray: string[] = [];
 
+  /**
+   * access control related
+   */
+  private validPagesArray: string[] = [];
   private allowAllMenus: boolean = false;
   private allowedModules: StringMap<true> = {};
   private allowedMenus: StringMap<boolean> = {};
@@ -104,12 +99,12 @@ export class AC implements AppController {
    */
   private readonly agent: ServiceAgent;
 
+  /**
+   * hooks for page/form level functions for the app-client layer
+   */
   private readonly onPageLoadFn?: PageFunction;
   private readonly onFormRenderFn?: FormFunction;
-  /**
-   * all parameters are assumed to be valid.
-   * No error handling for any possible invalid parameters
-   */
+
   public constructor(
     /**
      * meta-data components for this apps
@@ -163,12 +158,14 @@ export class AC implements AppController {
   }
 
   pageLoaded(pc: PageController): void {
+    //global hook for the app-client layer
     if (this.onPageLoadFn) {
       this.onPageLoadFn(pc, undefined, []);
     }
   }
 
   formRendered(fc: FormController): void {
+    //global hook for the app-client layer
     if (this.onFormRenderFn) {
       this.onFormRenderFn(fc, undefined, []);
     }
@@ -200,14 +197,31 @@ export class AC implements AppController {
     return new Error(msg);
   }
 
-  navigate(action: NavigationAction): void {
-    this.appView.navigate(action);
+  /**
+   * use has selected a menu item (outside of page buttons etc.. like from a menu)
+   * @param menu
+   */
+  menuSelected(module: string, menuItem: string): void {
+    //TODO: check with pc before demolition!!
+    const options: NavigationOptions = {
+      module,
+      menuItem,
+      purgePageStack: true,
+    };
+
+    this.navigate(options);
+  }
+  /**
+   * request coming from the controller side to navigate to another page
+   * @param options
+   */
+  navigate(options: NavigationOptions): void {
+    this.appView.navigate(options);
   }
 
   selectModule(name: string): void {
     this.appView.navigate({
-      name: name,
-      type: 'navigation',
+      module: name,
     });
   }
 
@@ -230,6 +244,7 @@ export class AC implements AppController {
     return false;
   }
 
+  // getters for app components
   getLayout(nam: string): Layout {
     const obj = this.allLayouts[nam];
     this.shouldExist(obj, nam, 'layout');
@@ -332,6 +347,7 @@ export class AC implements AppController {
     });
   }
 
+  //context related functions
   getPermittedPages(): string[] {
     return this.validPagesArray;
   }
@@ -395,6 +411,54 @@ export class AC implements AppController {
     this.serve(this.logoutServiceName).then();
   }
 
+  atLeastOneAllowed(ids: string[]): boolean {
+    if (this.allowAllMenus) {
+      return true;
+    }
+
+    for (const id of ids) {
+      if (this.allowedMenus[id]) {
+        const item = this.allMenus[id];
+        if (item && !item.isHidden) {
+          return true;
+        }
+      } else {
+        const menu = this.allMenus[id];
+        if (menu && menu.guestAccess) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  setAccessControls(ids: string): void {
+    this.allowedMenus = {};
+    this.allowedModules = {};
+    this.allowAllMenus = false;
+    if (!ids) {
+      // no access
+      return;
+    }
+    if (ids === '*') {
+      //super user
+      this.allowAllMenus = true;
+      return;
+    }
+
+    for (let id of ids.split(',')) {
+      this.allowedMenus[id.trim()] = true;
+    }
+
+    for (let [key, mod] of Object.entries(this.allModules)) {
+      if (this.atLeastOneAllowed(mod.menuItems)) {
+        this.allowedModules[key] = true;
+      }
+    }
+  }
+
+  //server-related
   async serve(serviceName: string, data?: Vo): Promise<ServiceResponse> {
     const resp = await this.agent.serve(serviceName, this.sessionId, data);
 
@@ -601,53 +665,6 @@ export class AC implements AppController {
       return { value };
     }
     return { messages: [{ alertType: 'error', messageId: 'invalidValue' }] };
-  }
-
-  atLeastOneAllowed(ids: string[]): boolean {
-    if (this.allowAllMenus) {
-      return true;
-    }
-
-    for (const id of ids) {
-      if (this.allowedMenus[id]) {
-        const item = this.allMenus[id];
-        if (item && !item.isHidden) {
-          return true;
-        }
-      } else {
-        const menu = this.allMenus[id];
-        if (menu && menu.guestAccess) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  setAccessControls(ids: string): void {
-    this.allowedMenus = {};
-    this.allowedModules = {};
-    this.allowAllMenus = false;
-    if (!ids) {
-      // no access
-      return;
-    }
-    if (ids === '*') {
-      //super user
-      this.allowAllMenus = true;
-      return;
-    }
-
-    for (let id of ids.split(',')) {
-      this.allowedMenus[id.trim()] = true;
-    }
-
-    for (let [key, mod] of Object.entries(this.allModules)) {
-      if (this.atLeastOneAllowed(mod.menuItems)) {
-        this.allowedModules[key] = true;
-      }
-    }
   }
 
   /**

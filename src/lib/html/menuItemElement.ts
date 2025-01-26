@@ -4,15 +4,14 @@ import { htmlUtil } from './htmlUtil';
 export class MenuItemElement {
   readonly root: HTMLElement;
   readonly labelEle: HTMLElement;
-  constructor(private readonly comp: MenuItem) {
+  constructor(public readonly menuItem: MenuItem) {
     this.root = htmlUtil.newHtmlElement('menu-item');
     this.labelEle = htmlUtil.getChildElement(this.root, 'label');
-    if (comp.icon) {
-      htmlUtil.appendIcon(this.labelEle, comp.icon);
+    if (menuItem.icon) {
+      htmlUtil.appendIcon(this.labelEle, menuItem.icon);
     }
-    if (comp.label) {
-      htmlUtil.appendText(this.labelEle, comp.label);
+    if (menuItem.label) {
+      htmlUtil.appendText(this.labelEle, menuItem.label);
     }
-    this.comp;
   }
 }

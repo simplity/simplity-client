@@ -79,7 +79,7 @@ export const predefinedHtmlTemplates = [
   'layout',
   'line',
   'list',
-  'menu-group',
+  'module',
   'menu-item',
   'output',
   'page',

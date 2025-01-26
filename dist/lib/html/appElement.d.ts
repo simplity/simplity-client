@@ -1,10 +1,11 @@
-import { Alert, AppController, ClientRuntime, AppView, NavigationAction, PanelView, StringMap, Values } from 'simplity-types';
+import { Alert, AppController, ClientRuntime, AppView, NavigationOptions, PanelView, StringMap } from 'simplity-types';
 export declare class AppElement implements AppView {
     readonly root: HTMLElement;
     private currentPopup?;
     private layoutEle?;
     private readonly logger;
     readonly ac: AppController;
+    private readonly pageStack;
     /**
      *
      * @param runtime
@@ -12,10 +13,9 @@ export declare class AppElement implements AppView {
      */
     constructor(runtime: ClientRuntime, appEle: HTMLElement);
     private renderLayout;
-    navigate(action: NavigationAction): void;
+    navigate(options: NavigationOptions): void;
     renderContextValues(values: StringMap<string>): void;
     renderPageTitle(title: string): void;
-    renderPage(pageName: string, pageParams?: Values): void;
     showAlert(alert: Alert): void;
     getUserChoice(text: string, choices: string[]): Promise<number>;
     renderAsPopup(panel: PanelView): void;

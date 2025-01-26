@@ -1,4 +1,4 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, NavigationAction, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, FormController, PageController } from 'simplity-types';
+import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, FormController, PageController, NavigationOptions } from 'simplity-types';
 export declare class AC implements AppController {
     /**
      * This is the root html element for this app.
@@ -12,19 +12,16 @@ export declare class AC implements AppController {
     private readonly allModules;
     private readonly allMenus;
     private readonly allLayouts;
-    /**
-     * prefix for all image names
-     */
-    private readonly imageBasePath;
+    private readonly listSources;
     private readonly allMessages;
     private readonly loginServiceName;
     private readonly logoutServiceName;
-    private readonly listSources;
-    /**
-     * session id as set by the server
-     */
+    private readonly imageBasePath;
     private sessionId?;
     private readonly context;
+    /**
+     * access control related
+     */
     private validPagesArray;
     private allowAllMenus;
     private allowedModules;
@@ -34,12 +31,11 @@ export declare class AC implements AppController {
      * can be a dummy for testing/demo version
      */
     private readonly agent;
+    /**
+     * hooks for page/form level functions for the app-client layer
+     */
     private readonly onPageLoadFn?;
     private readonly onFormRenderFn?;
-    /**
-     * all parameters are assumed to be valid.
-     * No error handling for any possible invalid parameters
-     */
     constructor(
     /**
      * meta-data components for this apps
@@ -55,7 +51,16 @@ export declare class AC implements AppController {
     newWindow(url: string): void;
     closePopup(): void;
     newError(msg: string): Error;
-    navigate(action: NavigationAction): void;
+    /**
+     * use has selected a menu item (outside of page buttons etc.. like from a menu)
+     * @param menu
+     */
+    menuSelected(module: string, menuItem: string): void;
+    /**
+     * request coming from the controller side to navigate to another page
+     * @param options
+     */
+    navigate(options: NavigationOptions): void;
     selectModule(name: string): void;
     getUserChoice(text: string, choices: string[]): Promise<number>;
     renderAsPopup(panel: PanelView): void;
@@ -80,14 +85,14 @@ export declare class AC implements AppController {
     getUser(): Vo | undefined;
     login(credentials: Values): Promise<boolean>;
     logout(): void;
+    atLeastOneAllowed(ids: string[]): boolean;
+    setAccessControls(ids: string): void;
     serve(serviceName: string, data?: Vo): Promise<ServiceResponse>;
     downloadServiceResponse(fileName: string, serviceName: string, data: Vo | undefined): Promise<boolean>;
     getList(listName: string, forceRefresh: boolean, key?: number | string): Promise<SimpleList>;
     getKeyedList(listName: string, forceRefresh: boolean): Promise<KeyedList>;
     validateValue(schemaName: string, value: string): ValueValidationResult;
     validateType(valueType: ValueType, textValue: string): ValueValidationResult;
-    atLeastOneAllowed(ids: string[]): boolean;
-    setAccessControls(ids: string): void;
     /**
      * method to be called after login, if that is done by another component.
      * it is better to call login() of this service instead.

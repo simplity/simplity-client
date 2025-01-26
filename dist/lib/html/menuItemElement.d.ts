@@ -1,7 +1,7 @@
 import { MenuItem } from 'simplity-types';
 export declare class MenuItemElement {
-    private readonly comp;
+    readonly menuItem: MenuItem;
     readonly root: HTMLElement;
     readonly labelEle: HTMLElement;
-    constructor(comp: MenuItem);
+    constructor(menuItem: MenuItem);
 }

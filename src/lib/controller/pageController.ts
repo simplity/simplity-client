@@ -680,7 +680,9 @@ export class PC implements PageController {
 
     switch (action.type) {
       case 'close':
-        throw new Error('Close action is not implemented yet');
+        //todo: any checks and balances?'
+        this.ac.navigate({ closePage: true });
+        break;
 
       case 'function':
         const functionName = (action as FunctionAction).functionName;
@@ -825,6 +827,7 @@ export class PC implements PageController {
         p.params || this.fc.getData()
       );
 
+      // we should not mutate the action
       if (newParams) {
         const newAction = { ...action };
         (newAction as NavigationAction).params = newParams;
@@ -994,20 +997,37 @@ export class PC implements PageController {
       vo.maxRows = action.maxRows;
     }
 
+    let filters: FilterCondition[] | undefined;
     if (action.filterFields) {
-      const filters = getConditions(
-        fc.getData(),
-        action.filterFields,
-        messages
-      );
+      filters = getConditions(fc.getData(), action.filterFields, messages);
+    } else {
+      filters = toFilters(fc.getData() as Values);
+    }
 
-      if (filters) {
-        vo.filters = filters;
-      }
+    if (filters) {
+      vo.filters = filters;
     }
 
     return vo;
   }
+}
+
+/**
+ * //TODO we have to validate the fields
+ * @param values
+ * @returns
+ */
+function toFilters(values: Values): FilterCondition[] | undefined {
+  const filters: FilterCondition[] = [];
+  for (const [field, value] of Object.entries(values)) {
+    if (value) {
+      filters.push({ field, value: '' + value, comparator: '=' });
+    }
+  }
+  if (filters.length) {
+    return filters;
+  }
+  return undefined;
 }
 
 function addMessage(text: string, msgs: DetailedMessage[]) {

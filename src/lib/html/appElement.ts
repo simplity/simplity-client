@@ -5,15 +5,14 @@ import {
   ClientRuntime,
   AppView,
   Logger,
-  NavigationAction,
-  NavigationParams,
+  NavigationOptions,
   PanelView,
   StringMap,
-  Values,
 } from 'simplity-types';
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
 import { htmlUtil } from './htmlUtil';
+import { PageElement } from './pageElement';
 
 const PAGE_TITLE = 'page-title';
 
@@ -23,6 +22,8 @@ export class AppElement implements AppView {
   private layoutEle?: LayoutElement;
   private readonly logger: Logger;
   public readonly ac: AppController;
+
+  private readonly pageStack: PageElement[] = [];
 
   /**
    *
@@ -43,7 +44,7 @@ export class AppElement implements AppView {
     });
   }
 
-  private renderLayout(layoutName: string, params: NavigationParams): void {
+  private renderLayout(layoutName: string, params: NavigationOptions): void {
     if (this.layoutEle) {
       if (this.layoutEle.layout.name === layoutName) {
         return;
@@ -57,38 +58,56 @@ export class AppElement implements AppView {
     this.root.appendChild(lv.root);
   }
 
-  navigate(action: NavigationAction): void {
-    const p: NavigationParams = {
-      menuItem: action.menuItem!,
-      module: action.module!,
-      params: action.params,
-    };
-
-    if (action.layout) {
-      this.renderLayout(action.layout, p);
+  navigate(options: NavigationOptions) {
+    if (options.closePage) {
+      this.layoutEle!.closeCurrentPage();
       return;
     }
 
-    if (action.module) {
-      this.layoutEle!.renderModule(p);
+    //navigate to a layout??
+    if (
+      options.layout &&
+      this.layoutEle &&
+      this.layoutEle.layout.name !== options.layout
+    ) {
+      if (options.asModal || options.retainCurrentPage) {
+        throw this.ac.newError(
+          `When the current page is retained, new menu-item must be from the same-layout`
+        );
+      }
+
+      if (this.pageStack.length) {
+        throw this.ac.newError(
+          `Navigation requested from layout '${this.layoutEle!.layout.name}' to '${options.layout}'. 
+            There are ${this.pageStack.length} pages on the stack. 
+            If these can be removed, then you must set erasePagesOnTheStack.true`
+        );
+      }
+
+      this.renderLayout(options.layout, options);
       return;
     }
-    if (!action.menuItem) {
+
+    if (options.module) {
+      this.layoutEle!.renderModule(options);
+      return;
+    }
+
+    if (!options.menuItem) {
       throw this.ac.newError(
-        `Navigation action ${action.name} has no layout/module/menu specified. navigation aborted`
+        `Navigation action has no layout/module/menu specified. navigation aborted`
       );
     }
-    const menu = this.ac.getMenu(action.menuItem);
+
+    const menu = this.ac.getMenu(options.menuItem);
     if (!menu.pageName) {
-      throw this.ac.newError(
-        `Navigation action ${action.name} specifies ${action.menuItem} but that menu has not specified pageName. Navigation aborted`
+      this.logger.error(
+        `Menu item ${options.menuItem} has no pageName. Can not navigate`
       );
+      return;
     }
-    console.info(
-      `requesting layout to go to page ${menu.pageName} with params:`,
-      action.params
-    );
-    this.layoutEle!.renderPage(menu.pageName, action.params);
+
+    this.layoutEle!.renderPage(menu.pageName, options);
   }
 
   renderContextValues(values: StringMap<string>): void {
@@ -108,10 +127,6 @@ export class AppElement implements AppView {
     const values: StringMap<string> = {};
     values[PAGE_TITLE] = title;
     this.renderContextValues(values);
-  }
-
-  renderPage(pageName: string, pageParams?: Values): void {
-    this.layoutEle!.renderPage(pageName, pageParams);
   }
 
   showAlert(alert: Alert): void {

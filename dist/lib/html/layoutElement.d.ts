@@ -1,8 +1,8 @@
-import { Layout, LayoutView, NavigationParams, StringMap, Values } from 'simplity-types';
+import { Layout, NavigationOptions, StringMap } from 'simplity-types';
 /**
  * Only child of AppElement. Defines the over-all layout
  */
-export declare class LayoutElement implements LayoutView {
+export declare class LayoutElement {
     readonly layout: Layout;
     readonly root: HTMLElement;
     private readonly ac;
@@ -19,14 +19,20 @@ export declare class LayoutElement implements LayoutView {
     private readonly moduleMap;
     private readonly menuGroups;
     /**
-     * undefined before the first page rendered.
+     * keeps track of active pages. Current one is on the top.
      */
-    constructor(layout: Layout, params: NavigationParams);
+    private readonly pageStack;
+    constructor(layout: Layout, options: NavigationOptions);
     /**
      *
      */
-    renderModule(params: NavigationParams): void;
-    renderPage(pageName: string, params?: Values): void;
+    renderModule(options: NavigationOptions): void;
+    renderPage(pageName: string, options: NavigationOptions): void;
+    /**
+     * to be called if the page was opened after retaining the earlier page
+     */
+    closeCurrentPage(): void;
+    private purgeStack;
     private getInitialModule;
     private getInitialMenu;
     renderPageTitle(title: string): void;
