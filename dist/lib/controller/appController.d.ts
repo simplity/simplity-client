@@ -1,4 +1,4 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, FormController, PageController, NavigationOptions } from 'simplity-types';
+import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, FormController, PageController, NavigationOptions, Alert } from 'simplity-types';
 export declare class AC implements AppController {
     /**
      * This is the root html element for this app.
@@ -65,6 +65,9 @@ export declare class AC implements AppController {
     getUserChoice(text: string, choices: string[]): Promise<number>;
     renderAsPopup(panel: PanelView): void;
     setPageTitle(title: string): void;
+    disableUx(): void;
+    enableUx(): void;
+    showAlerts(alerts: Alert[]): void;
     isPageValid(page: string): boolean;
     getLayout(nam: string): Layout;
     getModule(nam: string): Module;
@@ -87,7 +90,7 @@ export declare class AC implements AppController {
     logout(): void;
     atLeastOneAllowed(ids: string[]): boolean;
     setAccessControls(ids: string): void;
-    serve(serviceName: string, data?: Vo): Promise<ServiceResponse>;
+    serve(serviceName: string, data?: Vo, toDisableUx?: boolean): Promise<ServiceResponse>;
     downloadServiceResponse(fileName: string, serviceName: string, data: Vo | undefined): Promise<boolean>;
     getList(listName: string, forceRefresh: boolean, key?: number | string): Promise<SimpleList>;
     getKeyedList(listName: string, forceRefresh: boolean): Promise<KeyedList>;

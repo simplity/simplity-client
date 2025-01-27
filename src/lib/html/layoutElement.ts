@@ -10,7 +10,7 @@ import {
 import { PageElement } from './pageElement';
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
-import { htmlUtil } from './htmlUtil';
+import { ChildElementId, htmlUtil } from './htmlUtil';
 import { ModuleElement } from './moduleElement';
 
 type PageOnStack = { ele: PageElement; scrollTop: number };
@@ -74,7 +74,10 @@ export class LayoutElement {
     }
 
     for (const nam of names) {
-      const ele = htmlUtil.getOptionalElement(this.root, nam) as HTMLElement;
+      const ele = htmlUtil.getOptionalElement(
+        this.root,
+        nam as ChildElementId
+      ) as HTMLElement;
       if (ele) {
         this.contextEles[nam] = ele;
       }
@@ -132,12 +135,10 @@ export class LayoutElement {
     });
 
     if (this.menuBarEle) {
-      if (page.hideModules) {
-        this.menuBarEle.setAttribute('data-hidden', '');
-      } else {
-        this.menuBarEle.removeAttribute('data-hidden');
-      }
+      const toHide = !!page.hideModules;
+      htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
     }
+
     this.pageEle.appendChild(pageView.root);
   }
 
@@ -163,6 +164,10 @@ export class LayoutElement {
     //show the last page
     entry = this.pageStack[this.pageStack.length - 1];
     htmlUtil.setViewState(entry.ele.root, 'hidden', false);
+    if (this.menuBarEle) {
+      const toHide = !!entry.ele.page.hideModules;
+      htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
+    }
     window.scrollTo({ top: entry.scrollTop, behavior: 'instant' });
   }
 

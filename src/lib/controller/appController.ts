@@ -28,6 +28,7 @@ import {
   PageFunction,
   FormFunction,
   NavigationOptions,
+  Alert,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
@@ -237,6 +238,17 @@ export class AC implements AppController {
     this.appView.renderPageTitle(title);
   }
 
+  disableUx(): void {
+    this.appView.disableUx();
+  }
+
+  enableUx(): void {
+    this.appView.enableUx();
+  }
+
+  showAlerts(alerts: Alert[]): void {
+    this.appView.showAlerts(alerts);
+  }
   isPageValid(page: string): boolean {
     logger.warn(
       `isPageValid() not yet implemented. Returning false for page ${page}.`
@@ -459,8 +471,18 @@ export class AC implements AppController {
   }
 
   //server-related
-  async serve(serviceName: string, data?: Vo): Promise<ServiceResponse> {
+  async serve(
+    serviceName: string,
+    data?: Vo,
+    toDisableUx?: boolean
+  ): Promise<ServiceResponse> {
+    if (toDisableUx) {
+      this.disableUx();
+    }
     const resp = await this.agent.serve(serviceName, this.sessionId, data);
+    if (toDisableUx) {
+      this.disableUx();
+    }
 
     if (resp.sessionId) {
       this.sessionId = resp.sessionId;

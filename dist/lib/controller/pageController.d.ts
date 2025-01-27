@@ -1,4 +1,4 @@
-import { FieldView, PageView, Vo, StringMap, PageController, AppController, FormController, Alert, DetailedMessage, FnStatus, Action, AnyValue, SimpleList, KeyedList, FormOperation, ServiceRequestOptions } from 'simplity-types';
+import { FieldView, PageView, Vo, StringMap, PageController, AppController, FormController, DetailedMessage, FnStatus, Action, AnyValue, SimpleList, KeyedList, FormOperation, ServiceRequestOptions } from 'simplity-types';
 export declare class PC implements PageController {
     readonly name: string;
     /**
@@ -52,14 +52,11 @@ export declare class PC implements PageController {
     getVariable(name: string): AnyValue | Vo | undefined;
     setModifiedStatus(isModified: boolean): void;
     isValid(): boolean;
-    showAlerts(alerts: Alert[]): void;
     /**
      *
      * @param messages
      */
     showMessages(messages: DetailedMessage[]): void;
-    enableUx(): void;
-    disableUx(): void;
     getList(control: FieldView, key?: string | number | undefined): void;
     getServiceName(formName: string | undefined, operation: FormOperation, messages: DetailedMessage[]): string;
     requestGet(controller: FormController, toDisableUx: boolean, params?: StringMap<boolean>, callback?: (allOK: boolean) => void): void;

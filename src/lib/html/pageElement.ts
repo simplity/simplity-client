@@ -99,14 +99,4 @@ export class PageElement implements PageView {
         JSON.stringify(alerts)
     );
   }
-
-  disableUx(): void {
-    window.alert(
-      'Disabling UX is yet to be implemented. Please refrain from editing anything'
-    );
-  }
-
-  enableUx(): void {
-    window.alert('Ok. You may edit it now');
-  }
 }

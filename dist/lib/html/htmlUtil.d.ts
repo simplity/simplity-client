@@ -52,13 +52,13 @@ type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
-export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "date-field", "dialog", "image-field", "image", "layout", "line", "list", "module", "menu-item", "output", "page", "page-panel", "panel-grid", "panel-flex", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
+export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "date-field", "dialog", "disable-ux", "image-field", "image", "layout", "line", "list", "module", "menu-item", "message", "output", "page", "page-panel", "panel-grid", "panel-flex", "panel", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 /**
  * data-* attribute used by our app
  */
 export declare const dataAttributeNames: readonly ["full", "id"];
-export declare const childElementIds: readonly ["add-button", "buttons", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "middle", "page", "right", "row", "rows", "search", "table", "title"];
+export declare const childElementIds: readonly ["add-button", "buttons", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "message", "middle", "page", "right", "row", "rows", "search", "table", "title"];
 export type ChildElementId = (typeof childElementIds)[number];
 export declare const htmlUtil: {
     /**
@@ -141,7 +141,7 @@ export declare const htmlUtil: {
      */
     initHtmlEle: typeof initHtmlEle;
 };
-declare function getOptionalElement(rootEle: HTMLElement, id: ChildElementId | string): HTMLElement | undefined;
+declare function getOptionalElement(rootEle: HTMLElement, id: ChildElementId): HTMLElement | undefined;
 declare function getChildElement(rootEle: HTMLElement, id: string): HTMLElement;
 declare function newHtmlElement(name: HtmlTemplateName): HTMLElement;
 declare function newElement(name: string): HTMLElement;

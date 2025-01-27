@@ -6,6 +6,9 @@ export declare class AppElement implements AppView {
     private readonly logger;
     readonly ac: AppController;
     private readonly pageStack;
+    private readonly spinnerEle?;
+    private readonly messageEle?;
+    private readonly messageTextEle?;
     /**
      *
      * @param runtime
@@ -16,9 +19,11 @@ export declare class AppElement implements AppView {
     navigate(options: NavigationOptions): void;
     renderContextValues(values: StringMap<string>): void;
     renderPageTitle(title: string): void;
-    showAlert(alert: Alert): void;
+    showAlerts(alerts: Alert[]): void;
     getUserChoice(text: string, choices: string[]): Promise<number>;
     renderAsPopup(panel: PanelView): void;
     closePopup(): void;
     doNavigate(url: string): void;
+    disableUx(): void;
+    enableUx(): void;
 }

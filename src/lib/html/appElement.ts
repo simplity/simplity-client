@@ -11,7 +11,7 @@ import {
 } from 'simplity-types';
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
-import { htmlUtil } from './htmlUtil';
+import { ChildElementId, htmlUtil } from './htmlUtil';
 import { PageElement } from './pageElement';
 
 const PAGE_TITLE = 'page-title';
@@ -24,7 +24,9 @@ export class AppElement implements AppView {
   public readonly ac: AppController;
 
   private readonly pageStack: PageElement[] = [];
-
+  private readonly spinnerEle?: HTMLElement;
+  private readonly messageEle?: HTMLElement;
+  private readonly messageTextEle?: HTMLElement;
   /**
    *
    * @param runtime
@@ -32,7 +34,6 @@ export class AppElement implements AppView {
    */
   constructor(runtime: ClientRuntime, appEle: HTMLElement) {
     this.logger = loggerStub.getLogger();
-
     this.root = appEle;
 
     //create the all important and all powerful controller of controllers!!!
@@ -42,6 +43,19 @@ export class AppElement implements AppView {
     this.renderLayout(runtime.startingLayout, {
       module: runtime.startingModule,
     });
+
+    this.spinnerEle = htmlUtil.newHtmlElement('disable-ux');
+    if (this.spinnerEle) {
+      document.body.appendChild(this.spinnerEle);
+    }
+    this.messageEle = htmlUtil.newHtmlElement('message');
+    if (this.messageEle) {
+      this.messageTextEle = htmlUtil.getOptionalElement(
+        this.messageEle,
+        'message'
+      );
+      document.body.appendChild(this.messageEle);
+    }
   }
 
   private renderLayout(layoutName: string, params: NavigationOptions): void {
@@ -112,7 +126,10 @@ export class AppElement implements AppView {
 
   renderContextValues(values: StringMap<string>): void {
     for (const [name, value] of Object.entries(values)) {
-      const ele = htmlUtil.getOptionalElement(this.root, name);
+      const ele = htmlUtil.getOptionalElement(
+        this.root,
+        name as ChildElementId
+      );
       if (ele) {
         ele.textContent = value.toString();
       } else {
@@ -129,9 +146,24 @@ export class AppElement implements AppView {
     this.renderContextValues(values);
   }
 
-  showAlert(alert: Alert): void {
-    console.info(alert);
-    window.alert('alert from app: \n' + JSON.stringify(alert));
+  showAlerts(alerts: Alert[]): void {
+    console.info(alerts);
+    let msg = '';
+    for (const alert of alerts) {
+      msg += alert.type + ': ' + alert.text + '\n';
+    }
+
+    if (!this.messageEle || !this.messageTextEle) {
+      window.alert(msg);
+      return;
+    }
+    const txt = this.messageTextEle.innerText;
+    if (txt) {
+      console.info(`We Still have the old message. Appending current message`);
+      msg = txt + '\n' + msg;
+    }
+    this.messageTextEle.innerText = msg;
+    htmlUtil.setViewState(this.messageEle, 'hidden', false);
   }
 
   getUserChoice(text: string, choices: string[]): Promise<number> {
@@ -164,5 +196,21 @@ export class AppElement implements AppView {
 
   doNavigate(url: string) {
     app.getCurrentAc().newWindow(url);
+  }
+
+  disableUx(): void {
+    if (this.spinnerEle) {
+      htmlUtil.setViewState(this.spinnerEle, 'hidden', false);
+    } else {
+      console.error(
+        `App has not provided an html-template named 'disable-ux'. UX is not disabled`
+      );
+    }
+  }
+
+  enableUx(): void {
+    if (this.spinnerEle) {
+      htmlUtil.setViewState(this.spinnerEle, 'hidden', true);
+    }
   }
 }

@@ -216,11 +216,6 @@ export class PC implements PageController {
   isValid(): boolean {
     return this.fc.isValid();
   }
-  public showAlerts(alerts: Alert[]): void {
-    if (alerts.length) {
-      this.pageView.alert(alerts);
-    }
-  }
   /**
    *
    * @param messages
@@ -238,15 +233,7 @@ export class PC implements PageController {
       }
       alerts.push({ type: msg.type, text });
     }
-    this.showAlerts(alerts);
-  }
-
-  public enableUx(): void {
-    this.pageView.enableUx();
-  }
-
-  public disableUx(): void {
-    this.pageView.disableUx();
+    this.ac.showAlerts(alerts);
   }
 
   getList(control: FieldView, key?: string | number | undefined): void {
@@ -405,31 +392,31 @@ export class PC implements PageController {
     }
     const controller = options.fc || this.fc;
     if (options.toDisableUx) {
-      //disable ux now
+      this.ac.disableUx();
     }
 
-    this.ac.serve(serviceName, options.payload).then((resp) => {
-      if (options.toDisableUx) {
-        //enable ux now
-      }
+    this.ac.serve(serviceName, options.payload, false).then((resp) => {
       logger.info(`Service ${serviceName} returned.`, resp);
       //we have to show messages
       if (resp.messages) {
         this.showMessages(resp.messages);
       }
 
-      if (resp.status !== 'completed') {
-        return;
+      const ok = resp.status === 'completed';
+      if (ok) {
+        const data = resp.data || {};
+        if (options.callback) {
+          options.callback(data);
+        } else {
+          controller.receiveData(data, options.targetPanelName);
+        }
       }
-      const data = resp.data || {};
-      if (options.callback) {
-        options.callback(data);
-      } else {
-        controller.receiveData(data, options.targetPanelName);
+
+      if (options.toDisableUx || true) {
+        this.ac.enableUx();
       }
     });
   }
-
   act(
     actionName: string,
     controller?: FormController | undefined,
@@ -602,17 +589,16 @@ export class PC implements PageController {
       }
     }
     if (disableUx) {
-      //disable ux now
+      this.ac.disableUx();
     }
 
     const reqAt = new Date().getTime();
-    const resp = await this.ac.serve(serviceName, data);
+    const resp = await this.ac.serve(serviceName, data, false); //we are handling disabling ux
     const respAt = new Date().getTime();
-    logger.info(`Service '${serviceName}' returned after  ${respAt - reqAt}ms`),
-      resp;
-    if (disableUx) {
-      //enable ux now
-    }
+    logger.info(
+      `Service '${serviceName}' returned after  ${respAt - reqAt}ms`,
+      resp
+    );
 
     if (onResponseFn) {
       logger.info(`Function ${onResponseFn} invoked to process the response`);
@@ -626,19 +612,21 @@ export class PC implements PageController {
       this.showMessages(resp.messages);
     }
 
-    if (resp.status !== 'completed') {
-      return false;
-    }
+    const ok = resp.status === 'completed';
+    if (ok) {
+      if (resp.data) {
+        fc.receiveData(resp.data as Vo, targetChild);
+      }
 
-    if (resp.data) {
-      fc.receiveData(resp.data as Vo, targetChild);
+      const completedAt = new Date().getTime();
+      logger.info(
+        `It took ${completedAt - respAt}ms to render the data received from the service '${serviceName}' `
+      );
+      if (disableUx) {
+        this.ac.enableUx();
+      }
     }
-
-    const completedAt = new Date().getTime();
-    logger.info(
-      `It took ${completedAt - respAt}ms to render the data received from the service '${serviceName}' `
-    );
-    return true;
+    return ok;
   }
 
   /**
@@ -765,7 +753,7 @@ export class PC implements PageController {
 
         this.serve(
           a.serviceName,
-          a.toDisableUx || false,
+          !!a.toDisableUx,
           controller,
           values,
           a.targetPanelName,

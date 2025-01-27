@@ -10,6 +10,4 @@ export declare class PageElement implements PageView {
     pageLoaded(): void;
     showButtons(toShow: boolean): void;
     alert(alerts: Alert[]): void;
-    disableUx(): void;
-    enableUx(): void;
 }

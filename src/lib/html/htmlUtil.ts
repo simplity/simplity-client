@@ -74,6 +74,7 @@ export const predefinedHtmlTemplates = [
   'content',
   'date-field',
   'dialog',
+  'disable-ux',
   'image-field',
   'image',
   'layout',
@@ -81,6 +82,7 @@ export const predefinedHtmlTemplates = [
   'list',
   'module',
   'menu-item',
+  'message',
   'output',
   'page',
   'page-panel',
@@ -119,6 +121,7 @@ export const childElementIds = [
   'left',
   'list-config',
   'menu-bar',
+  'message',
   'middle',
   'page',
   'right',
@@ -228,7 +231,7 @@ export const htmlUtil = {
 
 function getOptionalElement(
   rootEle: HTMLElement,
-  id: ChildElementId | string
+  id: ChildElementId
 ): HTMLElement | undefined {
   const ele = rootEle.querySelector(`[data-id="${id}"]`) as HTMLElement;
   if (ele) {
@@ -243,7 +246,7 @@ function getOptionalElement(
 }
 
 function getChildElement(rootEle: HTMLElement, id: string): HTMLElement {
-  const ele = getOptionalElement(rootEle, id);
+  const ele = getOptionalElement(rootEle, id as ChildElementId);
   if (ele) {
     return ele;
   }
