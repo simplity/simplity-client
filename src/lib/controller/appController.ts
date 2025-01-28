@@ -207,7 +207,7 @@ export class AC implements AppController {
     const options: NavigationOptions = {
       module,
       menuItem,
-      purgePageStack: true,
+      erasePagesOnTheStack: true,
     };
 
     this.navigate(options);
@@ -483,23 +483,33 @@ export class AC implements AppController {
     if (toDisableUx) {
       this.disableUx();
     }
-
-    if (resp.sessionId) {
-      this.sessionId = resp.sessionId;
-      delete resp.sessionId;
-    } else if (resp.status === 'noSuchSession') {
+    if (resp.status === 'noSuchSession') {
       // TODO: handle server session timeout.
       logger.warn(
         'Server has reported that the current session is not valid anymore.'
       );
       this.sessionId = undefined;
+      return resp;
     }
-    //TODO: patch to take care of login as a service instead of login as a command
-    if (serviceName === this.loginServiceName) {
-      console.info('Detected call to login service');
-      this.afterLogin(resp.data);
+    if (resp.status === 'completed') {
+      if (resp.sessionId) {
+        this.sessionId = resp.sessionId;
+        delete resp.sessionId;
+      }
+
+      if (serviceName === this.loginServiceName) {
+        console.info('Detected call to login service');
+        this.afterLogin(resp.data);
+      }
     } else {
-      console.info(`service ${serviceName} returned from the server`);
+      let msgs = resp.messages;
+      if (msgs && msgs.length) {
+        //error message is sent by the server
+      } else {
+        resp.messages = [
+          { id: resp.status, type: 'error', text: resp.description },
+        ];
+      }
     }
 
     return resp;

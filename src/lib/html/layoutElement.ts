@@ -28,6 +28,12 @@ export class LayoutElement {
   private readonly pageEle: HTMLElement;
   private readonly menuBarEle?: HTMLElement;
   /**
+   * if a modal page is active
+   */
+  private readonly modalContainerEle: HTMLElement;
+  private readonly modalPageParent: HTMLElement;
+  private modalPageView?: PageElement;
+  /**
    * html elements for any context-value being rendered in the layout
    */
   private readonly contextEles: StringMap<HTMLElement> = {};
@@ -53,6 +59,15 @@ export class LayoutElement {
     this.ac = app.getCurrentAc();
 
     this.root = htmlUtil.newHtmlElement('layout');
+    /**
+     * keep the modal container ready;
+     */
+    this.modalContainerEle = htmlUtil.newHtmlElement('panel-modal');
+    this.modalPageParent = htmlUtil.getChildElement(
+      this.modalContainerEle,
+      'page'
+    );
+    document.body.appendChild(this.modalContainerEle);
 
     /*
      * modules are mandatory. however, during development, it could be an empty array
@@ -106,10 +121,20 @@ export class LayoutElement {
   }
 
   renderPage(pageName: string, options: NavigationOptions): void {
+    console.info(
+      `going to render page '${pageName}' with asModal=${options.asModal}`
+    );
     const page = this.ac.getPage(pageName);
 
-    if (options.purgePageStack) {
+    if (options.erasePagesOnTheStack) {
       this.purgeStack();
+    }
+
+    /**
+     * if the old page was modal, we just close that
+     */
+    if (this.modalPageView) {
+      this.closeModalPage();
     } else {
       const lastEntry = this.pageStack.pop();
       if (lastEntry) {
@@ -123,29 +148,40 @@ export class LayoutElement {
             htmlUtil.setViewState(lastEntry.ele.root, 'hidden', true);
           }
         } else {
+          //old page is gone
           lastEntry.ele.root.remove();
         }
       }
     }
 
     const pageView = new PageElement(page, options.params || {});
-    this.pageStack.push({
-      ele: pageView,
-      scrollTop: 0,
-    });
-
-    if (this.menuBarEle) {
-      const toHide = !!page.hideModules;
-      htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
+    if (options.asModal && this.modalContainerEle) {
+      this.modalPageView = pageView;
+      this.modalPageParent.appendChild(pageView.root);
+      htmlUtil.setViewState(this.modalContainerEle, 'hidden', false);
+    } else {
+      this.pageStack.push({
+        ele: pageView,
+        scrollTop: 0,
+      });
+      this.pageEle.appendChild(pageView.root);
     }
 
-    this.pageEle.appendChild(pageView.root);
+    if (this.menuBarEle) {
+      const toHide = this.modalPageView === undefined && !!page.hideModules;
+      htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
+    }
   }
 
   /**
    * to be called if the page was opened after retaining the earlier page
    */
   public closeCurrentPage(): void {
+    if (this.modalPageView) {
+      this.closeModalPage();
+      return;
+    }
+
     let entry = this.pageStack.pop();
     if (!entry) {
       this.logger.error(
@@ -171,7 +207,16 @@ export class LayoutElement {
     window.scrollTo({ top: entry.scrollTop, behavior: 'instant' });
   }
 
+  private closeModalPage() {
+    htmlUtil.setViewState(this.modalContainerEle!, 'hidden', true);
+    this.modalPageView!.root.remove();
+    this.modalPageView = undefined;
+  }
+
   private purgeStack() {
+    if (this.modalPageView) {
+      this.modalPageView.root.remove;
+    }
     for (const entry of this.pageStack) {
       entry.ele.root.remove();
     }

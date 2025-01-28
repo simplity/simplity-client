@@ -622,9 +622,9 @@ export class PC implements PageController {
       logger.info(
         `It took ${completedAt - respAt}ms to render the data received from the service '${serviceName}' `
       );
-      if (disableUx) {
-        this.ac.enableUx();
-      }
+    }
+    if (disableUx) {
+      this.ac.enableUx();
     }
     return ok;
   }

@@ -85,10 +85,10 @@ export const predefinedHtmlTemplates = [
   'message',
   'output',
   'page',
-  'page-panel',
-  'panel-grid',
-  'panel-flex',
   'panel',
+  'panel-flex',
+  'panel-grid',
+  'panel-modal',
   'password',
   'select-output',
   'select',
@@ -121,6 +121,7 @@ export const childElementIds = [
   'left',
   'list-config',
   'menu-bar',
+  'menu-item',
   'message',
   'middle',
   'page',
@@ -245,7 +246,10 @@ function getOptionalElement(
   return undefined;
 }
 
-function getChildElement(rootEle: HTMLElement, id: string): HTMLElement {
+function getChildElement(
+  rootEle: HTMLElement,
+  id: ChildElementId
+): HTMLElement {
   const ele = getOptionalElement(rootEle, id as ChildElementId);
   if (ele) {
     return ele;

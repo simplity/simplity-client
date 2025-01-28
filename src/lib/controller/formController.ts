@@ -223,6 +223,14 @@ export class FC implements FormController {
       }
 
       /**
+       * key field may have a default value..
+       */
+      const keyValue = keyControl.getValue();
+      if (keyValue) {
+        this.pc.getList(fieldView, '' + keyValue);
+        this.pc.getList(fieldView, field.listKeyValue);
+      }
+      /**
        * wire the "change" event to get a keyed list for this drop-down-field
        */
       this.addEventListener(keyControl.name, 'change', (evt) => {

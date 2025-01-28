@@ -1,7 +1,7 @@
 import { Button, ButtonPanel, FormController } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { elementFactory } from './elementFactory';
-import { htmlUtil } from './htmlUtil';
+import { ChildElementId, htmlUtil } from './htmlUtil';
 
 /**
  * button panel renders action buttons, typically at the bottom of a form
@@ -31,7 +31,10 @@ export class ButtonPanelElement extends BaseElement {
       ['right', panel.rightButtons],
     ] as [string, Button[]][]) {
       if (buttons) {
-        const parent = htmlUtil.getChildElement(this.root, place);
+        const parent = htmlUtil.getChildElement(
+          this.root,
+          place as ChildElementId
+        );
         for (const button of buttons) {
           const ele = elementFactory.newElement(fc, button, 0);
           parent.appendChild(ele.root);

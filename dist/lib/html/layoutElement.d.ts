@@ -10,6 +10,12 @@ export declare class LayoutElement {
     private readonly pageEle;
     private readonly menuBarEle?;
     /**
+     * if a modal page is active
+     */
+    private readonly modalContainerEle;
+    private readonly modalPageParent;
+    private modalPageView?;
+    /**
      * html elements for any context-value being rendered in the layout
      */
     private readonly contextEles;
@@ -32,6 +38,7 @@ export declare class LayoutElement {
      * to be called if the page was opened after retaining the earlier page
      */
     closeCurrentPage(): void;
+    private closeModalPage;
     private purgeStack;
     private getInitialModule;
     private getInitialMenu;
