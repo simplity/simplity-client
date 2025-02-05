@@ -57,6 +57,7 @@ export declare class TEC implements TableEditorController {
      */
     validate(): boolean;
     private sanitizeIdx;
+    setDisplayState(_compName: string, _settings: Values): boolean;
     setColumnDisplayState(_columnName: string, _stateName: string, _stateValue: string | number | boolean): void;
     setCellDisplayState(_columnName: string, _stateName: string, _stateValue: string | number | boolean, _rowId?: number): void;
 }

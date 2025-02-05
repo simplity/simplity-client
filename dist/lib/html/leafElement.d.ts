@@ -7,8 +7,5 @@ import { BaseElement } from './baseElement';
  */
 export declare class LeafElement extends BaseElement {
     comp: StaticComp | Button;
-    /**
-     * to be called if this view component is to be available for any run-time changes lik enable/disable
-     */
     constructor(fc: FormController | undefined, comp: StaticComp | Button, maxWidth: number);
 }

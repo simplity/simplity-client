@@ -109,7 +109,7 @@ export class FC implements FormController {
   registerChild(view: BaseView): void {
     const name = view.name;
     if (this.children[name]) {
-      console.error(
+      logger.error(
         `${name} is a duplicate child-name for the form "${this.name}. This may create unexpected behavior"`
       );
       return;
@@ -235,9 +235,6 @@ export class FC implements FormController {
        */
       this.addEventListener(keyControl.name, 'change', (evt) => {
         const newValue = evt.newValue;
-        console.log(
-          `Triggering getList() for field '${field.name}' because field '${field.listKeyFieldName}' changed it's value to '${newValue}' `
-        );
         /**
          * empty list when key has no value,
          */
@@ -246,7 +243,6 @@ export class FC implements FormController {
           newValue === '' ||
           evt.newValidity === false
         ) {
-          console.log(`Triggering ${fieldView.name}.setList([])`);
           fieldView.setList([]);
           return;
         }
@@ -258,15 +254,9 @@ export class FC implements FormController {
           value = newValue.toString();
         }
 
-        console.log(`Triggering pc.getList([])`);
         this.pc.getList(fieldView, value);
       });
     }
-
-    /**
-     * all app-specific hook onFormRender
-     */
-    this.ac.formRendered(this);
   }
 
   getChildren(): StringMap<BaseView> {
@@ -398,7 +388,7 @@ export class FC implements FormController {
       if (value === undefined) {
         value = '';
       } else if (typeof value === 'object') {
-        console.error(
+        logger.error(
           `${name} is a field inside the form ${this.name} but an object is being set as its value. Ignored.`
         );
         continue;
@@ -459,7 +449,6 @@ export class FC implements FormController {
       }
     }
 
-    console.info(`extracted data:`, data, params);
     if (allOk) {
       return data;
     }
@@ -492,7 +481,7 @@ export class FC implements FormController {
       if (typeof value === 'object') {
         controller.setData(value as Vo | Vo[]);
       } else {
-        console.error(
+        logger.error(
           `${name} is a child-controller in the from "${this.name} but a primitive value of ${value} is being set. Value ignored"`
         );
       }
@@ -506,7 +495,7 @@ export class FC implements FormController {
     }
 
     if (typeof value === 'object') {
-      console.error(
+      logger.error(
         `${name} is a field but a non-primitive value is being set.`
       );
       return;
@@ -635,15 +624,19 @@ export class FC implements FormController {
     // feature not yet designed
   }
 
-  setDisplayState(
-    fieldName: string,
-    stateName: string,
-    stateValue: string | number | boolean
-  ): void {
-    const f = this.children[fieldName];
+  setDisplayState(compName: string, settings: Values): boolean {
+    const f = this.children[compName];
     if (f) {
-      f.setDisplayState(stateName, stateValue);
+      f.setDisplayState(settings);
+      return true;
     }
+
+    for (const c of Object.values(this.controllers)) {
+      if (c.setDisplayState(compName, settings)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   eventOccurred(evt: EventDetails): void {

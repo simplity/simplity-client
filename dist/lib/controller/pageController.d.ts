@@ -1,4 +1,4 @@
-import { FieldView, PageView, Vo, StringMap, PageController, AppController, FormController, DetailedMessage, FnStatus, Action, AnyValue, SimpleList, KeyedList, FormOperation, ServiceRequestOptions } from 'simplity-types';
+import { FieldView, PageView, Vo, Values, StringMap, PageController, AppController, FormController, DetailedMessage, FnStatus, Action, AnyValue, SimpleList, KeyedList, FormOperation, ServiceRequestOptions } from 'simplity-types';
 export declare class PC implements PageController {
     readonly name: string;
     /**
@@ -81,6 +81,7 @@ export declare class PC implements PageController {
      * @param activeActions
      */
     private doAct;
+    setDisplayState(compName: string, settings: Values): void;
     /**
      * an async action has returned. We have to continue the possible action-chain
      * @param action

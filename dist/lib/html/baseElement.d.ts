@@ -1,5 +1,5 @@
 import { HtmlTemplateName } from './htmlUtil';
-import { AppController, BaseComponent, BaseView, FormController, PageController } from 'simplity-types';
+import { AppController, BaseComponent, BaseView, FormController, PageController, Values } from 'simplity-types';
 /**
  * Base class to be extended by all view components
  * As of now, it is NOT a WebComponent, but a controller that is bound to the root html element.
@@ -17,13 +17,13 @@ export declare class BaseElement implements BaseView {
      */
     protected maxWidth: number;
     protected readonly logger: import("simplity-types").Logger;
-    protected readonly ac: AppController;
-    protected readonly pc: PageController;
+    readonly ac: AppController;
+    readonly pc: PageController;
     /**
      * If this is an input
      */
-    protected readonly inputEle?: HTMLInputElement;
-    protected labelEle?: HTMLElement;
+    readonly inputEle?: HTMLInputElement;
+    labelEle?: HTMLElement;
     readonly name: string;
     /**
      * root of the html element that this controller manages.
@@ -50,6 +50,6 @@ export declare class BaseElement implements BaseView {
      * @param msg
      */
     setError(msg: unknown): void;
-    setDisplayState(stateName: string, stateValue: string | number | boolean): void;
+    setDisplayState(settings: Values): void;
     clicked(): void;
 }

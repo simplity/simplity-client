@@ -178,7 +178,7 @@ export class ReportConfigurator {
         this.labels[name] = label;
       }
     } else {
-      console.error(
+      logger.error(
         'List configuration is not yet designed to handle dynamic columns'
       );
     }

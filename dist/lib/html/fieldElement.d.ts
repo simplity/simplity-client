@@ -1,4 +1,4 @@
-import { DataField, DetailedMessage, FieldView, SimpleList, Value, FormController } from 'simplity-types';
+import { DataField, DetailedMessage, FieldView, SimpleList, Value, FormController, Values } from 'simplity-types';
 import { BaseElement } from './baseElement';
 /**
  * Field is an element that has to render the value that it is given at run time.
@@ -97,4 +97,10 @@ export declare class FieldElement extends BaseElement implements FieldView {
     private setValueToSelect;
     able(enabled: boolean): void;
     setError(text: string | undefined): void;
+    /**
+     * overriding to apply disabled and valid states to teh right elements
+     * @param stateName
+     * @param stateValue
+     */
+    setDisplayState(settings: Values): void;
 }

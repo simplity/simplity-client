@@ -8,6 +8,8 @@ import {
   FormController,
   PageController,
   Panel,
+  Values,
+  ViewInitFunction,
 } from 'simplity-types';
 
 const DEFAULT_WIDTH = 4;
@@ -21,14 +23,14 @@ const DEFAULT_WIDTH = 4;
  */
 export class BaseElement implements BaseView {
   protected readonly logger = loggerStub.getLogger();
-  protected readonly ac: AppController;
-  protected readonly pc: PageController;
+  public readonly ac: AppController;
+  public readonly pc: PageController;
   /**
    * If this is an input
    */
-  protected readonly inputEle?: HTMLInputElement;
+  public readonly inputEle?: HTMLInputElement;
 
-  protected labelEle?: HTMLElement;
+  public labelEle?: HTMLElement;
 
   public readonly name: string;
   /**
@@ -108,6 +110,7 @@ export class BaseElement implements BaseView {
         this.clicked();
       });
     }
+
     /**
      *
      * input element is quite common. adding this simple line to the base itself
@@ -124,7 +127,23 @@ export class BaseElement implements BaseView {
         );
       }
     }
-    htmlUtil.initHtmlEle(this.root, this);
+
+    /**
+     * does this html require custom initialization?
+     */
+    const att = htmlUtil.getViewState(this.root, 'init');
+    if (att) {
+      const fnName: string = '' + att;
+      const fn = this.ac.getFn(fnName, 'init');
+      (fn.fn as ViewInitFunction)(this);
+    }
+
+    /**
+     * initial display states
+     */
+    if (comp.displayStates) {
+      this.setDisplayState(comp.displayStates);
+    }
   }
 
   /**
@@ -138,17 +157,10 @@ export class BaseElement implements BaseView {
     htmlUtil.setViewState(this.root, 'error', msg !== undefined);
   }
 
-  setDisplayState(
-    stateName: string,
-    stateValue: string | number | boolean
-  ): void {
-    /**
-     * we have one special case with inputElement where disabled is a pre-defined attribute to be set/reset
-     */
-    if (stateName === 'disabled' && this.inputEle) {
-      this.inputEle.disabled = !!stateValue;
+  setDisplayState(settings: Values): void {
+    for (const [name, value] of Object.entries(settings)) {
+      htmlUtil.setViewState(this.root, name, value);
     }
-    htmlUtil.setViewState(this.root, stateName, stateValue);
   }
 
   clicked() {

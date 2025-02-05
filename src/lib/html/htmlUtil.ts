@@ -1,19 +1,7 @@
+import { Value, ValueFormatter } from 'simplity-types';
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
-import { StringMap, Value, ValueFormatter } from 'simplity-types';
-import { BaseElement } from './baseElement';
 
-export type InitFunction = (ele: HTMLElement, view: BaseElement) => void;
-export type InitFunctions = StringMap<InitFunction>;
-
-/**
- * name under which global init functions are available in the window
- */
-declare const _html_init_functions: InitFunctions;
-/**
- * global variable name under which the init functions are made available
- */
-export const HTML_INIT_FUNCTIONS: string = '_html_init_functions';
 /**
  * display states that are designed by simplity
  */
@@ -38,7 +26,7 @@ const viewStates = {
   /**
    * generally meant for input field, but may be used for a wrapper that contain input fields
    */
-  inError: 'boolean',
+  invalid: 'boolean',
 
   /**
    * index of the element within its parent array.
@@ -223,11 +211,6 @@ export const htmlUtil = {
    * string otherwise
    */
   getViewState,
-
-  /**
-   * initialize an html element
-   */
-  initHtmlEle,
 };
 
 function getOptionalElement(
@@ -383,7 +366,7 @@ function getViewState(
 function setViewState(
   ele: HTMLElement,
   stateName: ViewState | string,
-  stateValue: string | number | boolean
+  stateValue: Value
 ): void {
   const vt = typeof stateValue;
   const knownOne = viewStates[stateName as ViewState];
@@ -410,23 +393,5 @@ function setViewState(
     ele.setAttribute(attName, val);
   } else {
     ele.removeAttribute(attName);
-  }
-}
-
-function initHtmlEle(ele: HTMLElement, view: BaseElement) {
-  if (!_html_init_functions) {
-    return;
-  }
-  /**
-   * does this html require custom initialization?
-   */
-  const att = htmlUtil.getViewState(ele, 'init');
-  if (!att) {
-    return;
-  }
-
-  const fn = _html_init_functions['' + att];
-  if (fn) {
-    fn(ele, view);
   }
 }

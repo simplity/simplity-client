@@ -1,11 +1,4 @@
-import { StringMap, Value, ValueFormatter } from 'simplity-types';
-import { BaseElement } from './baseElement';
-export type InitFunction = (ele: HTMLElement, view: BaseElement) => void;
-export type InitFunctions = StringMap<InitFunction>;
-/**
- * global variable name under which the init functions are made available
- */
-export declare const HTML_INIT_FUNCTIONS: string;
+import { Value, ValueFormatter } from 'simplity-types';
 /**
  * display states that are designed by simplity
  */
@@ -27,7 +20,7 @@ declare const viewStates: {
     /**
      * generally meant for input field, but may be used for a wrapper that contain input fields
      */
-    readonly inError: "boolean";
+    readonly invalid: "boolean";
     /**
      * index of the element within its parent array.
      * e.g. for a tr-element, this is the idx into the data-array that this tr is rendering from
@@ -136,10 +129,6 @@ export declare const htmlUtil: {
      * string otherwise
      */
     getViewState: typeof getViewState;
-    /**
-     * initialize an html element
-     */
-    initHtmlEle: typeof initHtmlEle;
 };
 declare function getOptionalElement(rootEle: HTMLElement, id: ChildElementId): HTMLElement | undefined;
 declare function getChildElement(rootEle: HTMLElement, id: ChildElementId): HTMLElement;
@@ -151,6 +140,5 @@ declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
 declare function formatValue(value: Value, formatter: ValueFormatter): string;
 declare function getViewState(ele: HTMLElement, stateName: string): string | boolean | undefined;
-declare function setViewState(ele: HTMLElement, stateName: ViewState | string, stateValue: string | number | boolean): void;
-declare function initHtmlEle(ele: HTMLElement, view: BaseElement): void;
+declare function setViewState(ele: HTMLElement, stateName: ViewState | string, stateValue: Value): void;
 export {};

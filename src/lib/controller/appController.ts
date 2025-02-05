@@ -23,10 +23,6 @@ import {
   ValueType,
   FunctionType,
   ValueSchema,
-  FormController,
-  PageController,
-  PageFunction,
-  FormFunction,
   NavigationOptions,
   Alert,
 } from 'simplity-types';
@@ -100,12 +96,6 @@ export class AC implements AppController {
    */
   private readonly agent: ServiceAgent;
 
-  /**
-   * hooks for page/form level functions for the app-client layer
-   */
-  private readonly onPageLoadFn?: PageFunction;
-  private readonly onFormRenderFn?: FormFunction;
-
   public constructor(
     /**
      * meta-data components for this apps
@@ -146,30 +136,6 @@ export class AC implements AppController {
 
     this.allMenus = runtime.menuItems || {};
     this.validationFns = this.createValidationFns(runtime.valueSchemas);
-
-    if (runtime.onPageLoadAction) {
-      this.onPageLoadFn = this.getFn(runtime.onPageLoadAction, 'page')
-        .fn as PageFunction;
-    }
-
-    if (runtime.onFormRenderAction) {
-      this.onFormRenderFn = this.getFn(runtime.onFormRenderAction, 'form')
-        .fn as FormFunction;
-    }
-  }
-
-  pageLoaded(pc: PageController): void {
-    //global hook for the app-client layer
-    if (this.onPageLoadFn) {
-      this.onPageLoadFn(pc, undefined, []);
-    }
-  }
-
-  formRendered(fc: FormController): void {
-    //global hook for the app-client layer
-    if (this.onFormRenderFn) {
-      this.onFormRenderFn(fc, undefined, []);
-    }
   }
 
   private createValidationFns(
@@ -194,7 +160,7 @@ export class AC implements AppController {
   }
 
   newError(msg: string): Error {
-    console.error(msg);
+    logger.error(msg);
     return new Error(msg);
   }
 

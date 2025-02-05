@@ -94,7 +94,7 @@ export declare class FC implements FormController {
     hasKeyValues(): boolean;
     valueHasChanged(fieldName: string, newValue: Value, newValidity?: boolean): void;
     valueIsChanging(_fieldName: string, _newValue: Value, _newValidity?: boolean): void;
-    setDisplayState(fieldName: string, stateName: string, stateValue: string | number | boolean): void;
+    setDisplayState(compName: string, settings: Values): boolean;
     eventOccurred(evt: EventDetails): void;
     act(actionName: string, params: unknown): void;
     private reportFieldErrors;

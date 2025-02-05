@@ -202,7 +202,7 @@ export class AppElement implements AppView {
     if (this.spinnerEle) {
       htmlUtil.setViewState(this.spinnerEle, 'hidden', false);
     } else {
-      console.error(
+      this.logger.error(
         `App has not provided an html-template named 'disable-ux'. UX is not disabled`
       );
     }

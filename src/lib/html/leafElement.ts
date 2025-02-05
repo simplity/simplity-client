@@ -19,9 +19,6 @@ const getTemplateName = (comp: StaticComp | Button): HtmlTemplateName | '' => {
  * This base class handles that part.
  */
 export class LeafElement extends BaseElement {
-  /**
-   * to be called if this view component is to be available for any run-time changes lik enable/disable
-   */
   constructor(
     fc: FormController | undefined,
     public comp: StaticComp | Button,

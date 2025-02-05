@@ -36,6 +36,7 @@ import {
   ServiceRequestOptions,
   DataController,
   FilterFields,
+  DisplayAction,
 } from 'simplity-types';
 import { FC } from './formController';
 import { app } from './app';
@@ -177,11 +178,6 @@ export class PC implements PageController {
        */
       this.saveIsUpdate = this.fc.hasKeyValues();
     }
-
-    /**
-     * any global init function ?
-     */
-    this.ac.pageLoaded(this);
 
     if (this.page.onLoadActions) {
       if (this.page.inputIsForUpdate && inputNames.length === 0) {
@@ -665,11 +661,19 @@ export class PC implements PageController {
     }
 
     p.activeActions[actionName] = true;
-
-    switch (action.type) {
+    const actionType = action.type;
+    switch (actionType) {
       case 'close':
         //todo: any checks and balances?'
         this.ac.navigate({ closePage: true });
+        break;
+
+      case 'display':
+        for (const [compName, settings] of Object.entries(
+          (action as DisplayAction).displaySettings
+        )) {
+          this.setDisplayState(compName, settings);
+        }
         break;
 
       case 'function':
@@ -765,7 +769,7 @@ export class PC implements PageController {
 
       default:
         addMessage(
-          `${action.type} is an invalid action-type specified in action ${actionName}`,
+          `${actionType} is an invalid action-type specified in action ${actionName}`,
           p.msgs
         );
         action = undefined; //so that we stop this chain..
@@ -774,6 +778,10 @@ export class PC implements PageController {
     }
 
     this.actionReturned(action, !errorFound, p);
+  }
+
+  setDisplayState(compName: string, settings: Values): void {
+    this.fc.setDisplayState(compName, settings);
   }
 
   /**

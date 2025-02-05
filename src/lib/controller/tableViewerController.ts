@@ -236,6 +236,9 @@ export class TWC implements TableViewerController {
       this.info.currentRowIdx = rowIdx;
     }
   }
+  setDisplayState(_compName: string, _settings: Values): boolean {
+    return false;
+  }
 }
 
 export class TableInfo {

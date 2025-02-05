@@ -7,6 +7,7 @@ import {
   systemResources,
   Value,
   FormController,
+  Values,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { HtmlTemplateName, htmlUtil } from './htmlUtil';
@@ -517,16 +518,17 @@ export class FieldElement extends BaseElement implements FieldView {
 
   public setError(text: string | undefined): void {
     if (!text) {
+      //is not in error
       if (!this.errorMessage) {
+        //was not in error
         return;
       }
       this.errorMessage = '';
       if (this.errorEle) {
         this.errorEle.innerText = '';
-        this.errorEle.removeAttribute('data-error');
-        return;
+        htmlUtil.setViewState(this.errorEle, 'invalid', false);
       }
-      this.setDisplayState('error', false);
+      htmlUtil.setViewState(this.fieldEle, 'invalid', false);
       return;
     }
 
@@ -537,12 +539,31 @@ export class FieldElement extends BaseElement implements FieldView {
     }
     if (this.errorEle) {
       this.errorEle.innerText = text;
-      this.errorEle.setAttribute('data-error', text);
+      htmlUtil.setViewState(this.errorEle, 'invalid', true);
     } else {
       this.logger.info(
         `field ${this.name} is invalid with an error message="${this.errorMessage}". The field rendering has no provision to show error message`
       );
-      this.setDisplayState('error', true);
+    }
+    htmlUtil.setViewState(this.fieldEle, 'invalid', true);
+  }
+
+  /**
+   * overriding to apply disabled and valid states to teh right elements
+   * @param stateName
+   * @param stateValue
+   */
+  setDisplayState(settings: Values): void {
+    for (const [name, value] of Object.entries(settings)) {
+      if (name === 'invalid') {
+        htmlUtil.setViewState(this.fieldEle!, name, value);
+        if (this.errorEle) {
+          htmlUtil.setViewState(this.errorEle, name, value);
+        }
+      } else if (name === 'disabled') {
+        this.inputEle!.disabled = !!value;
+      }
+      htmlUtil.setViewState(this.root, name, value);
     }
   }
 }

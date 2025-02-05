@@ -69,6 +69,7 @@ export declare class TWC implements TableViewerController {
     selectAllRows(toSelect: boolean): TableInfo;
     columnClicked(row: Vo, action: string): void;
     setCurrentRowIdx(rowIdx: number): void;
+    setDisplayState(_compName: string, _settings: Values): boolean;
 }
 export declare class TableInfo {
     /**

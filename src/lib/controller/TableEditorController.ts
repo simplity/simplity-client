@@ -84,7 +84,7 @@ export class TEC implements TableEditorController {
       this.setData(data as Values[]);
       return;
     }
-    console.error(
+    logger.error(
       `${this.name} is a table controller but a non-array data is being set. Data ignored`
     );
   }
@@ -222,6 +222,10 @@ export class TEC implements TableEditorController {
       return idx;
     }
     return undefined;
+  }
+
+  setDisplayState(_compName: string, _settings: Values): boolean {
+    return false;
   }
 
   setColumnDisplayState(
