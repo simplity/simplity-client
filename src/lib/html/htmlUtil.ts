@@ -7,6 +7,15 @@ import { loggerStub } from '../logger-stub/logger';
  */
 const viewStates = {
   /**
+   * clickable: some action will be triggered on click-of this element
+   */
+  clickable: 'boolean',
+
+  /**
+   * a row can be "selected", may be an item can be "selected"
+   */
+  selectable: 'boolean',
+  /**
    * true/false. Generally used for input fields.
    * However, we should be able to use it for wrapper elements that contain input fields
    */
@@ -50,8 +59,19 @@ const viewStates = {
    * initialization function for this element
    */
   init: 'string',
+
+  /**
+   * change alignment at run time. like right-align for numbers in a table-column
+   */
+  align: 'string',
+
+  /**
+   * how a column in a table is sorted.
+   * 'asc' or 'desc'
+   */
+  sorted: 'string',
 } as const;
-type ViewState = keyof typeof viewStates;
+export type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
@@ -365,17 +385,14 @@ function getViewState(
 
 function setViewState(
   ele: HTMLElement,
-  stateName: ViewState | string,
+  stateName: ViewState,
   stateValue: Value
 ): void {
   const vt = typeof stateValue;
   const knownOne = viewStates[stateName as ViewState];
-  if (knownOne) {
-    if (knownOne !== vt) {
-      logger.error(`displayState '${stateName}' takes a ${knownOne} value but ${stateValue} is being set.
-      state value not to the view-component   `);
-      return;
-    }
+  if (knownOne && knownOne !== vt) {
+    logger.warn(`displayState '${stateName}' takes a ${knownOne} value but ${stateValue} is being set.
+      state value not set to the view-component`);
   }
 
   const attName = 'data-' + stateName;

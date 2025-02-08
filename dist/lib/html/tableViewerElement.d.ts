@@ -49,7 +49,7 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private sortedRows;
     private sortedAscending;
     constructor(fc: FormController, table: TableViewer, maxWidth: number);
-    private initHeaderDetails;
+    private createHeaderDetails;
     private renderHeaders;
     /**
      *

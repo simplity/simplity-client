@@ -131,9 +131,14 @@ export class TWC implements TableViewerController {
     logger.info(`Quick search initiated for text=${text}`);
   }
 
-  receiveData(data: Vo | Vo[]): void {
+  public receiveData(data: Vo | Vo[]): void {
     if (Array.isArray(data)) {
       this.setData(data as Values[]);
+      return;
+    }
+    let arr = data[this.name] || data['list'];
+    if (arr && Array.isArray(arr)) {
+      this.setData(arr as Values[]);
       return;
     }
     logger.error(
@@ -171,6 +176,16 @@ export class TWC implements TableViewerController {
       );
       this.pc.act(this.table.onRowClick, undefined, this.data[idx]);
     }
+  }
+
+  public cellClicked(rowIdx: number, action: string): void {
+    const idx = this.sanitizeIdx(rowIdx);
+    if (idx === undefined) {
+      return;
+    }
+    this.currentIdx = idx;
+    this.info.currentRowIdx = idx;
+    this.pc.act(action, undefined, this.data[idx]);
   }
 
   public isValid(): boolean {

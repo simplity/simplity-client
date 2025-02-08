@@ -62,6 +62,7 @@ export declare class TWC implements TableViewerController {
     setData(data: Values[]): void;
     getData(): Values[];
     rowClicked(rowIdx: number): void;
+    cellClicked(rowIdx: number, action: string): void;
     isValid(): boolean;
     validate(): boolean;
     private sanitizeIdx;

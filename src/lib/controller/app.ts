@@ -35,7 +35,7 @@ export const app = {
     listServiceName: '_getList',
 
     /**
-     * special pre-defined service to get drop-down values
+     * special pre-defined service to get a report
      */
     reportServiceName: '_getReportSettings',
     /**

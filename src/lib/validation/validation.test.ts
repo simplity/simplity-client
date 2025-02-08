@@ -875,7 +875,7 @@ describe.each(Object.entries(testSets))('%s', (_desc, cases) => {
     if (okTests && okTests.length) {
       it.each(okTests)('"value" should be valid', ({ value, parsedValue }) => {
         //we want to test with Value types though the spec requires string to check their robustness
-        const res = fn(value as string); //Actually value MAY NOT be string
+        const res = fn({ value: value as string }); //Actually value MAY NOT be string
         const pv = parsedValue === undefined ? (value as Value) : parsedValue;
         expect(res.messages).toBeUndefined();
         expect(res.value).toBe(pv);

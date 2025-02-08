@@ -10,20 +10,24 @@ import {
   Values,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
-import { HtmlTemplateName, htmlUtil } from './htmlUtil';
+import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
 import { parseToValue } from '../validation/validation';
 
 function getTemplateName(field: DataField): HtmlTemplateName | '' {
-  const name = field.renderAs;
-  if (name === 'hidden' || name === 'custom') {
+  const ras = field.renderAs;
+  if (!ras) {
+    return 'text-field';
+  }
+  if (ras === 'hidden' || ras === 'custom') {
     return '';
   }
-  if (name === 'text-field' && field.valueType === 'date') {
+
+  if (ras === 'text-field' && field.valueType === 'date') {
     return 'date-field';
   }
-  return name;
+  return ras;
 }
-const NO_VALIDATION: FieldRendering[] = ['output', 'select-output'];
+
 /**
  * Field is an element that has to render the value that it is given at run time.
  * Input fields allow the user to enter/alter the value.
@@ -101,7 +105,9 @@ export class FieldElement extends BaseElement implements FieldView {
   ) {
     super(fc, field, getTemplateName(field), maxWidth);
 
-    this.fieldRendering = field.renderAs;
+    if (field.renderAs) {
+      this.fieldRendering = field.renderAs;
+    }
 
     this.fieldEle = htmlUtil.getChildElement(this.root, 'field')!;
     /**
@@ -120,9 +126,7 @@ export class FieldElement extends BaseElement implements FieldView {
 
     this.fieldEle.setAttribute('name', field.name);
 
-    if (NO_VALIDATION.indexOf(field.renderAs) === -1) {
-      this.errorEle = htmlUtil.getOptionalElement(this.root, 'error');
-    }
+    this.errorEle = htmlUtil.getOptionalElement(this.root, 'error');
 
     this.wireEvents();
 
@@ -554,16 +558,21 @@ export class FieldElement extends BaseElement implements FieldView {
    * @param stateValue
    */
   setDisplayState(settings: Values): void {
-    for (const [name, value] of Object.entries(settings)) {
-      if (name === 'invalid') {
-        htmlUtil.setViewState(this.fieldEle!, name, value);
-        if (this.errorEle) {
-          htmlUtil.setViewState(this.errorEle, name, value);
-        }
-      } else if (name === 'disabled') {
-        this.inputEle!.disabled = !!value;
+    let setting: ViewState = 'invalid';
+    let val = settings[setting];
+    if (val !== undefined) {
+      htmlUtil.setViewState(this.fieldEle!, setting, !!val);
+      if (this.errorEle) {
+        htmlUtil.setViewState(this.errorEle, setting, !!val);
       }
-      htmlUtil.setViewState(this.root, name, value);
+      delete settings[setting];
     }
+    setting = 'disabled';
+    val = settings[setting];
+    if (val !== undefined) {
+      htmlUtil.setViewState(this.root, setting, !!val);
+      delete settings[setting];
+    }
+    super.setDisplayState(settings);
   }
 }

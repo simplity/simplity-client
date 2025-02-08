@@ -62,11 +62,11 @@ export declare class PC implements PageController {
     requestGet(controller: FormController, toDisableUx: boolean, params?: StringMap<boolean>, callback?: (allOK: boolean) => void): void;
     requestSave(saveOperation: 'update' | 'create' | 'delete' | 'save', controller: FormController, toDisableUx: boolean, callback?: (allOK: boolean) => void): void;
     requestService(serviceName: string, options?: ServiceRequestOptions): void;
-    act(actionName: string, controller?: FormController | undefined, params?: unknown): void;
-    addAction(action: Action): void;
+    takeAction(action: Action, controller?: FormController, params?: StringMap<any>): void;
+    act(actionName: string, controller?: FormController, params?: StringMap<any>): void;
     addList(name: string, list: SimpleList | KeyedList): void;
     addFunction(name: string, fn: () => unknown): void;
-    callFunction(name: string, params: unknown, msgs?: DetailedMessage[], controller?: FormController): FnStatus;
+    callFunction(name: string, params?: StringMap<any>, msgs?: DetailedMessage[], controller?: FormController): FnStatus;
     private setButtonDisplays;
     private checkTitle;
     private serve;

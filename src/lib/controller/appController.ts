@@ -654,7 +654,7 @@ export class AC implements AppController {
         ],
       };
     }
-    return fn(value);
+    return fn({ value });
   }
 
   validateType(valueType: ValueType, textValue: string): ValueValidationResult {

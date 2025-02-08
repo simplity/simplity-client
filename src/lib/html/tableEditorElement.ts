@@ -94,7 +94,7 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
    */
   public appendRow(fc: FormController, rowIdx: number, values?: Values) {
     const rowEle = this.dataRowEle.cloneNode(true) as HTMLElement;
-    rowEle.setAttribute('data-idx', rowIdx.toString());
+    htmlUtil.setViewState(rowEle, 'idx', rowIdx);
 
     for (const column of this.table.children) {
       const cellEle = this.dataCellEle.cloneNode(true) as HTMLElement;

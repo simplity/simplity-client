@@ -189,26 +189,26 @@ export function createValidationFn(schema: ValueSchema): ValueValidationFn {
  * createXxxFn functions are  designed to minimize the scope of teh closure around the returned function
  */
 function createTextFn(schema: SchemaForText): ValueValidationFn {
-  return (value: string) => {
-    return validateString(schema, value);
+  return (p: { value: string }) => {
+    return validateString(schema, p.value);
   };
 }
 
 function createNumberFn(schema: SchemaForNumber): ValueValidationFn {
-  return (value: string) => {
-    return validateNumber(schema, value);
+  return (p: { value: string }) => {
+    return validateNumber(schema, p.value);
   };
 }
 
 function createDateFn(schema: SchemaForDate): ValueValidationFn {
-  return (value: string) => {
-    return validateDate(schema, value);
+  return (p: { value: string }) => {
+    return validateDate(schema, p.value);
   };
 }
 
 function createTimestampFn(schema: SchemaForDate): ValueValidationFn {
-  return (value: string) => {
-    return validateTimestamp(schema, value);
+  return (p: { value: string }) => {
+    return validateTimestamp(schema, p.value);
   };
 }
 
@@ -308,7 +308,8 @@ function validateNumber(
  * @param value
  * @returns
  */
-function validateBoolean(value: string): ValueValidationResult {
+function validateBoolean(param: { value: string }): ValueValidationResult {
+  const value = param.value;
   if (value === undefined || value === null || Number.isNaN(value)) {
     return { value: false };
   }

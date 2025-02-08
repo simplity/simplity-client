@@ -11,15 +11,17 @@ import {
   FormController,
   Value,
   Markups,
+  StaticComp,
+  Button,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
-import { htmlUtil } from './htmlUtil';
+import { htmlUtil, ViewState } from './htmlUtil';
 import { elementFactory } from './elementFactory';
 import { LeafElement } from './leafElement';
 import { FieldElement } from './fieldElement';
 
 type SortedRow = { idx: number; value: Value };
-type HeaderDetails = ValueRenderingDetails & { comp?: LeafComponent };
+type HeaderDetails = ValueRenderingDetails & { comp?: Button | StaticComp };
 export class TableViewerElement extends BaseElement implements TableViewerView {
   private twc: TableViewerController;
   /**
@@ -131,46 +133,72 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     this.dataRowEle.remove();
 
     if (this.table.onRowClick) {
-      this.tableEle.setAttribute('data-clickable', '');
+      htmlUtil.setViewState(this.tableEle, 'clickable', true);
     }
 
     if (table.selectFieldName) {
-      this.tableEle.setAttribute('data-selectable', '');
+      htmlUtil.setViewState(this.tableEle, 'selectable', true);
     }
 
     this.twc = this.fc.newTableViewerController(this);
 
     this.initSearch();
     this.initConfig();
-    this.initHeaderDetails();
-    if (this.columnDetails) {
-      this.renderHeaders(this.columnDetails);
+    const details = this.createHeaderDetails();
+    if (details) {
+      this.columnDetails = details;
+      /**
+       * populate the map for look-up purpose for dynamic columns
+       */
+      for (const col of details) {
+        this.columnDetailsMap[col.name] = col;
+      }
+      this.renderHeaders(details);
     }
   }
 
   /////////////////// methods to render rows
 
-  private initHeaderDetails() {
+  private createHeaderDetails(): HeaderDetails[] | undefined {
     //readily available on a platter?
     if (this.table.columns) {
-      this.columnDetails = this.table.columns;
-    } else if (this.table.children) {
+      return this.table.columns;
+    }
+
+    const details: HeaderDetails[] = [];
+    if (this.table.children) {
       //infer from child components
-      this.columnDetails = [];
       for (const child of this.table.children) {
-        this.columnDetails.push({
+        let field =
+          child.compType === 'field' || child.compType === 'referred'
+            ? (child as DataField)
+            : undefined;
+
+        if (field && field.hideInList) {
+          continue;
+        }
+
+        const hd: HeaderDetails = {
           name: child.name,
           label: child.label || htmlUtil.toLabel(child.name),
-          valueType:
-            child.compType === 'field'
-              ? (child as DataField).valueType
-              : 'text',
-          comp: child,
-        });
+          valueType: 'text',
+        };
+        if (field) {
+          hd.valueType = field.valueType;
+          hd.labelAttributes = field.labelAttributes;
+          hd.valueFormatter = field.valueFormatter;
+          hd.formattingFn = field.formattingFn;
+          hd.onClick = field.onClick;
+        } else {
+          hd.comp = child as StaticComp | Button;
+        }
+        details.push(hd);
       }
-    } else if (this.table.formName) {
+      return details;
+    }
+
+    if (this.table.formName) {
       //if form is given, we assume all the fields in the form
-      this.columnDetails = [];
       const form = this.ac.getForm(this.table.formName);
       for (const name of form.fieldNames) {
         const field = form.fields[name]!;
@@ -179,27 +207,25 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
           continue;
         }
 
-        this.columnDetails.push({
+        details.push({
           name,
           label: field.label || htmlUtil.toLabel(field.name),
           valueType: field.valueType,
+          labelAttributes: field.labelAttributes,
+          valueFormatter: field.valueFormatter,
+          formattingFn: field.formattingFn,
+          onClick: field.onClick,
         });
       }
-    } else {
-      this.logger.info(
-        `Table ${this.name} has no design-time columns. 
-        Hence the header row is not rendered onload.
-        columns will be rendered as and when data is received`
-      );
-      return;
+      return details;
     }
 
-    /**
-     * populate the map for look-up purpose for dynamic columns
-     */
-    for (const col of this.columnDetails) {
-      this.columnDetailsMap[col.name] = col;
-    }
+    this.logger.info(
+      `Table ${this.name} has no design-time columns. 
+        Hence the header row is not rendered onload.
+        columns will be rendered as and when data is received`
+    );
+    return undefined;
   }
 
   private renderHeaders(cols: HeaderDetails[]): void {
@@ -229,7 +255,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
      */
 
     if (this.columnDetails && columnNames === undefined) {
-      this.renderRows(data, this.columnDetails!);
+      this.renderRows(data, this.columnDetails);
       return;
     }
 
@@ -253,6 +279,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
         const textValue = this.formatColumnValue(value, col, row);
 
         if (col.comp) {
+          //comp is a static element.
           this.addTdForComp(textValue, col.comp, rowEle, searchRow);
           continue;
         }
@@ -260,13 +287,19 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
         const isNumeric =
           col.valueType === 'integer' || col.valueType === 'decimal';
         const td = this.addTd(textValue, isNumeric, rowEle, searchRow);
-        if (col.valueFormatterFn) {
-          const fn = this.ac.getFn(col.valueFormatterFn, 'format')
+        if (col.onClick) {
+          htmlUtil.setViewState(td, 'clickable', true);
+          td.addEventListener('click', () => {
+            this.twc.cellClicked(idx, col.onClick!);
+          });
+        }
+        if (col.formattingFn) {
+          const fn = this.ac.getFn(col.formattingFn, 'format')
             .fn as FormatterFunction;
           const fd = fn(value, row);
           if (fd.markups) {
             for (const [name, attr] of Object.entries(fd.markups as Markups)) {
-              td.setAttribute('data-' + name, attr);
+              htmlUtil.setViewState(td, name as ViewState, attr);
             }
           }
         }
@@ -286,7 +319,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     const td = this.dataCellEle.cloneNode(true) as HTMLElement;
     htmlUtil.appendText(td, value);
     if (isNumeric) {
-      td.setAttribute('data-align', 'right');
+      htmlUtil.setViewState(td, 'align', 'right');
     }
 
     rowEle.appendChild(td);
@@ -307,7 +340,10 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     let ele: BaseElement | undefined;
 
     if (leafComp.compType === 'field' || leafComp.compType === 'referred') {
-      ele = new FieldElement(undefined, leafComp as DataField, 0);
+      //fields have to be rendered as output
+      const df = { ...leafComp } as DataField;
+      df.renderAs = 'output';
+      ele = new FieldElement(undefined, df, 0);
     } else {
       ele = new LeafElement(undefined, leafComp, 0);
     }
@@ -324,8 +360,8 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     vrd: HeaderDetails,
     row: Values
   ): string {
-    if (vrd.valueFormatterFn) {
-      const fn = this.ac.getFn(vrd.valueFormatterFn, 'format')
+    if (vrd.formattingFn) {
+      const fn = this.ac.getFn(vrd.formattingFn, 'format')
         .fn as FormatterFunction;
       const fd = fn(value, row);
       return fd.value;
@@ -359,22 +395,13 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
 
   private addTr(idx: number): HTMLElement {
     const ele = this.dataRowEle.cloneNode(true) as HTMLElement;
-    ele.setAttribute('data-idx', idx.toString());
+    htmlUtil.setViewState(ele, 'idx', idx);
     /**
      * Controller needs to know WHENEVER a row is clicked.
      * as a minimum, the controller has to track "current row"
      */
 
-    ele.addEventListener('click', (evt) => {
-      const str = htmlUtil.getViewState(ele, 'idx');
-      const idx = +('' + str);
-      if (Number.isNaN(idx)) {
-        this.logger.error(
-          `Design error. data-idx for tr is non-numeric`,
-          evt.target
-        );
-        return;
-      }
+    ele.addEventListener('click', () => {
       this.twc.rowClicked(idx);
     });
 
@@ -386,7 +413,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     const ele = this.headerCellEle.cloneNode(true) as HTMLElement;
     this.columnHeaders[name] = ele;
     if (isNumeric) {
-      ele.setAttribute('data-align', 'right');
+      htmlUtil.setViewState(ele, 'align', 'right');
     }
     if (this.sortable) {
       ele.addEventListener('click', () => {
@@ -405,6 +432,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
    */
   private getDynamicHeader(data: Values[], names?: string[]): HeaderDetails[] {
     let allCols = this.columnDetails;
+    //no predefined columns. create them based on the first row
     if (!allCols) {
       allCols = [];
       for (const [name, value] of Object.entries(data[0])) {
@@ -423,7 +451,14 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     const cols: HeaderDetails[] = [];
 
     for (const name of names) {
-      cols.push(this.columnDetailsMap![name]);
+      const d = this.columnDetailsMap![name];
+      if (d) {
+        cols.push(d);
+      } else {
+        this.logger
+          .error(`Column '${name}' is requested at run time, but that is not a valid field/child/column as per design time parameters.
+          Column is not rendered`);
+      }
     }
 
     return cols;
@@ -570,12 +605,16 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     if (this.sortedOn === column) {
       this.reverseRows();
       this.sortedAscending = !this.sortedAscending;
-      th.setAttribute('data-sorted', this.sortedAscending ? 'asc' : 'desc');
+      htmlUtil.setViewState(
+        th,
+        'sorted',
+        this.sortedAscending ? 'asc' : 'desc'
+      );
     } else {
       if (this.sortedOn) {
         this.columnHeaders[this.sortedOn].removeAttribute('data-sorted');
       }
-      th.setAttribute('data-sorted', 'asc');
+      htmlUtil.setViewState(th, 'sorted', 'asc');
       this.sortedAscending = true;
       this.sortRows(column);
     }

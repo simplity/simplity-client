@@ -1,6 +1,6 @@
 import { loggerStub } from '../logger-stub/logger';
 import { app } from '../controller/app';
-import { HtmlTemplateName, htmlUtil } from './htmlUtil';
+import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
 import {
   AppController,
   BaseComponent,
@@ -154,16 +154,19 @@ export class BaseElement implements BaseView {
     this.logger.warn(
       `component type ${this.comp.compType} has not implemented setError(), but a request is received with value="${msg}"`
     );
-    htmlUtil.setViewState(this.root, 'error', msg !== undefined);
+    htmlUtil.setViewState(this.root, 'invalid', msg !== undefined);
   }
 
   setDisplayState(settings: Values): void {
     for (const [name, value] of Object.entries(settings)) {
-      htmlUtil.setViewState(this.root, name, value);
+      htmlUtil.setViewState(this.root, name as ViewState, value);
     }
   }
 
   clicked() {
+    console.info(
+      `${this.comp.name} clicked with onClick='${this.comp.onClick}'`
+    );
     const action = this.comp.onClick;
     if (action) {
       if (this.fc) {

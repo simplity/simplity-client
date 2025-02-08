@@ -4,6 +4,14 @@ import { Value, ValueFormatter } from 'simplity-types';
  */
 declare const viewStates: {
     /**
+     * clickable: some action will be triggered on click-of this element
+     */
+    readonly clickable: "boolean";
+    /**
+     * a row can be "selected", may be an item can be "selected"
+     */
+    readonly selectable: "boolean";
+    /**
      * true/false. Generally used for input fields.
      * However, we should be able to use it for wrapper elements that contain input fields
      */
@@ -40,8 +48,17 @@ declare const viewStates: {
      * initialization function for this element
      */
     readonly init: "string";
+    /**
+     * change alignment at run time. like right-align for numbers in a table-column
+     */
+    readonly align: "string";
+    /**
+     * how a column in a table is sorted.
+     * 'asc' or 'desc'
+     */
+    readonly sorted: "string";
 };
-type ViewState = keyof typeof viewStates;
+export type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
@@ -140,5 +157,5 @@ declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
 declare function formatValue(value: Value, formatter: ValueFormatter): string;
 declare function getViewState(ele: HTMLElement, stateName: string): string | boolean | undefined;
-declare function setViewState(ele: HTMLElement, stateName: ViewState | string, stateValue: Value): void;
+declare function setViewState(ele: HTMLElement, stateName: ViewState, stateValue: Value): void;
 export {};

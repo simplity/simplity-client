@@ -659,7 +659,7 @@ export class FC implements FormController {
     }
   }
 
-  act(actionName: string, params: unknown): void {
+  act(actionName: string, params?: StringMap<any>): void {
     this.pc.act(actionName, this, params);
   }
 

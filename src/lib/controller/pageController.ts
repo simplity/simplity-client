@@ -45,7 +45,7 @@ type StringSet = StringMap<boolean>;
 
 type ActionParameters = {
   fc?: FormController;
-  params?: unknown;
+  params?: StringMap<any>;
   msgs: DetailedMessage[];
   activeActions: StringSet;
 };
@@ -283,7 +283,7 @@ export class PC implements PageController {
     const ops = form.operations;
     if (!ops) {
       addMessage(
-        `Form controller ${this.name} is not associated with a form. Can not do form based service`,
+        `Form ${form.name} is not designed for any form operation. Can not do form based service`,
         messages
       );
       return '';
@@ -298,7 +298,7 @@ export class PC implements PageController {
 
     if (!ops[operation]) {
       addMessage(
-        `${operation} is not allowed on the form ${this.name}`,
+        `operation '${operation}' is not allowed on the form ${this.name}`,
         messages
       );
       return '';
@@ -413,13 +413,32 @@ export class PC implements PageController {
       }
     });
   }
+
+  takeAction(
+    action: Action,
+    controller?: FormController,
+    params?: StringMap<any>
+  ): void {
+    const ap: ActionParameters = {
+      params,
+      msgs: [],
+      fc: controller || this.fc,
+      activeActions: {},
+    };
+
+    /**
+     * actions may trigger other actions that may lead to infinite-loops.
+     * we treat recursive call to the  same action as an infinite-loop.
+     */
+    this.doAct(action.name, ap, action);
+  }
   act(
     actionName: string,
-    controller?: FormController | undefined,
-    params?: unknown
+    controller?: FormController,
+    params?: StringMap<any>
   ): void {
     /**
-     * run time actions override design time actions.
+     * run time functions override design time actions.
      * Also, run time action is just a function, and has no feature for "before" or "after" action
      */
     const fn = this.functions[actionName];
@@ -441,14 +460,6 @@ export class PC implements PageController {
     this.doAct(actionName, ap);
   }
 
-  addAction(action: Action): void {
-    const name = action.name;
-    if (this.actions[name]) {
-      logger.warn(`Action "${name}" overrides as existing action`);
-    }
-    this.actions[name] = action;
-  }
-
   addList(name: string, list: SimpleList | KeyedList): void {
     this.lists[name] = list;
   }
@@ -459,7 +470,7 @@ export class PC implements PageController {
 
   callFunction(
     name: string,
-    params: unknown,
+    params?: StringMap<any>,
     msgs?: DetailedMessage[],
     controller?: FormController
   ): FnStatus {
@@ -504,7 +515,7 @@ export class PC implements PageController {
           logger.warn(
             `function ${name} is a validation function, but is being called in a non-validation context in page ${this.name}`
           );
-          ret = (entry.fn as ValueValidationFn)(params as string);
+          ret = (entry.fn as ValueValidationFn)(params as { value: string });
           break;
 
         case 'request':
@@ -635,10 +646,29 @@ export class PC implements PageController {
    * @param params
    * @param activeActions
    */
-  private doAct(actionName: string, p: ActionParameters): void {
-    let action: Action | undefined = this.actions[actionName];
-    let errorFound: boolean = false;
+  private doAct(
+    actionName: string,
+    p: ActionParameters,
+    action?: Action
+  ): void {
+    if (!action) {
+      action = this.actions[actionName];
+      //several actions have params. Hence this lint command
+      //merge params. run-time must override design-time in case of a clash
+      if (action) {
+        //@ts-expect-error
+        const ap = action.params as StringMap<any>;
+        if (ap) {
+          if (p.params) {
+            p.params = { ...ap, ...p.params };
+          } else {
+            p.params = ap;
+          }
+        }
+      }
+    }
 
+    let errorFound: boolean = false;
     const controller = p.fc || this.fc;
     if (!action) {
       addMessage(
@@ -911,7 +941,7 @@ export class PC implements PageController {
     }
 
     const serviceName = this.getServiceName(
-      fc.getFormName(),
+      action.formName || fc.getFormName(),
       action.formOperation,
       messages
     );
@@ -1041,12 +1071,15 @@ function getConditions(
   }
 
   for (const [field, param] of Object.entries(params)) {
-    const val = rootData![field] as Value;
+    let val = param.fieldValue as Value;
+    if (val === undefined) {
+      val = rootData![field] as Value;
+    }
 
-    if (!val) {
+    if (val === undefined || val === '') {
       if (param.isRequired) {
         addMessage(
-          `value missing for parameter ${field}. fetch action will abort.`,
+          `value missing for parameter ${field}. Action will abort.`,
           msgs
         );
         return undefined;
@@ -1061,22 +1094,33 @@ function getConditions(
     };
 
     if (param.comparator === '><') {
-      const toField = param.toField;
-
-      if (toField) {
-        filter.toValue = rootData![toField] as string | number;
-      } else {
-        addMessage(
-          `toField not specified for for field ${field} for its >< operation. filter action will abort.`,
-          msgs
-        );
-        return undefined;
+      let toValue = param.toFieldValue as Value;
+      if (toValue === undefined) {
+        const toField = param.toField;
+        if (!toField) {
+          addMessage(
+            `toField not specified for for field ${field} for its >< operation. filter action will abort.`,
+            msgs
+          );
+          return undefined;
+        }
+        toValue = rootData![toField] as Value;
+        if (toValue === undefined || val === '') {
+          if (param.isRequired) {
+            addMessage(
+              `value missing for parameter ${toField} that is defined as the to-field for ${field}. Action will abort.`,
+              msgs
+            );
+            return undefined;
+          }
+          continue;
+        }
       }
-    }
 
+      filter.toValue = toValue;
+    }
     filters.push(filter);
   }
-
   return filters;
 }
 

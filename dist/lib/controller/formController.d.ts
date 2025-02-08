@@ -96,7 +96,7 @@ export declare class FC implements FormController {
     valueIsChanging(_fieldName: string, _newValue: Value, _newValidity?: boolean): void;
     setDisplayState(compName: string, settings: Values): boolean;
     eventOccurred(evt: EventDetails): void;
-    act(actionName: string, params: unknown): void;
+    act(actionName: string, params?: StringMap<any>): void;
     private reportFieldErrors;
     private isInterFieldValid;
     private checkName;
