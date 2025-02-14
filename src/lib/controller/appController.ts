@@ -96,6 +96,13 @@ export class AC implements AppController {
    */
   private readonly agent: ServiceAgent;
 
+  /**
+   * fragile design to manage multiple requests to disable/enable involving async calls
+   * is enabled when 0.
+   * TODO: when a function throws error after disabling!!!
+   */
+  private disableUxCount = 0;
+
   public constructor(
     /**
      * meta-data components for this apps
@@ -205,11 +212,33 @@ export class AC implements AppController {
   }
 
   disableUx(): void {
-    this.appView.disableUx();
+    if (this.disableUxCount === 0) {
+      this.appView.disableUx();
+    }
+    this.disableUxCount++;
+    console.info(`disableCount upped to ${this.disableUxCount}`);
   }
 
-  enableUx(): void {
-    this.appView.enableUx();
+  enableUx(force?: boolean): void {
+    console.info(`Request for enable when count is at ${this.disableUxCount}`);
+    if (force) {
+      console.info(`Enabling with force`);
+      this.disableUxCount = 0;
+      this.appView.enableUx();
+      return;
+    }
+
+    this.disableUxCount--;
+    if (this.disableUxCount === 0) {
+      this.appView.enableUx();
+      return;
+    }
+    if (this.disableUxCount < 0) {
+      logger.error(
+        `Request to enable the UX when it is already enabled. Possible internal error, or exception in some path`
+      );
+      this.disableUxCount = 0;
+    }
   }
 
   showAlerts(alerts: Alert[]): void {
@@ -437,18 +466,8 @@ export class AC implements AppController {
   }
 
   //server-related
-  async serve(
-    serviceName: string,
-    data?: Vo,
-    toDisableUx?: boolean
-  ): Promise<ServiceResponse> {
-    if (toDisableUx) {
-      this.disableUx();
-    }
+  async serve(serviceName: string, data?: Vo): Promise<ServiceResponse> {
     const resp = await this.agent.serve(serviceName, this.sessionId, data);
-    if (toDisableUx) {
-      this.disableUx();
-    }
     if (resp.status === 'noSuchSession') {
       // TODO: handle server session timeout.
       logger.warn(

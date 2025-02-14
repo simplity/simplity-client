@@ -100,7 +100,6 @@ export class ReportConfigurator {
        */
       this.pc.requestService(REPORT_SERVICE_NAME, {
         payload: { reportName: this.table.reportName! },
-        toDisableUx: false,
         callback: (vo) => {
           this.settingsReceived(vo);
         },

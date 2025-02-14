@@ -31,6 +31,12 @@ export declare class AC implements AppController {
      * can be a dummy for testing/demo version
      */
     private readonly agent;
+    /**
+     * fragile design to manage multiple requests to disable/enable involving async calls
+     * is enabled when 0.
+     * TODO: when a function throws error after disabling!!!
+     */
+    private disableUxCount;
     constructor(
     /**
      * meta-data components for this apps
@@ -59,7 +65,7 @@ export declare class AC implements AppController {
     renderAsPopup(panel: PanelView): void;
     setPageTitle(title: string): void;
     disableUx(): void;
-    enableUx(): void;
+    enableUx(force?: boolean): void;
     showAlerts(alerts: Alert[]): void;
     isPageValid(page: string): boolean;
     getLayout(nam: string): Layout;
@@ -83,7 +89,7 @@ export declare class AC implements AppController {
     logout(): void;
     atLeastOneAllowed(ids: string[]): boolean;
     setAccessControls(ids: string): void;
-    serve(serviceName: string, data?: Vo, toDisableUx?: boolean): Promise<ServiceResponse>;
+    serve(serviceName: string, data?: Vo): Promise<ServiceResponse>;
     downloadServiceResponse(fileName: string, serviceName: string, data: Vo | undefined): Promise<boolean>;
     getList(listName: string, forceRefresh: boolean, key?: number | string): Promise<SimpleList>;
     getKeyedList(listName: string, forceRefresh: boolean): Promise<KeyedList>;

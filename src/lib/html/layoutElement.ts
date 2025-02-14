@@ -121,9 +121,6 @@ export class LayoutElement {
   }
 
   renderPage(pageName: string, options: NavigationOptions): void {
-    console.info(
-      `going to render page '${pageName}' with asModal=${options.asModal}`
-    );
     const page = this.ac.getPage(pageName);
 
     if (options.erasePagesOnTheStack) {

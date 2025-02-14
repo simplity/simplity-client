@@ -159,7 +159,6 @@ export class AppElement implements AppView {
     }
     const txt = this.messageTextEle.innerText;
     if (txt) {
-      console.info(`We Still have the old message. Appending current message`);
       msg = txt + '\n' + msg;
     }
     this.messageTextEle.innerText = msg;

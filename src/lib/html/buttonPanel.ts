@@ -19,9 +19,6 @@ export class ButtonPanelElement extends BaseElement {
     maxWidth: number
   ) {
     super(fc, panel, 'button-panel', maxWidth);
-    console.info(
-      `Button panel called with maxWidth='${maxWidth}' with attr='${htmlUtil.getViewState(this.root, 'full')}'`
-    );
     /**
      * render the three sets of buttons
      */

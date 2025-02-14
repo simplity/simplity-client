@@ -59,8 +59,8 @@ export declare class PC implements PageController {
     showMessages(messages: DetailedMessage[]): void;
     getList(control: FieldView, key?: string | number | undefined): void;
     getServiceName(formName: string | undefined, operation: FormOperation, messages: DetailedMessage[]): string;
-    requestGet(controller: FormController, toDisableUx: boolean, params?: StringMap<boolean>, callback?: (allOK: boolean) => void): void;
-    requestSave(saveOperation: 'update' | 'create' | 'delete' | 'save', controller: FormController, toDisableUx: boolean, callback?: (allOK: boolean) => void): void;
+    requestGet(controller: FormController, params?: StringMap<boolean>, callback?: (allOK: boolean) => void): void;
+    requestSave(saveOperation: 'update' | 'create' | 'delete' | 'save', controller: FormController, callback?: (allOK: boolean) => void): void;
     requestService(serviceName: string, options?: ServiceRequestOptions): void;
     takeAction(action: Action, controller?: FormController, params?: StringMap<any>): void;
     act(actionName: string, controller?: FormController, params?: StringMap<any>): void;

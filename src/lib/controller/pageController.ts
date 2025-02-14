@@ -309,7 +309,6 @@ export class PC implements PageController {
 
   requestGet(
     controller: FormController,
-    toDisableUx: boolean,
     params?: StringMap<boolean>,
     callback?: (allOK: boolean) => void
   ): void {
@@ -333,7 +332,7 @@ export class PC implements PageController {
       return;
     }
 
-    this.serve(serviceName, toDisableUx, controller, data).then((ok) => {
+    this.serve(serviceName, controller, data).then((ok) => {
       if (callback) {
         callback(ok);
       }
@@ -343,7 +342,6 @@ export class PC implements PageController {
   requestSave(
     saveOperation: 'update' | 'create' | 'delete' | 'save',
     controller: FormController,
-    toDisableUx: boolean,
     callback?: (allOK: boolean) => void
   ): void {
     const msgs: DetailedMessage[] = [];
@@ -375,7 +373,7 @@ export class PC implements PageController {
     }
 
     const data = controller.getData();
-    this.serve(serviceName, toDisableUx, controller, data).then((ok) => {
+    this.serve(serviceName, controller, data).then((ok) => {
       if (callback) {
         callback(ok);
       }
@@ -387,9 +385,6 @@ export class PC implements PageController {
       options = {};
     }
     const controller = options.fc || this.fc;
-    if (options.toDisableUx) {
-      this.ac.disableUx();
-    }
 
     this.ac.serve(serviceName, options.payload, false).then((resp) => {
       logger.info(`Service ${serviceName} returned.`, resp);
@@ -406,10 +401,6 @@ export class PC implements PageController {
         } else {
           controller.receiveData(data, options.targetPanelName);
         }
-      }
-
-      if (options.toDisableUx || true) {
-        this.ac.enableUx();
       }
     });
   }
@@ -581,7 +572,6 @@ export class PC implements PageController {
 
   private async serve(
     serviceName: string,
-    disableUx: boolean,
     fc: FormController,
     data?: Vo,
     targetChild?: string,
@@ -594,9 +584,6 @@ export class PC implements PageController {
         this.showMessages([{ id: 'noTable', text, type: 'error' }]);
         return false;
       }
-    }
-    if (disableUx) {
-      this.ac.disableUx();
     }
 
     const reqAt = new Date().getTime();
@@ -629,9 +616,6 @@ export class PC implements PageController {
       logger.info(
         `It took ${completedAt - respAt}ms to render the data received from the service '${serviceName}' `
       );
-    }
-    if (disableUx) {
-      this.ac.enableUx();
     }
     return ok;
   }
@@ -692,6 +676,9 @@ export class PC implements PageController {
 
     p.activeActions[actionName] = true;
     const actionType = action.type;
+    if (action.toDisableUx) {
+      this.ac.disableUx();
+    }
     switch (actionType) {
       case 'close':
         //todo: any checks and balances?'
@@ -756,8 +743,6 @@ export class PC implements PageController {
           //let us validate the form again
           if (controllerToUse.validate()) {
             values = controllerToUse.getData() as Vo;
-            console.info('values are ready:', values);
-            console.info(this);
           } else {
             addMessage('Please fix the errors on this page', p.msgs);
             errorFound = true;
@@ -787,7 +772,6 @@ export class PC implements PageController {
 
         this.serve(
           a.serviceName,
-          !!a.toDisableUx,
           controller,
           values,
           a.targetPanelName,
@@ -828,6 +812,9 @@ export class PC implements PageController {
     this.showMessages(p.msgs);
     if (!action) {
       return;
+    }
+    if (action.toDisableUx) {
+      this.ac.enableUx();
     }
     //call back action??
     if (ok) {
@@ -991,14 +978,7 @@ export class PC implements PageController {
       return;
     }
 
-    this.serve(
-      serviceName,
-      !!action.toDisableUx,
-      fc,
-      data,
-      targetChild,
-      undefined
-    ).then((ok) => {
+    this.serve(serviceName, fc, data, targetChild, undefined).then((ok) => {
       if (callback) {
         callback(ok);
       }
@@ -1062,22 +1042,27 @@ function addMessage(text: string, msgs: DetailedMessage[]) {
 
 function getConditions(
   rootData: Vo,
-  params: FilterFields,
+  filterFields: FilterFields,
   msgs: DetailedMessage[]
 ): FilterCondition[] | undefined {
   const filters: FilterCondition[] = [];
-  if (!params) {
+  if (!filterFields) {
     return filters;
   }
 
-  for (const [field, param] of Object.entries(params)) {
-    let val = param.fieldValue as Value;
+  for (const [field, con] of Object.entries(filterFields)) {
+    if (con.comparator === '!#' || con.comparator === '#') {
+      filters.push({ field, comparator: con.comparator });
+      continue;
+    }
+
+    let val = con.fieldValue as Value;
     if (val === undefined) {
       val = rootData![field] as Value;
     }
 
     if (val === undefined || val === '') {
-      if (param.isRequired) {
+      if (con.isRequired) {
         addMessage(
           `value missing for parameter ${field}. Action will abort.`,
           msgs
@@ -1089,14 +1074,14 @@ function getConditions(
 
     const filter: FilterCondition = {
       field,
-      comparator: param.comparator,
+      comparator: con.comparator,
       value: val,
     };
 
-    if (param.comparator === '><') {
-      let toValue = param.toFieldValue as Value;
+    if (con.comparator === '><') {
+      let toValue = con.toFieldValue as Value;
       if (toValue === undefined) {
-        const toField = param.toField;
+        const toField = con.toField;
         if (!toField) {
           addMessage(
             `toField not specified for for field ${field} for its >< operation. filter action will abort.`,
@@ -1106,7 +1091,7 @@ function getConditions(
         }
         toValue = rootData![toField] as Value;
         if (toValue === undefined || val === '') {
-          if (param.isRequired) {
+          if (con.isRequired) {
             addMessage(
               `value missing for parameter ${toField} that is defined as the to-field for ${field}. Action will abort.`,
               msgs

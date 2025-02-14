@@ -171,9 +171,6 @@ export class TWC implements TableViewerController {
 
     this.info.currentRowIdx = idx;
     if (this.table.onRowClick) {
-      console.info(
-        `row ${idx} clicked. Going to act on ${this.table.onRowClick}`
-      );
       this.pc.act(this.table.onRowClick, undefined, this.data[idx]);
     }
   }

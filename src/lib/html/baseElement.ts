@@ -164,9 +164,6 @@ export class BaseElement implements BaseView {
   }
 
   clicked() {
-    console.info(
-      `${this.comp.name} clicked with onClick='${this.comp.onClick}'`
-    );
     const action = this.comp.onClick;
     if (action) {
       if (this.fc) {
