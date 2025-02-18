@@ -95,6 +95,10 @@ export class FieldElement extends BaseElement implements FieldView {
   private fieldRendering: FieldRendering = 'hidden';
 
   /**
+   * is this a select (drop-down) element?
+   */
+  private isSelect = false;
+  /**
    * to be called from the concrete class after rendering itself in the constructor
    */
   constructor(
@@ -107,6 +111,7 @@ export class FieldElement extends BaseElement implements FieldView {
 
     if (field.renderAs) {
       this.fieldRendering = field.renderAs;
+      this.isSelect = field.renderAs === 'select';
     }
 
     this.fieldEle = htmlUtil.getChildElement(this.root, 'field')!;
@@ -243,7 +248,7 @@ export class FieldElement extends BaseElement implements FieldView {
     }
   }
 
-  private valueIsChanging(newValue: string) {
+  public valueIsChanging(newValue: string) {
     if (this.field.onBeingChanged) {
       this.pc.act(this.field.onBeingChanged, this.fc, { value: newValue });
     }
@@ -254,8 +259,11 @@ export class FieldElement extends BaseElement implements FieldView {
      */
   }
 
-  private valueHasChanged(newValue: string) {
+  public valueHasChanged(newValue: string) {
     this.textValue = newValue.trim();
+    if (this.isSelect) {
+      this.setEmpty(!this.textValue);
+    }
     const wasOk = this.valueIsValid;
     const oldValue = this.value;
 
@@ -354,7 +362,7 @@ export class FieldElement extends BaseElement implements FieldView {
     return parseToValue(text, this.field.valueType);
   }
 
-  getValue(): Value {
+  public getValue(): Value {
     return this.value!;
   }
 
@@ -408,7 +416,7 @@ export class FieldElement extends BaseElement implements FieldView {
     }
 
     htmlUtil.removeChildren(this.fieldEle);
-
+    this.setEmpty(true);
     if (!list || list.length === 0) {
       /**
        * this is a reset;
@@ -453,6 +461,7 @@ export class FieldElement extends BaseElement implements FieldView {
     }
 
     if (gotSelected) {
+      this.setEmpty(false);
       return;
     }
 
@@ -465,6 +474,7 @@ export class FieldElement extends BaseElement implements FieldView {
       //        this.value = v;
       //        this.textValue = v.toString();
       this.valueHasChanged('' + v);
+      this.setEmpty(false);
 
       return;
     }
@@ -481,7 +491,11 @@ export class FieldElement extends BaseElement implements FieldView {
     }
   }
 
+  private setEmpty(isEmpty: boolean): void {
+    htmlUtil.setViewState(this.fieldEle, 'empty', isEmpty);
+  }
   private setValueToSelect(value: string) {
+    this.setEmpty(value !== '');
     const ele = this.fieldEle as HTMLSelectElement;
     let idx = ele.selectedIndex;
     if (idx >= 0) {
@@ -494,6 +508,8 @@ export class FieldElement extends BaseElement implements FieldView {
         return;
       }
     }
+    this.setEmpty(value === '');
+    console.info(`drop-down selected = ${value !== ''}`, this.fieldEle);
     /**
      * we have a situation where the value being set is not available as an option.
      * This is generally the case when the value is set before the options are set.

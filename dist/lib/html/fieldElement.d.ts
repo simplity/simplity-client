@@ -55,6 +55,10 @@ export declare class FieldElement extends BaseElement implements FieldView {
     private errorEle?;
     private fieldRendering;
     /**
+     * is this a select (drop-down) element?
+     */
+    private isSelect;
+    /**
      * to be called from the concrete class after rendering itself in the constructor
      */
     constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value);
@@ -67,8 +71,8 @@ export declare class FieldElement extends BaseElement implements FieldView {
      * @returns
      */
     private wireEvents;
-    private valueIsChanging;
-    private valueHasChanged;
+    valueIsChanging(newValue: string): void;
+    valueHasChanged(newValue: string): void;
     /**
      * forces a validation for this field.
      * error status of the field is set before returning the validation result
@@ -94,6 +98,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
      * @param list list of valid options. This is set by page data service
      */
     setList(list: SimpleList): void;
+    private setEmpty;
     private setValueToSelect;
     able(enabled: boolean): void;
     setError(text: string | undefined): void;

@@ -25,6 +25,7 @@ import {
   ValueSchema,
   NavigationOptions,
   Alert,
+  ViewFactory,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
@@ -68,6 +69,7 @@ export class AC implements AppController {
   private readonly allModules: StringMap<Module>;
   private readonly allMenus: StringMap<MenuItem>;
   private readonly allLayouts: StringMap<Layout>;
+  private readonly allValueSchemas: StringMap<ValueSchema>;
   private readonly listSources: StringMap<ListSource>;
 
   // app level parameters
@@ -75,6 +77,8 @@ export class AC implements AppController {
   private readonly loginServiceName;
   private readonly logoutServiceName;
   private readonly imageBasePath;
+
+  private readonly viewFActory;
 
   /*
    * context for the logged-in user
@@ -103,15 +107,12 @@ export class AC implements AppController {
    */
   private disableUxCount = 0;
 
+  /**
+   * @param runtime meta-data components for this apps
+   * @param appView  This is the root html element for this app.
+   */
   public constructor(
-    /**
-     * meta-data components for this apps
-     */
     runtime: ClientRuntime,
-
-    /**
-     * This is the root html element for this app.
-     */
     private readonly appView: AppView
   ) {
     this.agent = serviceAgent.newAgent({
@@ -142,7 +143,10 @@ export class AC implements AppController {
     this.allModules = runtime.modules || {};
 
     this.allMenus = runtime.menuItems || {};
+    this.allValueSchemas = runtime.valueSchemas || {};
     this.validationFns = this.createValidationFns(runtime.valueSchemas);
+
+    this.viewFActory = runtime.viewFactory;
   }
 
   private createValidationFns(
@@ -270,6 +274,15 @@ export class AC implements AppController {
     return obj;
   }
 
+  getValueSchema(nam: string): ValueSchema {
+    const obj = this.allValueSchemas[nam];
+    this.shouldExist(obj, nam, 'menu item');
+    return obj;
+  }
+
+  getViewFactory(): ViewFactory | undefined {
+    return this.viewFActory;
+  }
   getModuleIfAccessible(nam: string): Module | undefined {
     const module = this.getModule(nam);
     if (!module) {

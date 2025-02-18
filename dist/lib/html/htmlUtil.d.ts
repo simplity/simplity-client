@@ -57,6 +57,10 @@ declare const viewStates: {
      * 'asc' or 'desc'
      */
     readonly sorted: "string";
+    /**
+     * whether a select element is empty. Used to the label positioning
+     */
+    readonly empty: "boolean";
 };
 export type ViewState = keyof typeof viewStates;
 /**

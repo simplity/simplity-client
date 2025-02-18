@@ -1,4 +1,4 @@
-import { BaseComponent, Value, FormController } from 'simplity-types';
+import { PageComponent, Value, FormController } from 'simplity-types';
 import { BaseElement } from './baseElement';
 export declare const elementFactory: {
     /**
@@ -10,5 +10,5 @@ export declare const elementFactory: {
      * @returns view-component instance
      * @throws Error in case the type of the supplied component is not recognized
      */
-    newElement(fc: FormController | undefined, comp: BaseComponent, maxWidth: number, value?: Value): BaseElement;
+    newElement(fc: FormController | undefined, comp: PageComponent, maxWidth: number, value?: Value): BaseElement;
 };

@@ -70,6 +70,11 @@ const viewStates = {
    * 'asc' or 'desc'
    */
   sorted: 'string',
+
+  /**
+   * whether a select element is empty. Used to the label positioning
+   */
+  empty: 'boolean',
 } as const;
 export type ViewState = keyof typeof viewStates;
 /**
@@ -279,6 +284,10 @@ function newElement(name: string): HTMLElement {
     }
     ele = toEle(html);
     allTemplates[name] = ele;
+  }
+  if (!ele) {
+    console.error(`ele is null when name=${name}`);
+    return toEle(`<div><!-- html source ${name} not found --></div>`);
   }
   return ele.cloneNode(true) as HTMLElement;
 }

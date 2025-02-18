@@ -1,5 +1,5 @@
 import { HtmlTemplateName } from './htmlUtil';
-import { AppController, BaseComponent, BaseView, FormController, PageController, Values } from 'simplity-types';
+import { AppController, PageComponent, BaseView, FormController, PageController, Values } from 'simplity-types';
 /**
  * Base class to be extended by all view components
  * As of now, it is NOT a WebComponent, but a controller that is bound to the root html element.
@@ -10,7 +10,7 @@ import { AppController, BaseComponent, BaseView, FormController, PageController,
  */
 export declare class BaseElement implements BaseView {
     readonly fc: FormController | undefined;
-    readonly comp: BaseComponent;
+    readonly comp: PageComponent;
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table
@@ -23,6 +23,10 @@ export declare class BaseElement implements BaseView {
      * If this is an input
      */
     readonly inputEle?: HTMLInputElement;
+    /**
+     * If this is a container? Added to the base class because it is quite common
+     */
+    readonly containerEle?: HTMLElement;
     labelEle?: HTMLElement;
     readonly name: string;
     /**
@@ -35,7 +39,7 @@ export declare class BaseElement implements BaseView {
      * @param templateName to be used to create the HTML element. ignored if root is provided
      * @param template instance to be cloned as HTML element
      */
-    constructor(fc: FormController | undefined, comp: BaseComponent, 
+    constructor(fc: FormController | undefined, comp: PageComponent, 
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
      */

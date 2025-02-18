@@ -1,4 +1,4 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, NavigationOptions, Alert } from 'simplity-types';
+import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert } from 'simplity-types';
 export declare class AC implements AppController {
     /**
      * This is the root html element for this app.
@@ -12,6 +12,7 @@ export declare class AC implements AppController {
     private readonly allModules;
     private readonly allMenus;
     private readonly allLayouts;
+    private readonly allValueSchemas;
     private readonly listSources;
     private readonly allMessages;
     private readonly loginServiceName;
@@ -71,6 +72,7 @@ export declare class AC implements AppController {
     getLayout(nam: string): Layout;
     getModule(nam: string): Module;
     getMenu(nam: string): MenuItem;
+    getValueSchema(nam: string): ValueSchema;
     getModuleIfAccessible(nam: string): Module | undefined;
     getMenuIfAccessible(nam: string): MenuItem | undefined;
     getPage(nam: string): Page;

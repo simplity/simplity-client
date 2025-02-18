@@ -1,7 +1,14 @@
 import { Form, FormController, Panel, PanelView } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { elementFactory } from './elementFactory';
-import { htmlUtil } from './htmlUtil';
+import { HtmlTemplateName, htmlUtil } from './htmlUtil';
+
+function getTemplateName(panel: Panel): HtmlTemplateName {
+  if (panel.panelType) {
+    return ('panel-' + panel.panelType) as HtmlTemplateName;
+  }
+  return 'panel';
+}
 export class PanelElement extends BaseElement implements PanelView {
   /**
    * in case this panel is associated with a child-form
@@ -13,7 +20,7 @@ export class PanelElement extends BaseElement implements PanelView {
     public readonly panel: Panel,
     maxWidth: number
   ) {
-    super(fc, panel, 'panel', maxWidth);
+    super(fc, panel, getTemplateName(panel), maxWidth);
 
     let fcForChildren = fc;
 

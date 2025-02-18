@@ -1,5 +1,5 @@
 import {
-  BaseComponent,
+  PageComponent,
   Button,
   DataField,
   FieldView,
@@ -387,7 +387,7 @@ export class ReportConfigurator {
               renderAs: 'check-box',
               valueType: 'boolean',
             } as DataField,
-          ] as BaseComponent[],
+          ] as PageComponent[],
         } as TableEditor,
 
         {
@@ -397,7 +397,7 @@ export class ReportConfigurator {
           label: 'Get Data',
           onClick: '',
         } as Button,
-      ] as BaseComponent[],
+      ] as PageComponent[],
     }; /* as Panel */
 
     //add the listOptions to the two fields

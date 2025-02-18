@@ -3,11 +3,10 @@ import { app } from '../controller/app';
 import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
 import {
   AppController,
-  BaseComponent,
+  PageComponent,
   BaseView,
   FormController,
   PageController,
-  Panel,
   Values,
   ViewInitFunction,
 } from 'simplity-types';
@@ -30,6 +29,10 @@ export class BaseElement implements BaseView {
    */
   public readonly inputEle?: HTMLInputElement;
 
+  /**
+   * If this is a container? Added to the base class because it is quite common
+   */
+  public readonly containerEle?: HTMLElement;
   public labelEle?: HTMLElement;
 
   public readonly name: string;
@@ -46,7 +49,7 @@ export class BaseElement implements BaseView {
    */
   constructor(
     public readonly fc: FormController | undefined,
-    public readonly comp: BaseComponent,
+    public readonly comp: PageComponent,
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
      */
@@ -66,42 +69,13 @@ export class BaseElement implements BaseView {
       this.pc = app.getCurrentPc();
     }
 
-    if (comp.customHtml) {
-      this.root = htmlUtil.newCustomElement(comp.customHtml);
+    if (comp.templateName) {
+      this.root = htmlUtil.newCustomElement(comp.templateName);
     } else if (templateName === '') {
       this.root = document.createElement('div');
       return;
     } else {
       this.root = htmlUtil.newHtmlElement(templateName);
-    }
-
-    /**
-     * set colSpan if maxWidth if parent has specified max-width
-     */
-    if (maxWidth !== 0) {
-      let width = comp.width;
-      if (width === undefined) {
-        //default for a normal panel is 'full'
-        if (
-          comp.compType === 'panel' &&
-          (comp as Panel).panelType === undefined
-        ) {
-          width = maxWidth;
-        } else if (htmlUtil.getViewState(this.root, 'full') !== undefined) {
-          //the html root has signalled that it wants full width
-          width = maxWidth;
-        } else {
-          width = DEFAULT_WIDTH;
-        }
-      }
-
-      if (width > maxWidth) {
-        this.logger
-          .error(`Page element '${this.name}' specifies a width of ${width} but the max possible width is only ${maxWidth};
-        Page may not render properly`);
-        width = maxWidth;
-      }
-      htmlUtil.setViewState(this.root, 'width', width);
     }
 
     if (fc) {
@@ -113,9 +87,10 @@ export class BaseElement implements BaseView {
 
     /**
      *
-     * input element is quite common. adding this simple line to the base itself
+     * input and panel are quite common. Hence added them to the base
      */
     this.inputEle = this.root.querySelector('input') || undefined;
+    this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
 
     if (comp.label) {
       this.labelEle = htmlUtil.getOptionalElement(this.root, 'label');
@@ -143,6 +118,31 @@ export class BaseElement implements BaseView {
      */
     if (comp.displayStates) {
       this.setDisplayState(comp.displayStates);
+    }
+    /**
+     * set colSpan to maxWidth if parent has specified id
+     */
+    if (maxWidth !== 0) {
+      let width = comp.width;
+      if (width === undefined) {
+        if (htmlUtil.getViewState(this.root, 'full') !== undefined) {
+          //the html root has signalled that it wants full width
+          width = maxWidth;
+        } else {
+          width = DEFAULT_WIDTH;
+        }
+      }
+
+      if (width > maxWidth) {
+        this.logger
+          .error(`Page element '${this.name}' specifies a width of ${width} but the max possible width is only ${maxWidth};
+        Page may not render properly`);
+        width = maxWidth;
+      }
+      htmlUtil.setViewState(this.root, 'width', width);
+      if (this.containerEle) {
+        htmlUtil.setViewState(this.containerEle, 'width', width);
+      }
     }
   }
 

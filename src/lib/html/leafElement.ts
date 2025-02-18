@@ -6,11 +6,11 @@ const getTemplateName = (comp: StaticComp | Button): HtmlTemplateName | '' => {
   if (comp.compType == 'button') {
     return 'button';
   }
-  const name = (comp as StaticComp).staticType;
-  if (name === 'custom') {
-    return '';
-  }
-  return name;
+  const st = comp as StaticComp;
+  console.info(
+    `going to create leaf element ${st.name} with type='${st.staticType}' and templateName='${st.templateName}'`
+  );
+  return st.staticType || '';
 };
 
 /**
