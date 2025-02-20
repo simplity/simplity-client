@@ -1,8 +1,5 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert } from 'simplity-types';
+import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert, BaseView, PageComponent, FormController, Value } from 'simplity-types';
 export declare class AC implements AppController {
-    /**
-     * This is the root html element for this app.
-     */
     private readonly appView;
     private readonly allForms;
     private readonly allPages;
@@ -18,6 +15,7 @@ export declare class AC implements AppController {
     private readonly loginServiceName;
     private readonly logoutServiceName;
     private readonly imageBasePath;
+    private readonly viewFActory?;
     private sessionId?;
     private readonly context;
     /**
@@ -38,15 +36,11 @@ export declare class AC implements AppController {
      * TODO: when a function throws error after disabling!!!
      */
     private disableUxCount;
-    constructor(
     /**
-     * meta-data components for this apps
+     * @param runtime meta-data components for this apps
+     * @param appView  This is the root html element for this app.
      */
-    runtime: ClientRuntime, 
-    /**
-     * This is the root html element for this app.
-     */
-    appView: AppView);
+    constructor(runtime: ClientRuntime, appView: AppView);
     private createValidationFns;
     newWindow(url: string): void;
     closePopup(): void;
@@ -78,6 +72,7 @@ export declare class AC implements AppController {
     getPage(nam: string): Page;
     getForm(nam: string): Form;
     getFn(nam: string, type?: FunctionType): FunctionDetails;
+    newPluginComponent(fc: FormController | undefined, comp: PageComponent, maxWidth: number, value?: Value): BaseView;
     getImageSrc(imageName: string): string;
     getHtml(htmlName: string): string;
     getMessage(id: string, params?: string[] | undefined): string;

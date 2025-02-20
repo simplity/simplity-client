@@ -25,7 +25,11 @@ import {
   ValueSchema,
   NavigationOptions,
   Alert,
-  ViewFactory,
+  ViewComponentFactory,
+  BaseView,
+  PageComponent,
+  FormController,
+  Value,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
@@ -78,7 +82,7 @@ export class AC implements AppController {
   private readonly logoutServiceName;
   private readonly imageBasePath;
 
-  private readonly viewFActory;
+  private readonly viewFActory?: ViewComponentFactory;
 
   /*
    * context for the logged-in user
@@ -146,7 +150,7 @@ export class AC implements AppController {
     this.allValueSchemas = runtime.valueSchemas || {};
     this.validationFns = this.createValidationFns(runtime.valueSchemas);
 
-    this.viewFActory = runtime.viewFactory;
+    this.viewFActory = runtime.viewComponentFactory;
   }
 
   private createValidationFns(
@@ -279,10 +283,6 @@ export class AC implements AppController {
     this.shouldExist(obj, nam, 'menu item');
     return obj;
   }
-
-  getViewFactory(): ViewFactory | undefined {
-    return this.viewFActory;
-  }
   getModuleIfAccessible(nam: string): Module | undefined {
     const module = this.getModule(nam);
     if (!module) {
@@ -336,6 +336,19 @@ export class AC implements AppController {
       throw new Error(msg);
     }
     return obj;
+  }
+
+  newPluginComponent(
+    fc: FormController | undefined,
+    comp: PageComponent,
+    maxWidth: number,
+    value?: Value
+  ): BaseView {
+    if (this.viewFActory) {
+      return this.viewFActory.newViewComponent(fc, comp, maxWidth, value);
+    }
+    throw new Error(`Component '${comp.name}' is of type '${comp.compType}' and has set pluginOptions=${comp.pluginOptions}. 
+        App run time is missing the required viewPluginFactory to create this component.`);
   }
 
   getImageSrc(imageName: string): string {

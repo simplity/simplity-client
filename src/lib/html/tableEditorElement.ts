@@ -96,7 +96,7 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
     const rowEle = this.dataRowEle.cloneNode(true) as HTMLElement;
     htmlUtil.setViewState(rowEle, 'idx', rowIdx);
 
-    for (const column of this.table.children) {
+    for (const column of this.table.children!) {
       const cellEle = this.dataCellEle.cloneNode(true) as HTMLElement;
       let value = values && values[column.name];
       if (this.table.editable) {
@@ -116,7 +116,7 @@ export class TableEditorElement extends BaseElement implements TableEditorView {
   }
 
   private renderHeader() {
-    for (const column of this.table.children) {
+    for (const column of this.table.children!) {
       const ele = this.headerCellEle.cloneNode(true) as HTMLElement;
       htmlUtil.appendText(ele, column.label || '');
       this.headerRowEle.appendChild(ele);

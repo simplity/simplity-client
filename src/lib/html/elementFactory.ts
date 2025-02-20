@@ -11,7 +11,6 @@ import {
   FormController,
   ButtonPanel,
   AppController,
-  ViewFactory,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { LeafElement } from './leafElement';
@@ -25,7 +24,7 @@ import { ButtonPanelElement } from './buttonPanel';
 import { app } from '../controller/app';
 
 let ac: AppController | undefined;
-let customFactory: ViewFactory | undefined;
+//let customFactory: ViewFactory | undefined;
 export const elementFactory = {
   /**
    * returns an instance of the right view component, or throws an error
@@ -42,21 +41,15 @@ export const elementFactory = {
     maxWidth: number,
     value?: Value
   ): BaseElement {
-    if (!ac) {
-      ac = app.getCurrentAc();
-      customFactory = ac.getViewFactory();
-    }
-    if (customFactory) {
-      const view = customFactory.newElement(fc, comp, maxWidth, value);
-      if (view) {
-        console.info(
-          `Page Component ${comp.name} is of type ${comp.compType}. It is built using App specific factory!!`
-        );
-        //TODO: we need to fix the return type of this
-        //@ts-expect-error
-        return view;
+    if (comp.pluginOptions) {
+      console.info(`Component '${comp.name}' requires a plugin from this app.`);
+
+      if (!ac) {
+        ac = app.getCurrentAc();
       }
+      return ac.newPluginComponent(fc, comp, maxWidth, value) as BaseElement;
     }
+
     switch (comp.compType) {
       case 'button':
       case 'static':
@@ -92,6 +85,7 @@ export const elementFactory = {
         if (!comp.width) {
           comp.width = maxWidth;
         }
+
         if ((comp as TableEditor | TableViewer).editable) {
           return new TableEditorElement(fc, comp as TableEditor, maxWidth);
         }

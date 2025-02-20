@@ -18,7 +18,7 @@ function getTemplateName(field: DataField): HtmlTemplateName | '' {
   if (!ras) {
     return 'text-field';
   }
-  if (ras === 'hidden' || ras === 'custom') {
+  if (ras === 'hidden') {
     return '';
   }
 
@@ -184,8 +184,12 @@ export class FieldElement extends BaseElement implements FieldView {
         return;
 
       case 'image':
-      case 'custom':
       case 'hidden':
+        return;
+
+        this.logger.error(
+          `Design Error: FieldElement class should not have been used for rendering type ${this.fieldRendering}. Value not set to field ${this.name}`
+        );
         return;
 
       default:
@@ -237,7 +241,6 @@ export class FieldElement extends BaseElement implements FieldView {
       case 'output':
       case 'select-output':
       case 'image':
-      case 'custom':
       case 'hidden':
         return;
 
