@@ -85,6 +85,7 @@ export const predefinedHtmlTemplates = [
   'button-panel',
   'check-box',
   'content',
+  'chart',
   'date-field',
   'dialog',
   'disable-ux',
@@ -124,6 +125,7 @@ export const dataAttributeNames = ['full', 'id'] as const;
 export const childElementIds = [
   'add-button',
   'buttons',
+  'chart',
   'data',
   'container',
   'error',

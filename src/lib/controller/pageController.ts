@@ -950,7 +950,7 @@ export class PC implements PageController {
         const fa = action as FilterAction;
 
         data = this.getFilterData(fc, fa, messages);
-        targetChild = fa.childName;
+        targetChild = fa.targetTableName;
         break;
 
       case 'create':

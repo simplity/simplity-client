@@ -1,0 +1,1 @@
+{"version":3,"file":"tabsElement.js","sourceRoot":"","sources":["../../../src/lib/html/tabsElement.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,WAAW,EAAE,MAAM,eAAe,CAAC;AAE5C,MAAM,OAAO,WAAY,SAAQ,WAAW;IAC1C,YAAY,EAA8B,EAAE,IAAU,EAAE,QAAgB;QACtE,KAAK,CAAC,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE,QAAQ,CAAC,CAAC;IACpC,CAAC;CACF"}

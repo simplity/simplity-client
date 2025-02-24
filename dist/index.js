@@ -1,24 +1,8 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./lib/simplityClient"), exports);
-__exportStar(require("./lib/html/htmlUtil"), exports);
-__exportStar(require("./lib/html/baseElement"), exports);
-__exportStar(require("./lib/html/fieldElement"), exports);
-__exportStar(require("./lib/html/pageElement"), exports);
-__exportStar(require("./lib/html/tableEditorElement"), exports);
-__exportStar(require("./lib/html/tableViewerElement"), exports);
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLHVEQUFxQztBQUNyQyxzREFBb0M7QUFDcEMseURBQXVDO0FBQ3ZDLDBEQUF3QztBQUN4Qyx5REFBdUM7QUFDdkMsZ0VBQThDO0FBQzlDLGdFQUE4QyJ9
+export * from './lib/simplityClient';
+export * from './lib/html/htmlUtil';
+export * from './lib/html/baseElement';
+export * from './lib/html/fieldElement';
+export * from './lib/html/pageElement';
+export * from './lib/html/tableEditorElement';
+export * from './lib/html/tableViewerElement';
+//# sourceMappingURL=index.js.map

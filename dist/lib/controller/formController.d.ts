@@ -1,4 +1,4 @@
-import { StringMap, FormController, Value, PageController, Form, AppController, DetailedMessage, EventDetails, EventHandler, EventName, TableEditorController, TableEditorView, TableViewerController, TableViewerView, Vo, DataController, BaseView, Values } from 'simplity-types';
+import { StringMap, FormController, Value, PageController, Form, AppController, DetailedMessage, EventDetails, EventHandler, EventName, TableEditorController, TableEditorView, TableViewerController, TableViewerView, Vo, DataController, BaseView, Values, ChartController } from 'simplity-types';
 /**
  * controls a row in a table or the root fields in a page.
  */
@@ -76,6 +76,7 @@ export declare class FC implements FormController {
     newTableViewerController(view: TableViewerView): TableViewerController;
     newTableEditorController(view: TableEditorView): TableEditorController;
     newFormController(name: string, form?: Form, data?: Vo): FormController;
+    newChartController(view: BaseView): ChartController;
     getController(name: string): DataController | undefined;
     searchChildController(name: string): DataController | undefined;
     addEventListener(viewName: string, eventName: EventName, eventFn: EventHandler): void;

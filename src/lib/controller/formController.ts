@@ -23,9 +23,12 @@ import {
   Tab,
   AnyValue,
   Values,
+  ChartController,
 } from 'simplity-types';
 import { TWC } from './tableViewerController';
 import { TEC } from './TableEditorController';
+import { CC } from './chartController';
+import { ChartElement } from '../html/chartElement';
 
 const logger = loggerStub.getLogger();
 
@@ -286,6 +289,13 @@ export class FC implements FormController {
     return controller;
   }
 
+  newChartController(view: BaseView): ChartController {
+    this.checkName(view.name);
+    const controller = new CC(this, view as ChartElement);
+    this.controllers[view.name] = controller;
+    return controller;
+  }
+
   getController(name: string): DataController | undefined {
     return this.controllers[name];
   }
@@ -383,6 +393,10 @@ export class FC implements FormController {
     }
 
     this.data = data;
+    /**
+     * this is more a 'reset to values' than just set-value.
+     * Hence we go by fields and set the value either to the received value or to ''.
+     */
     for (const [name, fieldView] of Object.entries(this.fieldViews)) {
       let value = data[name];
       if (value === undefined) {
@@ -394,6 +408,19 @@ export class FC implements FormController {
         continue;
       }
       fieldView.setValue(value);
+    }
+
+    //TODO: we considered fields as "reset". Should we do the same with child-controllers?
+    /**
+     * we DO NOT treat this as reset. It is up to the server to send [] or {} as data
+     */
+    for (const [name, controller] of Object.entries(this.controllers)) {
+      const d = data[name];
+      if (d) {
+        controller.receiveData(d as Vo | Vo[]);
+      } else {
+        logger.info(`No data received for panel/form/table '${name}'`);
+      }
     }
   }
 

@@ -1,24 +1,22 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const globals_1 = require("@jest/globals");
-const logger_1 = require("./logger");
+import { describe, expect, it, jest } from '@jest/globals';
+import { loggerStub, nullLogger } from './logger';
 const methods = ['info', 'warn', 'error'];
 const expects = [['one'], [2], ['one', 'two']];
 function doTest(loggerImpl) {
     const spies = [];
     for (const method of methods) {
-        spies.push(globals_1.jest.spyOn(loggerImpl, method));
+        spies.push(jest.spyOn(loggerImpl, method));
     }
-    const logger = logger_1.loggerStub.getLogger();
+    const logger = loggerStub.getLogger();
     logger.info(expects[0][0]);
     logger.warn(expects[1][0]);
     logger.error(expects[2][0], expects[2][1]);
     for (let i = 0; i < 3; i++) {
-        (0, globals_1.expect)(spies[i]).toBeCalledWith(expects[i]);
+        expect(spies[i]).toBeCalledWith(expects[i]);
     }
 }
-(0, globals_1.describe)('Logger Stub', () => {
-    (0, globals_1.it)('should use the right output device', () => {
+describe('Logger Stub', () => {
+    it('should use the right output device', () => {
         doTest(console);
         const testLogger = {
             info() { },
@@ -26,14 +24,14 @@ function doTest(loggerImpl) {
             warn() { },
         };
         //doTest(console);
-        logger_1.loggerStub.connectLogger(testLogger);
+        loggerStub.connectLogger(testLogger);
         doTest(testLogger);
-        logger_1.loggerStub.swallowAll();
-        doTest(logger_1.nullLogger);
+        loggerStub.swallowAll();
+        doTest(nullLogger);
         //@ts-ignore
         global.console = undefined;
-        logger_1.loggerStub.resetToDefault();
-        doTest(logger_1.nullLogger);
+        loggerStub.resetToDefault();
+        doTest(nullLogger);
     });
 });
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibG9nZ2VyLnRlc3QuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvbGliL2xvZ2dlci1zdHViL2xvZ2dlci50ZXN0LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsMkNBQTJEO0FBQzNELHFDQUFrRDtBQUdsRCxNQUFNLE9BQU8sR0FBRyxDQUFDLE1BQU0sRUFBRSxNQUFNLEVBQUUsT0FBTyxDQUFDLENBQUM7QUFDMUMsTUFBTSxPQUFPLEdBQUcsQ0FBQyxDQUFDLEtBQUssQ0FBQyxFQUFFLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxLQUFLLEVBQUUsS0FBSyxDQUFDLENBQUMsQ0FBQztBQUUvQyxTQUFTLE1BQU0sQ0FBQyxVQUFrQjtJQUNoQyxNQUFNLEtBQUssR0FBRyxFQUFFLENBQUM7SUFDakIsS0FBSyxNQUFNLE1BQU0sSUFBSSxPQUFPLEVBQUUsQ0FBQztRQUM3QixLQUFLLENBQUMsSUFBSSxDQUFDLGNBQUksQ0FBQyxLQUFLLENBQUMsVUFBVSxFQUFFLE1BQXNCLENBQUMsQ0FBQyxDQUFDO0lBQzdELENBQUM7SUFFRCxNQUFNLE1BQU0sR0FBRyxtQkFBVSxDQUFDLFNBQVMsRUFBRSxDQUFDO0lBQ3RDLE1BQU0sQ0FBQyxJQUFJLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7SUFDM0IsTUFBTSxDQUFDLElBQUksQ0FBQyxPQUFPLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUMzQixNQUFNLENBQUMsS0FBSyxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsRUFBRSxPQUFPLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUUzQyxLQUFLLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUM7UUFDM0IsSUFBQSxnQkFBTSxFQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLGNBQWMsQ0FBQyxPQUFPLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUM5QyxDQUFDO0FBQ0gsQ0FBQztBQUVELElBQUEsa0JBQVEsRUFBQyxhQUFhLEVBQUUsR0FBRyxFQUFFO0lBQzNCLElBQUEsWUFBRSxFQUFDLG9DQUFvQyxFQUFFLEdBQUcsRUFBRTtRQUM1QyxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUM7UUFDaEIsTUFBTSxVQUFVLEdBQVc7WUFDekIsSUFBSSxLQUFJLENBQUM7WUFDVCxLQUFLLEtBQUksQ0FBQztZQUNWLElBQUksS0FBSSxDQUFDO1NBQ1YsQ0FBQztRQUVGLGtCQUFrQjtRQUNsQixtQkFBVSxDQUFDLGFBQWEsQ0FBQyxVQUFVLENBQUMsQ0FBQztRQUNyQyxNQUFNLENBQUMsVUFBVSxDQUFDLENBQUM7UUFFbkIsbUJBQVUsQ0FBQyxVQUFVLEVBQUUsQ0FBQztRQUN4QixNQUFNLENBQUMsbUJBQVUsQ0FBQyxDQUFDO1FBRW5CLFlBQVk7UUFDWixNQUFNLENBQUMsT0FBTyxHQUFHLFNBQVMsQ0FBQztRQUMzQixtQkFBVSxDQUFDLGNBQWMsRUFBRSxDQUFDO1FBQzVCLE1BQU0sQ0FBQyxtQkFBVSxDQUFDLENBQUM7SUFDckIsQ0FBQyxDQUFDLENBQUM7QUFDTCxDQUFDLENBQUMsQ0FBQyJ9
+//# sourceMappingURL=logger.test.js.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"jsdom.js","sourceRoot":"","sources":["../../../../src/lib/controller/mocks/jsdom.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,MAAM,OAAO,CAAC;AAC9B,MAAM,KAAK,GAAG,IAAI,KAAK,CAAC,8BAA8B,CAAC,CAAC;AACxD,MAAM,CAAC,MAAM,GAAG,KAAK,CAAC,MAA2C,CAAC;AAClE,MAAM,CAAC,QAAQ,GAAG,KAAK,CAAC,MAAM,CAAC,QAAQ,CAAC"}

@@ -11,6 +11,7 @@ import {
   FormController,
   ButtonPanel,
   AppController,
+  Chart,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { LeafElement } from './leafElement';
@@ -22,6 +23,7 @@ import { TableEditorElement } from './tableEditorElement';
 import { HiddenField } from './hiddenField';
 import { ButtonPanelElement } from './buttonPanel';
 import { app } from '../controller/app';
+import { ChartElement } from './chartElement';
 
 let ac: AppController | undefined;
 //let customFactory: ViewFactory | undefined;
@@ -55,6 +57,8 @@ export const elementFactory = {
       case 'static':
         return new LeafElement(fc, comp as Button | StaticComp, maxWidth);
 
+      case 'chart':
+        return new ChartElement(fc, comp as Chart, maxWidth);
       case 'field':
         const field = comp as DataField;
         if (field.renderAs === 'hidden') {
