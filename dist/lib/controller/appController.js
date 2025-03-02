@@ -136,6 +136,9 @@ export class AC {
         };
         this.navigate(options);
     }
+    closePage() {
+        this.appView.closePage();
+    }
     /**
      * request coming from the controller side to navigate to another page
      * @param options

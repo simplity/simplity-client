@@ -193,6 +193,10 @@ export class AC implements AppController {
 
     this.navigate(options);
   }
+
+  closePage(): void {
+    this.appView.closePage();
+  }
   /**
    * request coming from the controller side to navigate to another page
    * @param options

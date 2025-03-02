@@ -50,6 +50,7 @@ export declare class AC implements AppController {
      * @param menu
      */
     menuSelected(module: string, menuItem: string): void;
+    closePage(): void;
     /**
      * request coming from the controller side to navigate to another page
      * @param options

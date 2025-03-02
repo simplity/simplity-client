@@ -151,7 +151,7 @@ export class LayoutElement {
       }
     }
 
-    const pageView = new PageElement(page, options.params || {});
+    const pageView = new PageElement(page, options.pageParameters || {});
     if (options.asModal && this.modalContainerEle) {
       this.modalPageView = pageView;
       this.modalPageParent.appendChild(pageView.root);

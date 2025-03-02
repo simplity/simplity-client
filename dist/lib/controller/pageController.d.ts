@@ -59,9 +59,14 @@ export declare class PC implements PageController {
     showMessages(messages: DetailedMessage[]): void;
     getList(control: FieldView, key?: string | number | undefined): void;
     getServiceName(formName: string | undefined, operation: FormOperation, messages: DetailedMessage[]): string;
-    requestGet(controller: FormController, params?: StringMap<boolean>, callback?: (allOK: boolean) => void): void;
-    requestSave(saveOperation: 'update' | 'create' | 'delete' | 'save', controller: FormController, callback?: (allOK: boolean) => void): void;
     requestService(serviceName: string, options?: ServiceRequestOptions): void;
+    /**
+     * to be called by a run-time app-specific function.
+     * This feature is designed to cater to a situation where teh details of an action can not be specified at design time.
+     * @param action
+     * @param controller
+     * @param params
+     */
     takeAction(action: Action, controller?: FormController, params?: StringMap<any>): void;
     act(actionName: string, controller?: FormController, params?: StringMap<any>): void;
     addList(name: string, list: SimpleList | KeyedList): void;
@@ -75,10 +80,6 @@ export declare class PC implements PageController {
      * actions can be chained with onSuccess and inFailure.
      * This may lead to infinite loops.
      * This is designed to detect any such loop and throw error, rather than getting a activeActions-over-flow
-     * @param action
-     * @param fd form data controller
-     * @param params
-     * @param activeActions
      */
     private doAct;
     setDisplayState(compName: string, settings: Values): void;

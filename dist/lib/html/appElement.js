@@ -49,11 +49,11 @@ export class AppElement {
         this.layoutEle = lv;
         this.root.appendChild(lv.root);
     }
+    closePage() {
+        this.layoutEle.closeCurrentPage();
+        return;
+    }
     navigate(options) {
-        if (options.closePage) {
-            this.layoutEle.closeCurrentPage();
-            return;
-        }
         //navigate to a layout??
         if (options.layout &&
             this.layoutEle &&

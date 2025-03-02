@@ -16,6 +16,7 @@ export declare class AppElement implements AppView {
      */
     constructor(runtime: ClientRuntime, appEle: HTMLElement);
     private renderLayout;
+    closePage(): void;
     navigate(options: NavigationOptions): void;
     renderContextValues(values: StringMap<string>): void;
     renderPageTitle(title: string): void;

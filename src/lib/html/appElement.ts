@@ -72,12 +72,12 @@ export class AppElement implements AppView {
     this.root.appendChild(lv.root);
   }
 
-  navigate(options: NavigationOptions) {
-    if (options.closePage) {
-      this.layoutEle!.closeCurrentPage();
-      return;
-    }
+  closePage(): void {
+    this.layoutEle!.closeCurrentPage();
+    return;
+  }
 
+  navigate(options: NavigationOptions) {
     //navigate to a layout??
     if (
       options.layout &&
