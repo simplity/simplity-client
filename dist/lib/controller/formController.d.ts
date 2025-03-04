@@ -78,13 +78,13 @@ export declare class FC implements FormController {
     newFormController(name: string, form?: Form, data?: Vo): FormController;
     newChartController(view: BaseView): ChartController;
     getController(name: string): DataController | undefined;
-    searchChildController(name: string): DataController | undefined;
     addEventListener(viewName: string, eventName: EventName, eventFn: EventHandler): void;
     receiveData(vo: Vo | Vo[], childName?: string): void;
     setData(data: Vo): void;
     getData(names?: string[]): Vo;
     extractData(params: StringMap<boolean>, messages: DetailedMessage[]): Vo | undefined;
     extractKeys(messages: DetailedMessage[]): Values | undefined;
+    resetData(fields?: string[]): void;
     private setValueToChild;
     setFieldValue(fieldName: string, value: Value): void;
     getFieldValue(fieldName: string): Value | undefined;

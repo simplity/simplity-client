@@ -109,6 +109,10 @@ export class TEC implements TableEditorController {
     }
   }
 
+  resetData(fields?: string[]): void {
+    this.setData([]);
+  }
+
   appendRow(values?: Values): number {
     const idx = this.controllers.length;
     this.doAppend(idx, values);

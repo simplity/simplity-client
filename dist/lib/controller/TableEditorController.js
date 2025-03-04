@@ -83,6 +83,9 @@ export class TEC {
             idx++;
         }
     }
+    resetData(fields) {
+        this.setData([]);
+    }
     appendRow(values) {
         const idx = this.controllers.length;
         this.doAppend(idx, values);

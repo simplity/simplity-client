@@ -24,7 +24,7 @@ export class PageElement implements PageView {
 
   constructor(
     public readonly page: Page,
-    public readonly params: Values
+    public readonly inputs: Values
   ) {
     this.root = htmlUtil.newHtmlElement('page');
 

@@ -43,6 +43,7 @@ export declare class TEC implements TableEditorController {
     getFormName(): string | undefined;
     receiveData(data: Vo | Vo[]): void;
     setData(data: Values[]): void;
+    resetData(fields?: string[]): void;
     appendRow(values?: Values): number;
     private doAppend;
     getData(): Values[];

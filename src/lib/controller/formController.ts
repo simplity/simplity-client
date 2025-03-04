@@ -297,16 +297,12 @@ export class FC implements FormController {
   }
 
   getController(name: string): DataController | undefined {
-    return this.controllers[name];
-  }
-
-  searchChildController(name: string): DataController | undefined {
     for (const [panelName, c] of Object.entries(this.controllers)) {
       if (panelName === name) {
         return c;
       }
       if (c.type === 'form') {
-        const f = (c as FormController).searchChildController(name);
+        const f = (c as FormController).getController(name);
         if (f) {
           return f;
         }
@@ -343,7 +339,7 @@ export class FC implements FormController {
     }
     const data = vo as Vo;
     if (childName) {
-      const controller = this.controllers[childName];
+      const controller = this.getController(childName);
 
       if (!controller) {
         logger.error(
@@ -502,8 +498,19 @@ export class FC implements FormController {
     }
     return data;
   }
+
+  resetData(fields?: string[]): void {
+    if (!fields) {
+      this.receiveData({});
+      return;
+    }
+
+    for (const field of fields) {
+      this.setFieldValue(field, '');
+    }
+  }
   private setValueToChild(name: string, value: AnyValue | Vo | Vo[]): void {
-    const controller = this.controllers[name];
+    const controller = this.getController(name);
     if (controller) {
       if (typeof value === 'object') {
         controller.setData(value as Vo | Vo[]);

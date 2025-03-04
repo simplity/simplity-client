@@ -486,7 +486,7 @@ export class FieldElement extends BaseElement {
         htmlUtil.setViewState(this.fieldEle, 'invalid', true);
     }
     /**
-     * overriding to apply disabled and valid states to teh right elements
+     * overriding to apply disabled and valid states to the right elements
      * @param stateName
      * @param stateValue
      */

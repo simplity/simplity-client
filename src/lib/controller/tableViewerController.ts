@@ -162,6 +162,10 @@ export class TWC implements TableViewerController {
     return this.data;
   }
 
+  resetData(fields?: string[]): void {
+    this.setData([]);
+  }
+
   public rowClicked(rowIdx: number): void {
     const idx = this.sanitizeIdx(rowIdx);
     if (idx === undefined) {

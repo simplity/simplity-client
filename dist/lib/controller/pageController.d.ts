@@ -62,13 +62,14 @@ export declare class PC implements PageController {
     requestService(serviceName: string, options?: ServiceRequestOptions): void;
     /**
      * to be called by a run-time app-specific function.
-     * This feature is designed to cater to a situation where teh details of an action can not be specified at design time.
+     * This feature is designed to cater to a situation where the details of an action can not be specified at design time.
      * @param action
-     * @param controller
+     * @param controller defaults to the root form controller.
+     * A child-form-controller may be passed in case some field values are to be taken from that form as part of this action.
      * @param params
      */
-    takeAction(action: Action, controller?: FormController, params?: StringMap<any>): void;
-    act(actionName: string, controller?: FormController, params?: StringMap<any>): void;
+    takeAction(action: Action, controller?: FormController, additionalParams?: StringMap<any>): void;
+    act(actionName: string, controller?: FormController, additionalParams?: StringMap<any>): void;
     addList(name: string, list: SimpleList | KeyedList): void;
     addFunction(name: string, fn: () => unknown): void;
     callFunction(name: string, params?: StringMap<any>, msgs?: DetailedMessage[], controller?: FormController): FnStatus;

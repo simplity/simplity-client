@@ -227,15 +227,12 @@ export class FC {
         return controller;
     }
     getController(name) {
-        return this.controllers[name];
-    }
-    searchChildController(name) {
         for (const [panelName, c] of Object.entries(this.controllers)) {
             if (panelName === name) {
                 return c;
             }
             if (c.type === 'form') {
-                const f = c.searchChildController(name);
+                const f = c.getController(name);
                 if (f) {
                     return f;
                 }
@@ -263,7 +260,7 @@ export class FC {
         }
         const data = vo;
         if (childName) {
-            const controller = this.controllers[childName];
+            const controller = this.getController(childName);
             if (!controller) {
                 logger.error(`Form named ${this.name}:  ${childName} is not a child of this form, but data is received for the same. data ignored.`);
                 return;
@@ -395,8 +392,17 @@ export class FC {
         }
         return data;
     }
+    resetData(fields) {
+        if (!fields) {
+            this.receiveData({});
+            return;
+        }
+        for (const field of fields) {
+            this.setFieldValue(field, '');
+        }
+    }
     setValueToChild(name, value) {
-        const controller = this.controllers[name];
+        const controller = this.getController(name);
         if (controller) {
             if (typeof value === 'object') {
                 controller.setData(value);

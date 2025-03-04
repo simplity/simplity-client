@@ -186,7 +186,7 @@ export function createValidationFn(schema: ValueSchema): ValueValidationFn {
 }
 
 /*
- * createXxxFn functions are  designed to minimize the scope of teh closure around the returned function
+ * createXxxFn functions are  designed to minimize the scope of the closure around the returned function
  */
 function createTextFn(schema: SchemaForText): ValueValidationFn {
   return (p: { value: string }) => {

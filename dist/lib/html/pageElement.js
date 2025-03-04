@@ -7,15 +7,15 @@ import { elementFactory } from './elementFactory';
 const NBR_COLS_IN_GRID = 12;
 export class PageElement {
     page;
-    params;
+    inputs;
     titleEle;
     // private readonly buttonsEle: HTMLElement;
     pc;
     fc;
     root;
-    constructor(page, params) {
+    constructor(page, inputs) {
         this.page = page;
-        this.params = params;
+        this.inputs = inputs;
         this.root = htmlUtil.newHtmlElement('page');
         this.titleEle = htmlUtil.getOptionalElement(this.root, 'title');
         const dataContainer = htmlUtil.getChildElement(this.root, 'data');

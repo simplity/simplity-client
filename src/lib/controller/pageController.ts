@@ -45,9 +45,12 @@ type StringSet = StringMap<boolean>;
 
 type ActionParameters = {
   fc?: FormController;
-  params?: StringMap<any>;
   msgs: DetailedMessage[];
   activeActions: StringSet;
+  /**
+   * additional parameters for a function passed at run time
+   */
+  additionalParams?: StringMap<any>;
 };
 
 const logger = loggerStub.getLogger();
@@ -155,7 +158,7 @@ export class PC implements PageController {
       /**
        * assign input parameters into the page
        */
-      const inp = this.pageView.pageParams || {};
+      const inp = this.pageView.inputs || {};
       for (const [key, isRequired] of Object.entries(expectedInputs)) {
         const val = inp[key];
         if (val !== undefined) {
@@ -335,21 +338,22 @@ export class PC implements PageController {
 
   /**
    * to be called by a run-time app-specific function.
-   * This feature is designed to cater to a situation where teh details of an action can not be specified at design time.
+   * This feature is designed to cater to a situation where the details of an action can not be specified at design time.
    * @param action
-   * @param controller
+   * @param controller defaults to the root form controller.
+   * A child-form-controller may be passed in case some field values are to be taken from that form as part of this action.
    * @param params
    */
   takeAction(
     action: Action,
     controller?: FormController,
-    params?: StringMap<any>
+    additionalParams?: StringMap<any>
   ): void {
     const ap: ActionParameters = {
-      params,
       msgs: [],
       fc: controller || this.fc,
       activeActions: {},
+      additionalParams,
     };
 
     /**
@@ -362,7 +366,7 @@ export class PC implements PageController {
   act(
     actionName: string,
     controller?: FormController,
-    params?: StringMap<any>
+    additionalParams?: StringMap<any>
   ): void {
     /**
      * run time functions override design time actions.
@@ -374,10 +378,10 @@ export class PC implements PageController {
       return;
     }
     const ap: ActionParameters = {
-      params,
       msgs: [],
       fc: controller || this.fc,
       activeActions: {},
+      additionalParams,
     };
 
     /**
@@ -460,9 +464,17 @@ export class PC implements PageController {
           );
           break;
       }
-    } catch (e: unknown) {
-      const msg = (e as Error).message;
-      addMessage(`Error while calling function ${name}: ${msg} `, msgs);
+    } catch (e) {
+      let msg = `Error while calling function ${name}: `;
+      if (e instanceof Error) {
+        const err = e as Error;
+        console.error(err.stack);
+
+        msg += err.message;
+      } else {
+        msg += e;
+      }
+      addMessage(msg, msgs);
       status.allOk = false;
     }
     status.returnedValue = ret;
@@ -514,8 +526,8 @@ export class PC implements PageController {
     onResponseFn?: string
   ): Promise<boolean> {
     if (targetChild) {
-      if (!fc.getController(targetChild)) {
-        const text = `Service ${serviceName} is requested with a target table="${targetChild}", but no table is available with that name. service not requested.`;
+      if (!this.fc.getController(targetChild)) {
+        const text = `Service ${serviceName} is requested with a target table='${targetChild}', but no table is available with that name. service not requested.`;
         logger.error(text);
         this.showMessages([{ id: 'noTable', text, type: 'error' }]);
         return false;
@@ -568,13 +580,13 @@ export class PC implements PageController {
     action?: Action
   ): void {
     if (!action) {
-      const an = substitute(actionName, p.fc || this.fc).toString();
-      if (an === '') {
+      const an = substituteValue(actionName, p.fc || this.fc);
+      if (an === undefined) {
         logger.error(
           `Action '${actionName}' could not be translated because a value for that field was not found`
         );
       } else {
-        action = this.actions[an];
+        action = this.actions['' + an];
       }
     }
 
@@ -606,13 +618,24 @@ export class PC implements PageController {
       this.ac.disableUx();
     }
 
-    /**
-     * IMPORTANT: action.params is already in p.params!!
-     */
     switch (actionType) {
       case 'close':
         //todo: any checks and balances?'
         this.ac.closePage();
+        break;
+
+      case 'reset':
+        let fc: DataController | undefined = this.fc;
+        if (action.panelToReset) {
+          fc = this.fc.getController(action.panelToReset);
+          if (!fc) {
+            logger.error(
+              `No panel/table named ${action.panelToReset} or that panel is not associated with a child-form. Reset action aborted`
+            );
+            break;
+          }
+        }
+        fc.resetData(action.fieldsToReset);
         break;
 
       case 'display':
@@ -634,9 +657,19 @@ export class PC implements PageController {
           break;
         }
 
+        let params: StringMap<any> | undefined;
+        if (action.additionalParams) {
+          if (p.additionalParams) {
+            params = { ...p.additionalParams, ...action.additionalParams };
+          } else {
+            params = action.additionalParams;
+          }
+        } else if (p.additionalParams) {
+          params = p.additionalParams;
+        }
         const status = this.callFunction(
           functionName,
-          action.additionalParams,
+          params,
           p.msgs,
           controller
         );
@@ -662,7 +695,7 @@ export class PC implements PageController {
           if (a.submitAll) {
             controllerToUse = this.fc;
           } else {
-            controllerToUse = this.fc.searchChildController(a.panelToSubmit!);
+            controllerToUse = this.fc.getController(a.panelToSubmit!);
           }
           if (!controllerToUse) {
             throw new Error(
@@ -764,7 +797,14 @@ export class PC implements PageController {
     if (action.pageParameters) {
       const values: Values = {};
       for (const [name, value] of Object.entries(action.pageParameters)) {
-        values[name] = substitute(value, p.fc || this.fc);
+        if (typeof value === 'string') {
+          const v = substituteValue(value, p.fc || this.fc);
+          if (v !== undefined) {
+            values[name] = v;
+          }
+        } else {
+          values[name] = value;
+        }
       }
       navOptions.pageParameters = values;
     }
@@ -808,7 +848,7 @@ export class PC implements PageController {
 
     const closeAction = this.page.onCloseAction;
     if (!closeAction) {
-      this.ac.closePage();
+      this.ac.navigate(navOptions);
       return true;
     }
 
@@ -824,9 +864,8 @@ export class PC implements PageController {
 
     this.act(closeAction, undefined);
 
-    const ac = this.ac;
     window.setTimeout(() => {
-      ac.closePage();
+      this.ac.navigate(navOptions);
     }, 0);
     return true;
   }
@@ -1055,7 +1094,7 @@ function getConditions(
       continue;
     }
 
-    const value = substitute(con.value, fc);
+    const value = getFilterValue(con.field, con.value, fc);
     if (value === '') {
       if (!con.isRequired) {
         continue;
@@ -1072,7 +1111,11 @@ function getConditions(
       continue;
     }
 
-    const toValue = substitute(con.toValue, fc);
+    let toValue = con.toValue;
+
+    if (typeof toValue === 'string') {
+      toValue = substituteValue(toValue, fc);
+    }
     if (toValue !== '') {
       filters.push({ ...con, value, toValue });
       continue;
@@ -1092,27 +1135,36 @@ function getConditions(
 }
 
 /**
- * if the param is like '${fieldName}' then the value of fieldName from values is returned.
- * else the param itself is returned
- * @param param
- * @param values
+ * get the value for the filter-field.
+ * if the supplied value is undefined, it means that the value must be taken from fc.
+ * If it is of the form ${fieldName}, it means that the value must be taken for this field-name
+ * otherwise the value is taken as it is.
+ * @param fieldName name of the field on which the condition is to be put for filtering
+ * @param value as specified at design time.
+ * @param fc: form controller that has values for the relevant fields
  * @returns
  */
-function substitute(param: Value | undefined, fc: FormController): Value {
-  if (param === undefined) {
+function getFilterValue(
+  fieldName: string | undefined,
+  value: Value | undefined,
+  fc: FormController
+): Value {
+  let nameToUse = fieldName;
+
+  // Is the value specified at design time?
+  if (value !== undefined) {
+    if (typeof value !== 'string' || !FIELD_REGEX.test(value)) {
+      //it's a constant
+      return value;
+    }
+
+    //it is a run-time field-name of the form ${field-name}
+    nameToUse = value.substring(2, value.length);
+  }
+  if (!nameToUse) {
     return '';
   }
-  if (typeof param !== 'string') {
-    return param;
-  }
-
-  // var:'${fieldName} is to be substituted
-  if (!FIELD_REGEX.test(param)) {
-    return param;
-  }
-
-  const fieldName = param.substring(2, param.length);
-  const fieldValue = fc.getFieldValue(fieldName);
+  const fieldValue = fc.getFieldValue(nameToUse);
   if (fieldValue !== undefined) {
     return fieldValue;
   }
@@ -1121,4 +1173,28 @@ function substitute(param: Value | undefined, fc: FormController): Value {
     `Parameter ${fieldName} has no value while invoking an action that uses this parameter`
   );
   return '';
+}
+
+/**
+ * If the value is of the pattern ${fieldName}, get the value of that field-name.
+ * else return the value as it is
+ * @param value as specified at design time.
+ * @param fc: form controller that has values for the relevant fields
+ * @returns
+ */
+function substituteValue(value: string, fc: FormController): Value | undefined {
+  if (!FIELD_REGEX.test(value)) {
+    return value;
+  }
+
+  const name = value.substring(2, value.length);
+
+  const val = fc.getFieldValue(name);
+  if (val === undefined) {
+    logger.warn(
+      `${value}: No value found for run-time-field ${name} in the form-controller`
+    );
+  }
+
+  return val;
 }

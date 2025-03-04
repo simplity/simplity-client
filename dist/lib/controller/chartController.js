@@ -40,5 +40,8 @@ export class CC {
     validate() {
         return true;
     }
+    resetData(fields) {
+        this.setData([]);
+    }
 }
 //# sourceMappingURL=chartController.js.map

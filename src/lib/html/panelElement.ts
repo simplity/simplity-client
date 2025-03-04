@@ -34,7 +34,7 @@ export class PanelElement extends BaseElement implements PanelView {
         fcForChildren = fc.newFormController(this.name, form);
       } else {
         this.logger.warn(
-          `panel "${this.name}" has a childFormName, but this panel itself is not controlled by a form. The child form-controller will be made a child of teh root-form-controller fo this page`
+          `panel "${this.name}" has a childFormName, but this panel itself is not controlled by a form. The child form-controller will be made a child of the root-form-controller fo this page`
         );
         fcForChildren = this.pc
           .getFormController()

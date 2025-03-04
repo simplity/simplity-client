@@ -58,4 +58,8 @@ export class CC implements ChartController {
   validate(): boolean {
     return true;
   }
+
+  resetData(fields?: string[]): void {
+    this.setData([]);
+  }
 }

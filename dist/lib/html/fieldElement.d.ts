@@ -103,7 +103,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
     able(enabled: boolean): void;
     setError(text: string | undefined): void;
     /**
-     * overriding to apply disabled and valid states to teh right elements
+     * overriding to apply disabled and valid states to the right elements
      * @param stateName
      * @param stateValue
      */

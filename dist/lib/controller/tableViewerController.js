@@ -130,6 +130,9 @@ export class TWC {
     getData() {
         return this.data;
     }
+    resetData(fields) {
+        this.setData([]);
+    }
     rowClicked(rowIdx) {
         const idx = this.sanitizeIdx(rowIdx);
         if (idx === undefined) {

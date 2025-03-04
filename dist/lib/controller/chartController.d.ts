@@ -16,4 +16,5 @@ export declare class CC implements ChartController {
     getData(): Vo | Vo[];
     isValid(): boolean;
     validate(): boolean;
+    resetData(fields?: string[]): void;
 }
