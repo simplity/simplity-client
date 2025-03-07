@@ -76,7 +76,7 @@ export declare class AC implements AppController {
     newPluginComponent(fc: FormController | undefined, comp: PageComponent, maxWidth: number, value?: Value): BaseView;
     getImageSrc(imageName: string): string;
     getHtml(htmlName: string): string;
-    getMessage(id: string, params?: string[] | undefined): string;
+    getMessage(id: string, params?: string[], fallbackText?: string): string;
     getPermittedPages(): string[];
     setContextValue(key: string, value: any): void;
     removeContextValue(key: string): void;

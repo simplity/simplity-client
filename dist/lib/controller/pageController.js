@@ -149,11 +149,8 @@ export class PC {
         }
         const alerts = [];
         for (let msg of messages) {
-            let text = msg.text;
-            if (msg.id) {
-                text = this.ac.getMessage(msg.id, msg.params) || text;
-            }
-            alerts.push({ type: msg.type, text });
+            const text = this.ac.getMessage(msg.id, msg.params, msg.text);
+            alerts.push({ type: msg.type, text: text });
         }
         this.ac.showAlerts(alerts);
     }
@@ -279,6 +276,30 @@ export class PC {
     }
     addFunction(name, fn) {
         this.functions[name] = fn;
+    }
+    getFieldValue(qualifiedName) {
+        const parts = qualifiedName.split('.');
+        const fieldName = parts.pop();
+        let fc = this.fc;
+        if (parts.length) {
+            for (const part of parts) {
+                const c = fc.getController(part);
+                if (!c) {
+                    logger.error(`No value could be determined for field '${qualifiedName}' because the sub-form '${part}' does not exist `);
+                    return undefined;
+                }
+                if (c.type !== 'form') {
+                    logger.error(`No value could be determined for field '${qualifiedName}' because the sub-form '${part}' is of type '${c.type}'. SUb forms must be of type 'form'`);
+                    return undefined;
+                }
+                fc = c;
+            }
+        }
+        const v = fc.getFieldValue(fieldName);
+        if (v === undefined) {
+            logger.error(`Field '${qualifiedName}' does not exist`);
+        }
+        return v;
     }
     callFunction(name, params, msgs, controller) {
         const entry = this.ac.getFn(name);
@@ -413,13 +434,7 @@ export class PC {
      */
     doAct(actionName, p, action) {
         if (!action) {
-            const an = substituteValue(actionName, p.fc || this.fc);
-            if (an === undefined) {
-                logger.error(`Action '${actionName}' could not be translated because a value for that field was not found`);
-            }
-            else {
-                action = this.actions['' + an];
-            }
+            action = this.getAction(actionName, p.fc);
         }
         let errorFound = false;
         const controller = p.fc || this.fc;
@@ -550,6 +565,24 @@ export class PC {
                 break;
         }
         this.actionReturned(action, !errorFound, p);
+    }
+    /**
+     *
+     * @param name may be of the form ${run-time-name}
+     */
+    getAction(name, fc) {
+        if (!name.startsWith('$')) {
+            return this.actions[name];
+        }
+        let an = substituteValue(name, this.fc);
+        if (an === undefined && fc && this.fc !== fc) {
+            an = substituteValue(name, fc);
+        }
+        if (an === undefined) {
+            logger.error(`Action '${name}' could not be translated because a value for that field was not found`);
+            return undefined;
+        }
+        return this.actions['' + an];
     }
     setDisplayState(compName, settings) {
         this.fc.setDisplayState(compName, settings);
@@ -755,7 +788,7 @@ function getConditions(fc, conditions, msgs) {
             if (!con.isRequired) {
                 continue;
             }
-            addMessage(`value is missing for the field '${con.value}'. Action will abort.`, msgs);
+            addMessage(`value is missing for the field '${con.field}'. Action will abort.`, msgs);
             return undefined;
         }
         if (con.comparator !== '><') {
@@ -773,7 +806,7 @@ function getConditions(fc, conditions, msgs) {
         if (!con.isRequired) {
             continue;
         }
-        addMessage(`value is missing for the field '${con.toValue}'. Action will abort.`, msgs);
+        addMessage(`value is missing for the field '${con.field}'. Action will abort.`, msgs);
         return undefined;
     }
     return filters;
@@ -820,7 +853,7 @@ function substituteValue(value, fc) {
     if (!FIELD_REGEX.test(value)) {
         return value;
     }
-    const name = value.substring(2, value.length);
+    const name = value.substring(2, value.length - 1);
     const val = fc.getFieldValue(name);
     if (val === undefined) {
         logger.warn(`${value}: No value found for run-time-field ${name} in the form-controller`);

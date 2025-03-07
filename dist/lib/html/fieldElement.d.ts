@@ -53,7 +53,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
      */
     private fieldEle;
     private errorEle?;
-    private fieldRendering;
+    private fieldRendering?;
     /**
      * is this a select (drop-down) element?
      */

@@ -2,7 +2,6 @@ import {
   DataField,
   DetailedMessage,
   FieldView,
-  FieldRendering,
   SimpleList,
   systemResources,
   Value,
@@ -92,7 +91,7 @@ export class FieldElement extends BaseElement implements FieldView {
    */
   private fieldEle: HTMLElement;
   private errorEle?: HTMLElement;
-  private fieldRendering: FieldRendering = 'hidden';
+  private fieldRendering?;
 
   /**
    * is this a select (drop-down) element?
@@ -109,10 +108,8 @@ export class FieldElement extends BaseElement implements FieldView {
   ) {
     super(fc, field, getTemplateName(field), maxWidth);
 
-    if (field.renderAs) {
-      this.fieldRendering = field.renderAs;
-      this.isSelect = field.renderAs === 'select';
-    }
+    this.fieldRendering = field.renderAs || 'text-field';
+    this.isSelect = field.renderAs === 'select';
 
     this.fieldEle = htmlUtil.getChildElement(this.root, 'field')!;
     /**
@@ -161,6 +158,7 @@ export class FieldElement extends BaseElement implements FieldView {
     const text = newValue.toString();
     this.textValue = text;
     switch (this.fieldRendering) {
+      case undefined:
       case 'text-field':
       case 'password':
       case 'text-area':
@@ -208,6 +206,7 @@ export class FieldElement extends BaseElement implements FieldView {
    */
   private wireEvents(): void {
     switch (this.fieldRendering) {
+      case undefined:
       case 'text-field':
       case 'password':
       case 'text-area':
@@ -281,6 +280,10 @@ export class FieldElement extends BaseElement implements FieldView {
       this.pc.act(this.field.onChange, this.fc, { value: newValue });
     }
 
+    console.log(
+      `Value of ${this.name} has changed with oldValue='${oldValue}', newValue='${this.value}', wasOk='${wasOk}' isOk = '${isOk}' this.fc:`,
+      this.fc
+    );
     if (oldValue === this.value || !this.fc) {
       //value has not actually changed, or there is NO controller
       return;

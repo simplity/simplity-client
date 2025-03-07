@@ -228,11 +228,8 @@ export class PC implements PageController {
 
     const alerts: Alert[] = [];
     for (let msg of messages) {
-      let text = msg.text;
-      if (msg.id) {
-        text = this.ac.getMessage(msg.id, msg.params) || text;
-      }
-      alerts.push({ type: msg.type, text });
+      const text = this.ac.getMessage(msg.id, msg.params, msg.text);
+      alerts.push({ type: msg.type, text: text! });
     }
     this.ac.showAlerts(alerts);
   }
@@ -397,6 +394,35 @@ export class PC implements PageController {
 
   addFunction(name: string, fn: () => unknown): void {
     this.functions[name] = fn;
+  }
+
+  getFieldValue(qualifiedName: string): Value | undefined {
+    const parts = qualifiedName.split('.');
+    const fieldName = parts.pop()!;
+    let fc = this.fc;
+    if (parts.length) {
+      for (const part of parts) {
+        const c = fc.getController(part);
+        if (!c) {
+          logger.error(
+            `No value could be determined for field '${qualifiedName}' because the sub-form '${part}' does not exist `
+          );
+          return undefined;
+        }
+        if (c.type !== 'form') {
+          logger.error(
+            `No value could be determined for field '${qualifiedName}' because the sub-form '${part}' is of type '${c.type}'. SUb forms must be of type 'form'`
+          );
+          return undefined;
+        }
+        fc = c as FormController;
+      }
+    }
+    const v = fc.getFieldValue(fieldName);
+    if (v === undefined) {
+      logger.error(`Field '${qualifiedName}' does not exist`);
+    }
+    return v;
   }
 
   callFunction(
@@ -580,14 +606,7 @@ export class PC implements PageController {
     action?: Action
   ): void {
     if (!action) {
-      const an = substituteValue(actionName, p.fc || this.fc);
-      if (an === undefined) {
-        logger.error(
-          `Action '${actionName}' could not be translated because a value for that field was not found`
-        );
-      } else {
-        action = this.actions['' + an];
-      }
+      action = this.getAction(actionName, p.fc);
     }
 
     let errorFound: boolean = false;
@@ -755,6 +774,27 @@ export class PC implements PageController {
     }
 
     this.actionReturned(action, !errorFound, p);
+  }
+
+  /**
+   *
+   * @param name may be of the form ${run-time-name}
+   */
+  private getAction(name: string, fc?: FormController): Action | undefined {
+    if (!name.startsWith('$')) {
+      return this.actions[name];
+    }
+    let an = substituteValue(name, this.fc);
+    if (an === undefined && fc && this.fc !== fc) {
+      an = substituteValue(name, fc);
+    }
+    if (an === undefined) {
+      logger.error(
+        `Action '${name}' could not be translated because a value for that field was not found`
+      );
+      return undefined;
+    }
+    return this.actions['' + an];
   }
 
   setDisplayState(compName: string, settings: Values): void {
@@ -1100,7 +1140,7 @@ function getConditions(
         continue;
       }
       addMessage(
-        `value is missing for the field '${con.value}'. Action will abort.`,
+        `value is missing for the field '${con.field}'. Action will abort.`,
         msgs
       );
       return undefined;
@@ -1126,7 +1166,7 @@ function getConditions(
     }
 
     addMessage(
-      `value is missing for the field '${con.toValue}'. Action will abort.`,
+      `value is missing for the field '${con.field}'. Action will abort.`,
       msgs
     );
     return undefined;
@@ -1187,7 +1227,7 @@ function substituteValue(value: string, fc: FormController): Value | undefined {
     return value;
   }
 
-  const name = value.substring(2, value.length);
+  const name = value.substring(2, value.length - 1);
 
   const val = fc.getFieldValue(name);
   if (val === undefined) {

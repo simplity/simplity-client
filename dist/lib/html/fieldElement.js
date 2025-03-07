@@ -72,7 +72,7 @@ export class FieldElement extends BaseElement {
      */
     fieldEle;
     errorEle;
-    fieldRendering = 'hidden';
+    fieldRendering;
     /**
      * is this a select (drop-down) element?
      */
@@ -83,10 +83,8 @@ export class FieldElement extends BaseElement {
     constructor(fc, field, maxWidth, initialValue) {
         super(fc, field, getTemplateName(field), maxWidth);
         this.field = field;
-        if (field.renderAs) {
-            this.fieldRendering = field.renderAs;
-            this.isSelect = field.renderAs === 'select';
-        }
+        this.fieldRendering = field.renderAs || 'text-field';
+        this.isSelect = field.renderAs === 'select';
         this.fieldEle = htmlUtil.getChildElement(this.root, 'field');
         /**
          * uncontrolled fields are to be disabled. Typically in a table-row
@@ -127,6 +125,7 @@ export class FieldElement extends BaseElement {
         const text = newValue.toString();
         this.textValue = text;
         switch (this.fieldRendering) {
+            case undefined:
             case 'text-field':
             case 'password':
             case 'text-area':
@@ -162,6 +161,7 @@ export class FieldElement extends BaseElement {
      */
     wireEvents() {
         switch (this.fieldRendering) {
+            case undefined:
             case 'text-field':
             case 'password':
             case 'text-area':
@@ -221,6 +221,7 @@ export class FieldElement extends BaseElement {
         if (this.field.onChange) {
             this.pc.act(this.field.onChange, this.fc, { value: newValue });
         }
+        console.log(`Value of ${this.name} has changed with oldValue='${oldValue}', newValue='${this.value}', wasOk='${wasOk}' isOk = '${isOk}' this.fc:`, this.fc);
         if (oldValue === this.value || !this.fc) {
             //value has not actually changed, or there is NO controller
             return;

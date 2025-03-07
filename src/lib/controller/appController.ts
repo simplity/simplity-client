@@ -370,10 +370,10 @@ export class AC implements AppController {
     return this.allHtmls[htmlName] || '';
   }
 
-  getMessage(id: string, params?: string[] | undefined): string {
+  getMessage(id: string, params?: string[], fallbackText?: string): string {
     const msg = this.allMessages[id];
     if (msg === undefined) {
-      return id;
+      return fallbackText || id || '';
     }
     const p = params || [];
     return msg.replace(REGEXP, (match, id: string) => {
@@ -539,7 +539,7 @@ export class AC implements AppController {
     if (response.status !== 'completed') {
       if (response.messages) {
         const msg = response.messages[0];
-        logger.error(this.getMessage(msg.id, msg.params));
+        logger.error(this.getMessage(msg.id, msg.params, msg.text));
       } else {
         logger.error(`Service ${serviceName} failed`);
       }

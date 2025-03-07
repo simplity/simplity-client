@@ -1,4 +1,4 @@
-import { FieldView, PageView, Vo, Values, StringMap, PageController, AppController, FormController, DetailedMessage, FnStatus, Action, AnyValue, SimpleList, KeyedList, FormOperation, ServiceRequestOptions } from 'simplity-types';
+import { FieldView, PageView, Value, Vo, Values, StringMap, PageController, AppController, FormController, DetailedMessage, FnStatus, Action, AnyValue, SimpleList, KeyedList, FormOperation, ServiceRequestOptions } from 'simplity-types';
 export declare class PC implements PageController {
     readonly name: string;
     /**
@@ -72,6 +72,7 @@ export declare class PC implements PageController {
     act(actionName: string, controller?: FormController, additionalParams?: StringMap<any>): void;
     addList(name: string, list: SimpleList | KeyedList): void;
     addFunction(name: string, fn: () => unknown): void;
+    getFieldValue(qualifiedName: string): Value | undefined;
     callFunction(name: string, params?: StringMap<any>, msgs?: DetailedMessage[], controller?: FormController): FnStatus;
     private setButtonDisplays;
     private checkTitle;
@@ -83,6 +84,11 @@ export declare class PC implements PageController {
      * This is designed to detect any such loop and throw error, rather than getting a activeActions-over-flow
      */
     private doAct;
+    /**
+     *
+     * @param name may be of the form ${run-time-name}
+     */
+    private getAction;
     setDisplayState(compName: string, settings: Values): void;
     /**
      * an async action has returned. We have to continue the possible action-chain

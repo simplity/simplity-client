@@ -280,10 +280,10 @@ export class AC {
     getHtml(htmlName) {
         return this.allHtmls[htmlName] || '';
     }
-    getMessage(id, params) {
+    getMessage(id, params, fallbackText) {
         const msg = this.allMessages[id];
         if (msg === undefined) {
-            return id;
+            return fallbackText || id || '';
         }
         const p = params || [];
         return msg.replace(REGEXP, (match, id) => {
@@ -425,7 +425,7 @@ export class AC {
         if (response.status !== 'completed') {
             if (response.messages) {
                 const msg = response.messages[0];
-                logger.error(this.getMessage(msg.id, msg.params));
+                logger.error(this.getMessage(msg.id, msg.params, msg.text));
             }
             else {
                 logger.error(`Service ${serviceName} failed`);
