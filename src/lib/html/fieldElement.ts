@@ -10,7 +10,7 @@ import {
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
-import { parseToValue } from '../validation/validation';
+import { parseValue } from '../validation/validation';
 
 function getTemplateName(field: DataField): HtmlTemplateName | '' {
   const ras = field.renderAs;
@@ -365,7 +365,7 @@ export class FieldElement extends BaseElement implements FieldView {
     if (!text) {
       return undefined;
     }
-    return parseToValue(text, this.field.valueType);
+    return parseValue(text, this.field.valueType);
   }
 
   public getValue(): Value {

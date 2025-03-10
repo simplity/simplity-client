@@ -2,7 +2,7 @@ import { loggerStub } from '../logger-stub/logger';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
-import { createValidationFn, parseToValue } from '../validation/validation';
+import { createValidationFn, parseValue } from '../validation/validation';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 let logger = loggerStub.getLogger();
@@ -559,7 +559,7 @@ export class AC {
         return fn({ value });
     }
     validateType(valueType, textValue) {
-        const value = parseToValue(textValue, valueType);
+        const value = parseValue(textValue, valueType);
         if (value !== undefined) {
             return { value };
         }

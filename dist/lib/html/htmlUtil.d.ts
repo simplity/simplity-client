@@ -72,7 +72,7 @@ export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
  * data-* attribute used by our app
  */
 export declare const dataAttributeNames: readonly ["full", "id"];
-export declare const childElementIds: readonly ["add-button", "buttons", "chart", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "menu-item", "message", "middle", "page", "right", "row", "rows", "search", "table", "title"];
+export declare const childElementIds: readonly ["add-button", "buttons", "chart", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "menu-item", "message", "middle", "no-data", "page", "right", "row", "rows", "search", "table", "title"];
 export type ChildElementId = (typeof childElementIds)[number];
 export declare const htmlUtil: {
     /**

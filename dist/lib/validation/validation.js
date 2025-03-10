@@ -2,7 +2,10 @@ export const DEFAULT_MAX_CHARS = 1000;
 export const DEFAULT_DAYS_RANGE = 365000;
 export const DEFAULT_MAX_NUMBER = Number.MAX_SAFE_INTEGER;
 export const DEFAULT_NBR_DECIMALS = 2;
+export const TRUE_VALUE = 'true';
+export const FALSE_VALUE = 'false';
 const DEFAULT_FACTOR = 10 ** DEFAULT_NBR_DECIMALS;
+const DATE_SHORTCUT_REGEX = /^([+-]\d+)|(\.)$/;
 const NUMBER_REGEX = /^[+-]?(\d+(\.\d*)?|\.\d+)$/;
 const DATE_REGEX = /^\d\d\d\d-\d\d-\d\d$/;
 const TIME_REGEX = /^T\d\d:\d\d:\d\d\.\d\d\dZ$/;
@@ -22,12 +25,12 @@ const STAMP_ERROR = {
     messages: [{ alertType: 'error', messageId: '_invalidTimestamp' }],
 };
 /**
- * validate that the text is of the right value type with no other constraints
+ * parse a text value as per given value-type. e.g
  * @param text
  * @param valueType
- * @returns true if the text is of the right value type. false otherwise.
+ * @returns value if it is of the right type, undefined otherwise
  */
-export function parseToValue(textValue, valueType) {
+export function parseValue(textValue, valueType) {
     const text = textValue.trim();
     switch (valueType) {
         case 'boolean':
@@ -355,11 +358,11 @@ function roundIt(n, factor) {
 }
 function parseBoolean(text) {
     const t = text.trim().toLowerCase();
-    if (t === 'true' || t === '1') {
+    if (t === TRUE_VALUE || t === '1') {
         return true;
     }
-    if (t === 'false' || t === '0') {
-        return false;
+    if (t === FALSE_VALUE || t === '0') {
+        false;
     }
     return undefined;
 }
@@ -372,17 +375,14 @@ function parseNumber(text) {
 }
 function parseDate(text) {
     const str = text.trim();
-    if (NUMBER_REGEX.test(str)) {
-        //date is given as number of days relative to today
-        let nbr = Number.parseFloat(str);
-        if (Number.isNaN(nbr)) {
-            return undefined;
+    if (DATE_SHORTCUT_REGEX.test(str)) {
+        console.info(`Going to parse date shortcut='${text}'`);
+        let nbr = 0;
+        if (text !== '.') {
+            nbr = Number.parseInt(text, 10);
         }
-        nbr = Math.round(nbr);
-        //get local year, month and date, and construct a date relative to these
-        //get the local-date object as per our standard
-        const now = new Date();
-        return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + nbr));
+        let date = new Date();
+        return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate() + nbr));
     }
     if (!DATE_REGEX.test(str)) {
         return undefined;

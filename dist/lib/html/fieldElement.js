@@ -1,7 +1,7 @@
 import { systemResources, } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
-import { parseToValue } from '../validation/validation';
+import { parseValue } from '../validation/validation';
 function getTemplateName(field) {
     const ras = field.renderAs;
     if (!ras) {
@@ -296,7 +296,7 @@ export class FieldElement extends BaseElement {
         if (!text) {
             return undefined;
         }
-        return parseToValue(text, this.field.valueType);
+        return parseValue(text, this.field.valueType);
     }
     getValue() {
         return this.value;

@@ -70,7 +70,7 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
    * thead elements mapped by column name
    */
   private columnHeaders: StringMap<HTMLElement> = {};
-  private sortedOn = ''; //column on which it this table is sorted
+  private sortedOn = ''; //column on which  this table is sorted
   private sortedRows: SortedRow[] = [];
   private sortedAscending = false;
 
@@ -435,6 +435,16 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     //no predefined columns. create them based on the first row
     if (!allCols) {
       allCols = [];
+      if (!data.length) {
+        //no predefined columns, and no data rows!!
+        allCols.push({
+          name: '',
+          label: 'No data for the selected filters',
+          valueType: 'text',
+        });
+        return allCols;
+      }
+
       for (const [name, value] of Object.entries(data[0])) {
         allCols.push({
           name,

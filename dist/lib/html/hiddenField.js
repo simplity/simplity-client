@@ -1,5 +1,5 @@
 import { BaseElement } from './baseElement';
-import { parseToValue } from '../validation/validation';
+import { parseValue } from '../validation/validation';
 export class HiddenField extends BaseElement {
     field;
     constructor(fc, field, maxWidth, value) {
@@ -23,7 +23,7 @@ export class HiddenField extends BaseElement {
         if (!text) {
             return undefined;
         }
-        return parseToValue(text, this.field.valueType);
+        return parseValue(text, this.field.valueType);
     }
 }
 //# sourceMappingURL=hiddenField.js.map

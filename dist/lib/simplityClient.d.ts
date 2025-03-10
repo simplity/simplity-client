@@ -1,4 +1,5 @@
 import { ClientRuntime, Logger } from 'simplity-types';
+import { parseValue } from './validation/validation';
 export declare const simplityClient: {
     /**
      * Simplity uses the console as the default device to log to.
@@ -14,5 +15,18 @@ export declare const simplityClient: {
      * @returns
      */
     setLogger: (logger: Logger | undefined) => void;
+    /**
+     * start the html client. This is the last step in the bootstrapping process.
+     * @param runtime
+     * @param root
+     * @returns
+     */
     startHtmlClient: (runtime: ClientRuntime, root: HTMLElement) => import("simplity-types").AppController;
+    /**
+     * parse a text value as per given value-type. e.g
+     * @param text
+     * @param valueType
+     * @returns value if it is of the right type, undefined otherwise
+     */
+    parseValue: typeof parseValue;
 };

@@ -122,6 +122,7 @@ export const childElementIds = [
     'menu-item',
     'message',
     'middle',
+    'no-data',
     'page',
     'right',
     'row',

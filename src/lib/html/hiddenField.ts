@@ -1,6 +1,6 @@
 import { DataField, FormController, Value } from 'simplity-types';
 import { BaseElement } from './baseElement';
-import { parseToValue } from '../validation/validation';
+import { parseValue } from '../validation/validation';
 
 export class HiddenField extends BaseElement {
   constructor(
@@ -29,6 +29,6 @@ export class HiddenField extends BaseElement {
     if (!text) {
       return undefined;
     }
-    return parseToValue(text, this.field.valueType);
+    return parseValue(text, this.field.valueType);
   }
 }

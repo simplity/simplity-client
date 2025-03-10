@@ -48,7 +48,7 @@ export class TableViewerElement extends BaseElement {
      * thead elements mapped by column name
      */
     columnHeaders = {};
-    sortedOn = ''; //column on which it this table is sorted
+    sortedOn = ''; //column on which  this table is sorted
     sortedRows = [];
     sortedAscending = false;
     constructor(fc, table, maxWidth) {
@@ -340,6 +340,15 @@ export class TableViewerElement extends BaseElement {
         //no predefined columns. create them based on the first row
         if (!allCols) {
             allCols = [];
+            if (!data.length) {
+                //no predefined columns, and no data rows!!
+                allCols.push({
+                    name: '',
+                    label: 'No data for the selected filters',
+                    valueType: 'text',
+                });
+                return allCols;
+            }
             for (const [name, value] of Object.entries(data[0])) {
                 allCols.push({
                     name,

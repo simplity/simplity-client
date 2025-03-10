@@ -1,6 +1,7 @@
 import { loggerStub } from './logger-stub/logger';
 import { AppElement } from './html/appElement';
 import { app } from './controller/app';
+import { parseValue } from './validation/validation';
 export const simplityClient = {
     /**
      * Simplity uses the console as the default device to log to.
@@ -26,9 +27,22 @@ export const simplityClient = {
         }
         return;
     },
+    /**
+     * start the html client. This is the last step in the bootstrapping process.
+     * @param runtime
+     * @param root
+     * @returns
+     */
     startHtmlClient: (runtime, root) => {
         new AppElement(runtime, root);
         return app.getCurrentAc();
     },
+    /**
+     * parse a text value as per given value-type. e.g
+     * @param text
+     * @param valueType
+     * @returns value if it is of the right type, undefined otherwise
+     */
+    parseValue,
 };
 //# sourceMappingURL=simplityClient.js.map

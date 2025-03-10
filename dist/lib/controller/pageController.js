@@ -779,7 +779,8 @@ function getConditions(fc, conditions, msgs) {
         return filters;
     }
     for (const con of conditions) {
-        if (con.comparator === '!#' || con.comparator === '#') {
+        const op = con.comparator || '=';
+        if (op === '!#' || op === '#') {
             filters.push(con);
             continue;
         }
