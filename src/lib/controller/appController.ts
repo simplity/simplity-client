@@ -82,7 +82,8 @@ export class AC implements AppController {
   private readonly logoutServiceName;
   private readonly imageBasePath;
 
-  private readonly viewFActory?: ViewComponentFactory;
+  private readonly viewFactory?: ViewComponentFactory;
+  private readonly defaultPageSize?: number;
 
   /*
    * context for the logged-in user
@@ -150,7 +151,8 @@ export class AC implements AppController {
     this.allValueSchemas = runtime.valueSchemas || {};
     this.validationFns = this.createValidationFns(runtime.valueSchemas);
 
-    this.viewFActory = runtime.viewComponentFactory;
+    this.viewFactory = runtime.viewComponentFactory;
+    this.defaultPageSize = runtime.defaultPageSize;
   }
 
   private createValidationFns(
@@ -342,17 +344,16 @@ export class AC implements AppController {
     return obj;
   }
 
-  newPluginComponent(
+  newViewComponent(
     fc: FormController | undefined,
     comp: PageComponent,
     maxWidth: number,
     value?: Value
-  ): BaseView {
-    if (this.viewFActory) {
-      return this.viewFActory.newViewComponent(fc, comp, maxWidth, value);
+  ): BaseView | undefined {
+    if (this.viewFactory) {
+      return this.viewFactory.newViewComponent(fc, comp, maxWidth, value);
     }
-    throw new Error(`Component '${comp.name}' is of type '${comp.compType}' and has set pluginOptions=${comp.pluginOptions}. 
-        App run time is missing the required viewPluginFactory to create this component.`);
+    return undefined;
   }
 
   getImageSrc(imageName: string): string {
@@ -714,6 +715,19 @@ export class AC implements AppController {
     return { messages: [{ alertType: 'error', messageId: 'invalidValue' }] };
   }
 
+  download(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const doc = window.document;
+    const a = doc.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  getDefaultPageSize(): number {
+    return this.defaultPageSize || 0;
+  }
   /**
    * method to be called after login, if that is done by another component.
    * it is better to call login() of this service instead.

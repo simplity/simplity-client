@@ -46,7 +46,8 @@ export class AC {
     loginServiceName;
     logoutServiceName;
     imageBasePath;
-    viewFActory;
+    viewFactory;
+    defaultPageSize;
     /*
      * context for the logged-in user
      */
@@ -102,7 +103,8 @@ export class AC {
         this.allMenus = runtime.menuItems || {};
         this.allValueSchemas = runtime.valueSchemas || {};
         this.validationFns = this.createValidationFns(runtime.valueSchemas);
-        this.viewFActory = runtime.viewComponentFactory;
+        this.viewFactory = runtime.viewComponentFactory;
+        this.defaultPageSize = runtime.defaultPageSize;
     }
     createValidationFns(schemas) {
         const fns = {};
@@ -260,12 +262,11 @@ export class AC {
         }
         return obj;
     }
-    newPluginComponent(fc, comp, maxWidth, value) {
-        if (this.viewFActory) {
-            return this.viewFActory.newViewComponent(fc, comp, maxWidth, value);
+    newViewComponent(fc, comp, maxWidth, value) {
+        if (this.viewFactory) {
+            return this.viewFactory.newViewComponent(fc, comp, maxWidth, value);
         }
-        throw new Error(`Component '${comp.name}' is of type '${comp.compType}' and has set pluginOptions=${comp.pluginOptions}. 
-        App run time is missing the required viewPluginFactory to create this component.`);
+        return undefined;
     }
     getImageSrc(imageName) {
         let s = '' + imageName;
@@ -564,6 +565,18 @@ export class AC {
             return { value };
         }
         return { messages: [{ alertType: 'error', messageId: 'invalidValue' }] };
+    }
+    download(blob, fileName) {
+        const url = URL.createObjectURL(blob);
+        const doc = window.document;
+        const a = doc.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    getDefaultPageSize() {
+        return this.defaultPageSize || 0;
     }
     /**
      * method to be called after login, if that is done by another component.

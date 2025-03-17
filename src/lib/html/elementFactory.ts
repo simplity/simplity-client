@@ -10,8 +10,8 @@ import {
   Value,
   FormController,
   ButtonPanel,
-  AppController,
   Chart,
+  AppController,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { LeafElement } from './leafElement';
@@ -43,13 +43,15 @@ export const elementFactory = {
     maxWidth: number,
     value?: Value
   ): BaseElement {
-    if (comp.pluginOptions) {
-      console.info(`Component '${comp.name}' requires a plugin from this app.`);
-
-      if (!ac) {
-        ac = app.getCurrentAc();
-      }
-      return ac.newPluginComponent(fc, comp, maxWidth, value) as BaseElement;
+    if (!ac) {
+      ac = app.getCurrentAc();
+    }
+    const view = ac.newViewComponent(fc, comp, maxWidth, value) as BaseElement;
+    if (view) {
+      console.info(
+        `Component '${comp.name}' created at the app-specific factory.`
+      );
+      return view;
     }
 
     switch (comp.compType) {

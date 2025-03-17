@@ -15,7 +15,8 @@ export declare class AC implements AppController {
     private readonly loginServiceName;
     private readonly logoutServiceName;
     private readonly imageBasePath;
-    private readonly viewFActory?;
+    private readonly viewFactory?;
+    private readonly defaultPageSize?;
     private sessionId?;
     private readonly context;
     /**
@@ -73,7 +74,7 @@ export declare class AC implements AppController {
     getPage(nam: string): Page;
     getForm(nam: string): Form;
     getFn(nam: string, type?: FunctionType): FunctionDetails;
-    newPluginComponent(fc: FormController | undefined, comp: PageComponent, maxWidth: number, value?: Value): BaseView;
+    newViewComponent(fc: FormController | undefined, comp: PageComponent, maxWidth: number, value?: Value): BaseView | undefined;
     getImageSrc(imageName: string): string;
     getHtml(htmlName: string): string;
     getMessage(id: string, params?: string[], fallbackText?: string): string;
@@ -93,6 +94,8 @@ export declare class AC implements AppController {
     getKeyedList(listName: string, forceRefresh: boolean): Promise<KeyedList>;
     validateValue(schemaName: string, value: string): ValueValidationResult;
     validateType(valueType: ValueType, textValue: string): ValueValidationResult;
+    download(blob: Blob, fileName: string): void;
+    getDefaultPageSize(): number;
     /**
      * method to be called after login, if that is done by another component.
      * it is better to call login() of this service instead.

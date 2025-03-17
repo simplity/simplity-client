@@ -23,7 +23,7 @@ import { FieldElement } from './fieldElement';
 type SortedRow = { idx: number; value: Value };
 type HeaderDetails = ValueRenderingDetails & { comp?: Button | StaticComp };
 export class TableViewerElement extends BaseElement implements TableViewerView {
-  private twc: TableViewerController;
+  public readonly twc: TableViewerController;
   /**
    * components of this panel
    */
@@ -197,6 +197,10 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
       return details;
     }
 
+    /**
+     * as per the current dev-util, this should not arise because children will be added based on the form.
+     * this is just a defensive code??
+     */
     if (this.table.formName) {
       //if form is given, we assume all the fields in the form
       const form = this.ac.getForm(this.table.formName);

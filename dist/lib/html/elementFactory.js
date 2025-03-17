@@ -21,12 +21,13 @@ export const elementFactory = {
      * @throws Error in case the type of the supplied component is not recognized
      */
     newElement(fc, comp, maxWidth, value) {
-        if (comp.pluginOptions) {
-            console.info(`Component '${comp.name}' requires a plugin from this app.`);
-            if (!ac) {
-                ac = app.getCurrentAc();
-            }
-            return ac.newPluginComponent(fc, comp, maxWidth, value);
+        if (!ac) {
+            ac = app.getCurrentAc();
+        }
+        const view = ac.newViewComponent(fc, comp, maxWidth, value);
+        if (view) {
+            console.info(`Component '${comp.name}' created at the app-specific factory.`);
+            return view;
         }
         switch (comp.compType) {
             case 'button':

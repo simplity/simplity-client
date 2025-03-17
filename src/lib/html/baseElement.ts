@@ -120,7 +120,7 @@ export class BaseElement implements BaseView {
       this.setDisplayState(comp.displayStates);
     }
     /**
-     * set colSpan to maxWidth if parent has specified id
+     * set colSpan to maxWidth if parent has specified it
      */
     if (maxWidth !== 0) {
       let width = comp.width;

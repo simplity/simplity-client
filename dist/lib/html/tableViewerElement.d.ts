@@ -1,9 +1,9 @@
-import { TableViewer, Values, TableViewerView, FormController } from 'simplity-types';
+import { TableViewer, TableViewerController, Values, TableViewerView, FormController } from 'simplity-types';
 import { BaseElement } from './baseElement';
 export declare class TableViewerElement extends BaseElement implements TableViewerView {
     readonly fc: FormController;
     readonly table: TableViewer;
-    private twc;
+    readonly twc: TableViewerController;
     /**
      * components of this panel
      */
