@@ -343,6 +343,9 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     const td = this.dataCellEle.cloneNode(true) as HTMLElement;
     let ele: BaseElement | undefined;
 
+    if (leafComp.compType === 'range') {
+      return;
+    }
     if (leafComp.compType === 'field' || leafComp.compType === 'referred') {
       //fields have to be rendered as output
       const df = { ...leafComp } as DataField;

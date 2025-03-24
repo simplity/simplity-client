@@ -1,4 +1,4 @@
-import { PageComponent, Value, FormController } from 'simplity-types';
+import { FormController, PageComponent, Value } from 'simplity-types';
 import { BaseElement } from './baseElement';
 export declare const elementFactory: {
     /**

@@ -1,6 +1,6 @@
 import { loggerStub } from '../logger-stub/logger';
-import { ReportConfigurator } from './reportConfigurator';
 import { FC } from './formController';
+import { ReportConfigurator } from './reportConfigurator';
 const logger = loggerStub.getLogger();
 /**
  * controls a tabular data (rows and columns)
@@ -155,6 +155,9 @@ export class TWC {
     }
     isValid() {
         return this.validate();
+    }
+    isModified() {
+        return false;
     }
     validate() {
         if (!this.info.selectColumn) {

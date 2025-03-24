@@ -52,6 +52,10 @@ export class TEC {
             this.form = this.ac.getForm(formName);
         }
     }
+    //todo: implement this
+    isModified() {
+        return false;
+    }
     tableRendered() {
         //Good to know. We do not see any work as of now.
     }

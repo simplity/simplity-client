@@ -260,6 +260,9 @@ export class TableViewerElement extends BaseElement {
     addTdForComp(value, leafComp, rowEle, searchRow) {
         const td = this.dataCellEle.cloneNode(true);
         let ele;
+        if (leafComp.compType === 'range') {
+            return;
+        }
         if (leafComp.compType === 'field' || leafComp.compType === 'referred') {
             //fields have to be rendered as output
             const df = { ...leafComp };

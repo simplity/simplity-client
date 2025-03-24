@@ -66,13 +66,13 @@ export type ViewState = keyof typeof viewStates;
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
-export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "chart", "date-field", "dialog", "disable-ux", "image-field", "image", "layout", "line", "list", "module", "menu-item", "message", "output", "page", "panel", "panel-flex", "panel-grid", "panel-modal", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
+export declare const predefinedHtmlTemplates: readonly ["button", "button-panel", "check-box", "content", "chart", "date-field", "dialog", "disable-ux", "image-field", "image", "layout", "line", "list", "module", "menu-item", "message", "output", "page", "panel", "panel-flex", "panel-grid", "panel-modal", "range-wrapper", "password", "select-output", "select", "snack-bar", "sortable-header", "tab", "table-editable", "table", "tabs", "text-area", "text-field"];
 export type HtmlTemplateName = (typeof predefinedHtmlTemplates)[number];
 /**
  * data-* attribute used by our app
  */
 export declare const dataAttributeNames: readonly ["full", "id"];
-export declare const childElementIds: readonly ["add-button", "buttons", "chart", "data", "container", "error", "field", "full", "header", "label", "left", "list-config", "menu-bar", "menu-item", "message", "middle", "no-data", "page", "right", "row", "rows", "search", "table", "title"];
+export declare const childElementIds: readonly ["add-button", "buttons", "chart", "data", "container", "error", "field", "from-field", "full", "header", "label", "left", "list-config", "menu-bar", "menu-item", "message", "middle", "no-data", "page", "right", "row", "rows", "search", "table", "title", "to-field"];
 export type ChildElementId = (typeof childElementIds)[number];
 export declare const htmlUtil: {
     /**

@@ -1,4 +1,4 @@
-import { AppController, Form, PageController, TableViewer, TableViewerView, Values, Vo, TableViewerController, Panel, FormController } from 'simplity-types';
+import { AppController, Form, FormController, PageController, Panel, TableViewer, TableViewerController, TableViewerView, Values, Vo } from 'simplity-types';
 /**
  * controls a tabular data (rows and columns)
  */
@@ -65,6 +65,7 @@ export declare class TWC implements TableViewerController {
     rowClicked(rowIdx: number): void;
     cellClicked(rowIdx: number, action: string): void;
     isValid(): boolean;
+    isModified(): boolean;
     validate(): boolean;
     private sanitizeIdx;
     selectARow(toSelect: boolean): TableInfo;

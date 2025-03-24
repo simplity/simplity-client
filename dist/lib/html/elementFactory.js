@@ -1,13 +1,14 @@
-import { LeafElement } from './leafElement';
-import { FieldElement } from './fieldElement';
-import { PanelElement } from './panelElement';
-import { TabsElement } from './tabsElement';
-import { TableViewerElement } from './tableViewerElement';
-import { TableEditorElement } from './tableEditorElement';
-import { HiddenField } from './hiddenField';
-import { ButtonPanelElement } from './buttonPanel';
 import { app } from '../controller/app';
+import { ButtonPanelElement } from './buttonPanel';
 import { ChartElement } from './chartElement';
+import { FieldElement } from './fieldElement';
+import { HiddenField } from './hiddenField';
+import { LeafElement } from './leafElement';
+import { PanelElement } from './panelElement';
+import { RangeElement } from './rangeElement';
+import { TableEditorElement } from './tableEditorElement';
+import { TableViewerElement } from './tableViewerElement';
+import { TabsElement } from './tabsElement';
 let ac;
 //let customFactory: ViewFactory | undefined;
 export const elementFactory = {
@@ -63,6 +64,8 @@ export const elementFactory = {
                     return new TableEditorElement(fc, comp, maxWidth);
                 }
                 return new TableViewerElement(fc, comp, maxWidth);
+            case 'range':
+                return new RangeElement(fc, comp, maxWidth);
             default:
                 throw new Error(`Component ${comp.name} has an invalid compType of  ${comp.compType}`);
         }

@@ -14,6 +14,7 @@ export declare class CC implements ChartController {
     receiveData(data: Vo | Vo[], _childName?: string): void;
     setData(data: Vo | Vo[]): void;
     getData(): Vo | Vo[];
+    isModified(): boolean;
     isValid(): boolean;
     validate(): boolean;
     resetData(fields?: string[]): void;

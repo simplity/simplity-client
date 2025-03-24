@@ -34,6 +34,9 @@ export class CC {
     getData() {
         return this.data;
     }
+    isModified() {
+        return false;
+    }
     isValid() {
         return true;
     }

@@ -1,4 +1,4 @@
-import { StringMap, FormController, Value, PageController, Form, AppController, DetailedMessage, EventDetails, EventHandler, EventName, TableEditorController, TableEditorView, TableViewerController, TableViewerView, Vo, DataController, BaseView, Values, ChartController } from 'simplity-types';
+import { AppController, BaseView, ChartController, DataController, DetailedMessage, EventDetails, EventHandler, EventName, Form, FormController, PageController, StringMap, TableEditorController, TableEditorView, TableViewerController, TableViewerView, Value, Values, Vo } from 'simplity-types';
 /**
  * controls a row in a table or the root fields in a page.
  */
@@ -25,11 +25,7 @@ export declare class FC implements FormController {
     /**
      * set to true whenever a child reports a data-change
      */
-    private isDirty;
-    /**
-     * last known validation status. To be used only if isDirty is false;
-     */
-    private allOk;
+    private gotModified;
     /**
      * editable fields within tab-children of tabs panel.
      * For each tabs panel, for each tab-child of that tabs, we have an array of editable fields.
@@ -90,10 +86,11 @@ export declare class FC implements FormController {
     getFieldValue(fieldName: string): Value | undefined;
     getChild(name: string): BaseView | undefined;
     isValid(): boolean;
+    isModified(): boolean;
     validate(): boolean;
     setModifiedStatus(isModified: boolean): void;
     hasKeyValues(): boolean;
-    valueHasChanged(fieldName: string, newValue: Value, newValidity?: boolean): void;
+    valueHasChanged(fieldName: string, newValue: Value): void;
     valueIsChanging(_fieldName: string, _newValue: Value, _newValidity?: boolean): void;
     setDisplayState(compName: string, settings: Values): boolean;
     eventOccurred(evt: EventDetails): void;

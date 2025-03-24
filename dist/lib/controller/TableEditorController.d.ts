@@ -1,4 +1,4 @@
-import { AppController, Form, PageController, TableEditorView, Values, TableEditorController, Vo, FormController } from 'simplity-types';
+import { AppController, Form, FormController, PageController, TableEditorController, TableEditorView, Values, Vo } from 'simplity-types';
 /**
  * controls a tabular data (rows and columns)
  */
@@ -39,6 +39,7 @@ export declare class TEC implements TableEditorController {
      * @param view
      */
     constructor(fc: FormController, view: TableEditorView);
+    isModified(): boolean;
     tableRendered(): void;
     getFormName(): string | undefined;
     receiveData(data: Vo | Vo[]): void;

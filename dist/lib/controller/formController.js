@@ -1,7 +1,7 @@
 import { loggerStub } from '../logger-stub/logger';
-import { TWC } from './tableViewerController';
 import { TEC } from './TableEditorController';
 import { CC } from './chartController';
+import { TWC } from './tableViewerController';
 const logger = loggerStub.getLogger();
 /**
  * controls a row in a table or the root fields in a page.
@@ -30,11 +30,7 @@ export class FC {
     /**
      * set to true whenever a child reports a data-change
      */
-    isDirty = true;
-    /**
-     * last known validation status. To be used only if isDirty is false;
-     */
-    allOk = false;
+    gotModified = true;
     /**
      * editable fields within tab-children of tabs panel.
      * For each tabs panel, for each tab-child of that tabs, we have an array of editable fields.
@@ -439,36 +435,37 @@ export class FC {
         return this.children[name];
     }
     isValid() {
-        if (this.isDirty) {
-            this.validate();
-        }
-        return this.allOk;
+        return this.validate();
+    }
+    isModified() {
+        return this.gotModified;
     }
     validate() {
-        this.allOk = true;
-        this.isDirty = false;
+        let ok = true;
+        this.gotModified = false;
         for (const fieldValue of Object.values(this.fieldViews)) {
             if (!fieldValue.validate()) {
-                this.allOk = false;
+                ok = false;
             }
         }
         /**
          * individual fields have been validated.
          * any further validation is relevant only if allOk at this point
          */
-        if (!this.allOk) {
+        if (!ok) {
             return false;
         }
         /**
          * do we have any more validations?
          */
         if (!this.form) {
-            return this.allOk;
+            return ok;
         }
         // inter field validations are triggered only if all the fields are valid
         if (this.form.interFieldValidations) {
             for (const f of this.form.interFieldValidations) {
                 if (this.isInterFieldValid(f) === false) {
+                    ok = false;
                     const fieldName = f.field1;
                     const message = this.ac.getMessage(f.messageId);
                     this.reportFieldErrors([{ fieldName, message }]);
@@ -476,7 +473,7 @@ export class FC {
             }
         }
         //form level validations are triggered only if there are no other errors
-        if (this.allOk && this.form.validationFn) {
+        if (ok && this.form.validationFn) {
             const fd = this.ac.getFn(this.form.validationFn, 'form');
             if (!fd) {
                 throw new Error(`${this.form.validationFn} is declared as the validationFn for form ${this.form.name} but it is not defined for the runtime`);
@@ -487,10 +484,10 @@ export class FC {
                 this.reportFieldErrors(msgs);
             }
         }
-        return this.allOk;
+        return ok;
     }
     setModifiedStatus(isModified) {
-        this.isDirty = isModified;
+        this.gotModified = isModified;
     }
     hasKeyValues() {
         if (!this.form) {
@@ -507,12 +504,9 @@ export class FC {
         }
         return true;
     }
-    valueHasChanged(fieldName, newValue, newValidity) {
+    valueHasChanged(fieldName, newValue) {
+        this.gotModified = true;
         this.data[fieldName] = newValue;
-        //if this validity has changed to false, then we have to set allOk to false
-        if (newValidity !== undefined && newValidity === false) {
-            this.allOk = false;
-        }
     }
     valueIsChanging(_fieldName, _newValue, _newValidity) {
         // feature not yet designed
@@ -552,7 +546,6 @@ export class FC {
         this.pc.act(actionName, this, params);
     }
     reportFieldErrors(msgs) {
-        this.allOk = false;
         for (const msg of msgs) {
             const fieldView = this.fieldViews[msg.fieldName];
             if (fieldView) {
