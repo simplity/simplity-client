@@ -1,29 +1,31 @@
 import {
+  AppController,
   Button,
+  ButtonPanel,
+  Chart,
+  DataField,
+  FormController,
   PageComponent,
   Panel,
+  RangePanel,
+  StaticComp,
   TableEditor,
   TableViewer,
   Tabs,
-  StaticComp,
-  DataField,
   Value,
-  FormController,
-  ButtonPanel,
-  Chart,
-  AppController,
 } from 'simplity-types';
-import { BaseElement } from './baseElement';
-import { LeafElement } from './leafElement';
-import { FieldElement } from './fieldElement';
-import { PanelElement } from './panelElement';
-import { TabsElement } from './tabsElement';
-import { TableViewerElement } from './tableViewerElement';
-import { TableEditorElement } from './tableEditorElement';
-import { HiddenField } from './hiddenField';
-import { ButtonPanelElement } from './buttonPanel';
 import { app } from '../controller/app';
+import { BaseElement } from './baseElement';
+import { ButtonPanelElement } from './buttonPanel';
 import { ChartElement } from './chartElement';
+import { FieldElement } from './fieldElement';
+import { HiddenField } from './hiddenField';
+import { LeafElement } from './leafElement';
+import { PanelElement } from './panelElement';
+import { RangeElement } from './rangeElement';
+import { TableEditorElement } from './tableEditorElement';
+import { TableViewerElement } from './tableViewerElement';
+import { TabsElement } from './tabsElement';
 
 let ac: AppController | undefined;
 //let customFactory: ViewFactory | undefined;
@@ -96,6 +98,9 @@ export const elementFactory = {
           return new TableEditorElement(fc, comp as TableEditor, maxWidth);
         }
         return new TableViewerElement(fc, comp as TableViewer, maxWidth);
+
+      case 'range':
+        return new RangeElement(fc, comp as RangePanel, maxWidth);
       default:
         throw new Error(
           `Component ${comp.name} has an invalid compType of  ${comp.compType}`

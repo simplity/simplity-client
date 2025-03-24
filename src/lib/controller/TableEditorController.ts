@@ -1,15 +1,15 @@
-import { loggerStub } from '../logger-stub/logger';
 import {
   AppController,
   Form,
+  FormController,
   PageController,
   TableEditor,
+  TableEditorController,
   TableEditorView,
   Values,
-  TableEditorController,
   Vo,
-  FormController,
 } from 'simplity-types';
+import { loggerStub } from '../logger-stub/logger';
 import { FC } from './formController';
 
 const logger = loggerStub.getLogger();
@@ -71,6 +71,10 @@ export class TEC implements TableEditorController {
     }
   }
 
+  //todo: implement this
+  isModified(): boolean {
+    return false;
+  }
   tableRendered(): void {
     //Good to know. We do not see any work as of now.
   }

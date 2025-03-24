@@ -103,6 +103,7 @@ export const predefinedHtmlTemplates = [
   'panel-flex',
   'panel-grid',
   'panel-modal',
+  'range-wrapper',
   'password',
   'select-output',
   'select',
@@ -130,6 +131,7 @@ export const childElementIds = [
   'container',
   'error',
   'field',
+  'from-field',
   'full',
   'header',
   'label',
@@ -147,6 +149,7 @@ export const childElementIds = [
   'search',
   'table',
   'title',
+  'to-field',
 ] as const;
 export type ChildElementId = (typeof childElementIds)[number];
 /**

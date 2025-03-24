@@ -147,6 +147,10 @@ export class TableViewerElement extends BaseElement {
             }
             return details;
         }
+        /**
+         * as per the current dev-util, this should not arise because children will be added based on the form.
+         * this is just a defensive code??
+         */
         if (this.table.formName) {
             //if form is given, we assume all the fields in the form
             const form = this.ac.getForm(this.table.formName);

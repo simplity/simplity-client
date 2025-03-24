@@ -1,18 +1,18 @@
-import { loggerStub } from '../logger-stub/logger';
 import {
   AppController,
   Form,
+  FormController,
   PageController,
+  Panel,
   TableViewer,
+  TableViewerController,
   TableViewerView,
   Values,
   Vo,
-  TableViewerController,
-  Panel,
-  FormController,
 } from 'simplity-types';
-import { ReportConfigurator } from './reportConfigurator';
+import { loggerStub } from '../logger-stub/logger';
 import { FC } from './formController';
+import { ReportConfigurator } from './reportConfigurator';
 
 const logger = loggerStub.getLogger();
 
@@ -191,6 +191,10 @@ export class TWC implements TableViewerController {
 
   public isValid(): boolean {
     return this.validate();
+  }
+
+  isModified(): boolean {
+    return false;
   }
 
   public validate(): boolean {

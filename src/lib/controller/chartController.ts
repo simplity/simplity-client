@@ -52,6 +52,9 @@ export class CC implements ChartController {
   getData(): Vo | Vo[] {
     return this.data;
   }
+  isModified(): boolean {
+    return false;
+  }
   isValid(): boolean {
     return true;
   }
