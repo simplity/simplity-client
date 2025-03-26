@@ -1,30 +1,33 @@
-import { FormController, RangePanel } from 'simplity-types';
+import { DataField, FormController, RangePanel } from 'simplity-types';
 import { BaseElement } from './baseElement';
-import { elementFactory } from './elementFactory';
 import { htmlUtil } from './htmlUtil';
+import { FieldElement } from './fieldElement';
 
 export class RangeElement extends BaseElement {
+  public readonly fromView;
+  public readonly toView;
+
   constructor(
     fc: FormController | undefined,
     public readonly range: RangePanel,
     maxWidth: number
   ) {
     super(fc, range, 'range-wrapper', maxWidth);
-
-    let fcForChildren = fc;
-
-    /**
-     * render children
-     */
-    let ele = elementFactory.newElement(
-      fcForChildren,
-      range.fromField,
-      maxWidth
+    const fromEle = htmlUtil.getChildElement(this.root, 'from-field');
+    const toEle = htmlUtil.getChildElement(this.root, 'to-field');
+    this.fromView = new FieldElement(
+      fc,
+      range.fromField as DataField,
+      0,
+      undefined,
+      fromEle
     );
-    let parentEle = htmlUtil.getChildElement(this.root, 'from-field');
-    parentEle.appendChild(ele.root);
-    ele = elementFactory.newElement(fcForChildren, range.toField, maxWidth);
-    parentEle = htmlUtil.getChildElement(this.root, 'to-field');
-    parentEle.appendChild(ele.root);
+    this.toView = new FieldElement(
+      fc,
+      range.toField as DataField,
+      0,
+      undefined,
+      toEle
+    );
   }
 }

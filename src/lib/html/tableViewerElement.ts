@@ -13,6 +13,7 @@ import {
   Markups,
   StaticComp,
   Button,
+  RangePanel,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil, ViewState } from './htmlUtil';
@@ -344,6 +345,12 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
     let ele: BaseElement | undefined;
 
     if (leafComp.compType === 'range') {
+      const range = leafComp as RangePanel;
+      for (const field of [range.fromField, range.toField]) {
+        const df = { ...field, renderAs: 'output' } as DataField;
+        ele = new FieldElement(undefined, df, 0);
+        td.appendChild(ele.root);
+      }
       return;
     }
     if (leafComp.compType === 'field' || leafComp.compType === 'referred') {

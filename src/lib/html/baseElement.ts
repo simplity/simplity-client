@@ -52,8 +52,9 @@ export class BaseElement implements BaseView {
     public readonly comp: PageComponent,
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
+     * a ready html element may be supplied instead of a template name
      */
-    templateName: HtmlTemplateName | '',
+    templateName: HtmlTemplateName | '' | HTMLElement,
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table
@@ -69,11 +70,15 @@ export class BaseElement implements BaseView {
       this.pc = app.getCurrentPc();
     }
 
-    if (comp.templateName) {
-      this.root = htmlUtil.newCustomElement(comp.templateName);
-    } else if (templateName === '') {
+    if (templateName === '') {
       this.root = document.createElement('div');
       return;
+    }
+
+    if (typeof templateName !== 'string') {
+      this.root = templateName;
+    } else if (comp.templateName) {
+      this.root = htmlUtil.newCustomElement(comp.templateName);
     } else {
       this.root = htmlUtil.newHtmlElement(templateName);
     }

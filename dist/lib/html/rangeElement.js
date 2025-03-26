@@ -1,21 +1,17 @@
 import { BaseElement } from './baseElement';
-import { elementFactory } from './elementFactory';
 import { htmlUtil } from './htmlUtil';
+import { FieldElement } from './fieldElement';
 export class RangeElement extends BaseElement {
     range;
+    fromView;
+    toView;
     constructor(fc, range, maxWidth) {
         super(fc, range, 'range-wrapper', maxWidth);
         this.range = range;
-        let fcForChildren = fc;
-        /**
-         * render children
-         */
-        let ele = elementFactory.newElement(fcForChildren, range.fromField, maxWidth);
-        let parentEle = htmlUtil.getChildElement(this.root, 'from-field');
-        parentEle.appendChild(ele.root);
-        ele = elementFactory.newElement(fcForChildren, range.toField, maxWidth);
-        parentEle = htmlUtil.getChildElement(this.root, 'to-field');
-        parentEle.appendChild(ele.root);
+        const fromEle = htmlUtil.getChildElement(this.root, 'from-field');
+        const toEle = htmlUtil.getChildElement(this.root, 'to-field');
+        this.fromView = new FieldElement(fc, range.fromField, 0, undefined, fromEle);
+        this.toView = new FieldElement(fc, range.toField, 0, undefined, toEle);
     }
 }
 //# sourceMappingURL=rangeElement.js.map

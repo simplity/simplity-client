@@ -12,7 +12,13 @@ import { BaseElement } from './baseElement';
 import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
 import { parseValue } from '../validation/validation';
 
-function getTemplateName(field: DataField): HtmlTemplateName | '' {
+function getTemplateName(
+  field: DataField,
+  ele?: HTMLElement
+): HtmlTemplateName | '' | HTMLElement {
+  if (ele) {
+    return ele;
+  }
   const ras = field.renderAs;
   if (!ras) {
     return 'text-field';
@@ -104,9 +110,10 @@ export class FieldElement extends BaseElement implements FieldView {
     fc: FormController | undefined,
     public readonly field: DataField,
     maxWidth: number,
-    initialValue?: Value
+    initialValue?: Value,
+    rootEle?: HTMLElement
   ) {
-    super(fc, field, getTemplateName(field), maxWidth);
+    super(fc, field, getTemplateName(field, rootEle), maxWidth);
 
     this.fieldRendering = field.renderAs || 'text-field';
     this.isSelect = field.renderAs === 'select';

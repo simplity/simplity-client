@@ -42,8 +42,9 @@ export declare class BaseElement implements BaseView {
     constructor(fc: FormController | undefined, comp: PageComponent, 
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
+     * a ready html element may be supplied instead of a template name
      */
-    templateName: HtmlTemplateName | '', 
+    templateName: HtmlTemplateName | '' | HTMLElement, 
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table

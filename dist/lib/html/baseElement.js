@@ -40,6 +40,7 @@ export class BaseElement {
     constructor(fc, comp, 
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
+     * a ready html element may be supplied instead of a template name
      */
     templateName, 
     /**
@@ -59,12 +60,15 @@ export class BaseElement {
             this.ac = app.getCurrentAc();
             this.pc = app.getCurrentPc();
         }
-        if (comp.templateName) {
-            this.root = htmlUtil.newCustomElement(comp.templateName);
-        }
-        else if (templateName === '') {
+        if (templateName === '') {
             this.root = document.createElement('div');
             return;
+        }
+        if (typeof templateName !== 'string') {
+            this.root = templateName;
+        }
+        else if (comp.templateName) {
+            this.root = htmlUtil.newCustomElement(comp.templateName);
         }
         else {
             this.root = htmlUtil.newHtmlElement(templateName);

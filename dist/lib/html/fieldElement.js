@@ -2,7 +2,10 @@ import { systemResources, } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
 import { parseValue } from '../validation/validation';
-function getTemplateName(field) {
+function getTemplateName(field, ele) {
+    if (ele) {
+        return ele;
+    }
     const ras = field.renderAs;
     if (!ras) {
         return 'text-field';
@@ -80,8 +83,8 @@ export class FieldElement extends BaseElement {
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc, field, maxWidth, initialValue) {
-        super(fc, field, getTemplateName(field), maxWidth);
+    constructor(fc, field, maxWidth, initialValue, rootEle) {
+        super(fc, field, getTemplateName(field, rootEle), maxWidth);
         this.field = field;
         this.fieldRendering = field.renderAs || 'text-field';
         this.isSelect = field.renderAs === 'select';

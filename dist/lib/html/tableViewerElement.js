@@ -261,6 +261,12 @@ export class TableViewerElement extends BaseElement {
         const td = this.dataCellEle.cloneNode(true);
         let ele;
         if (leafComp.compType === 'range') {
+            const range = leafComp;
+            for (const field of [range.fromField, range.toField]) {
+                const df = { ...field, renderAs: 'output' };
+                ele = new FieldElement(undefined, df, 0);
+                td.appendChild(ele.root);
+            }
             return;
         }
         if (leafComp.compType === 'field' || leafComp.compType === 'referred') {

@@ -61,7 +61,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value);
+    constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value, rootEle?: HTMLElement);
     setValue(newValue: Value): void;
     /**
      * wire 'change' and 'changing' events.
