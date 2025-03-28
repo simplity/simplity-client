@@ -15,15 +15,16 @@ export class BaseElement {
     comp;
     maxWidth;
     logger = loggerStub.getLogger();
+    /**
+     * for any initializers/plugins to save anything across their function invocation etc..
+     */
+    initInfo = {};
     ac;
     pc;
     /**
-     * If this is an input
+     * label, container and field are quite common, and it helps if they are set in the base-class itself, specifically for init operations.
      */
-    inputEle;
-    /**
-     * If this is a container? Added to the base class because it is quite common
-     */
+    fieldEle;
     containerEle;
     labelEle;
     name;
@@ -40,7 +41,6 @@ export class BaseElement {
     constructor(fc, comp, 
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
-     * a ready html element may be supplied instead of a template name
      */
     templateName, 
     /**
@@ -64,10 +64,7 @@ export class BaseElement {
             this.root = document.createElement('div');
             return;
         }
-        if (typeof templateName !== 'string') {
-            this.root = templateName;
-        }
-        else if (comp.templateName) {
+        if (comp.templateName) {
             this.root = htmlUtil.newCustomElement(comp.templateName);
         }
         else {
@@ -79,12 +76,8 @@ export class BaseElement {
                 this.clicked();
             });
         }
-        /**
-         *
-         * input and panel are quite common. Hence added them to the base
-         */
-        this.inputEle = this.root.querySelector('input') || undefined;
         this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
+        this.fieldEle = htmlUtil.getOptionalElement(this.root, 'field');
         if (comp.label) {
             this.labelEle = htmlUtil.getOptionalElement(this.root, 'label');
             if (this.labelEle) {

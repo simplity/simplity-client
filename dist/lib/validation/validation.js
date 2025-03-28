@@ -362,7 +362,7 @@ function parseBoolean(text) {
         return true;
     }
     if (t === FALSE_VALUE || t === '0') {
-        false;
+        return false;
     }
     return undefined;
 }

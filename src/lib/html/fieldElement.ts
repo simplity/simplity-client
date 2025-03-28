@@ -12,13 +12,7 @@ import { BaseElement } from './baseElement';
 import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
 import { parseValue } from '../validation/validation';
 
-function getTemplateName(
-  field: DataField,
-  ele?: HTMLElement
-): HtmlTemplateName | '' | HTMLElement {
-  if (ele) {
-    return ele;
-  }
+function getTemplateName(field: DataField): HtmlTemplateName | '' {
   const ras = field.renderAs;
   if (!ras) {
     return 'text-field';
@@ -95,14 +89,14 @@ export class FieldElement extends BaseElement implements FieldView {
   /**
    * instantiated only for input fields.
    */
-  private fieldEle: HTMLElement;
   private errorEle?: HTMLElement;
   private fieldRendering?;
 
   /**
-   * is this a select (drop-down) element?
+   * super.fieldEle is optional. Asserted value set to this local attribute for convenience
    */
-  private isSelect = false;
+  private readonly fldEle: HTMLElement;
+
   /**
    * to be called from the concrete class after rendering itself in the constructor
    */
@@ -110,20 +104,22 @@ export class FieldElement extends BaseElement implements FieldView {
     fc: FormController | undefined,
     public readonly field: DataField,
     maxWidth: number,
-    initialValue?: Value,
-    rootEle?: HTMLElement
+    initialValue?: Value
   ) {
-    super(fc, field, getTemplateName(field, rootEle), maxWidth);
-
+    super(fc, field, getTemplateName(field), maxWidth);
+    if (!this.fieldEle) {
+      throw new Error(
+        `HTML template :'${getTemplateName(field)}' - data-id="field" missing for the target element for the field. e.g. <input data-id="field"...../>`
+      );
+    }
+    this.fldEle = this.fieldEle;
     this.fieldRendering = field.renderAs || 'text-field';
-    this.isSelect = field.renderAs === 'select';
 
-    this.fieldEle = htmlUtil.getChildElement(this.root, 'field')!;
     /**
      * uncontrolled fields are to be disabled. Typically in a table-row
      */
     if (!fc) {
-      this.fieldEle.setAttribute('disabled', '');
+      this.fldEle.setAttribute('disabled', '');
     }
     /**
      * no labels inside grids
@@ -133,11 +129,15 @@ export class FieldElement extends BaseElement implements FieldView {
       this.labelEle = undefined;
     }
 
-    this.fieldEle.setAttribute('name', field.name);
+    this.fldEle.setAttribute('name', field.name);
 
     this.errorEle = htmlUtil.getOptionalElement(this.root, 'error');
 
     this.wireEvents();
+
+    if (field.listOptions) {
+      this.setList(field.listOptions);
+    }
 
     let val = initialValue;
     if (val === undefined) {
@@ -150,10 +150,14 @@ export class FieldElement extends BaseElement implements FieldView {
         this.fc.valueHasChanged(this.name, val);
       }
     }
+  }
 
-    if (field.listOptions) {
-      this.setList(field.listOptions);
+  public resetValue() {
+    let value = this.getDefaultValue();
+    if (value === undefined) {
+      value = '';
     }
+    this.setValue(value);
   }
 
   public setValue(newValue: Value): void {
@@ -169,23 +173,21 @@ export class FieldElement extends BaseElement implements FieldView {
       case 'text-field':
       case 'password':
       case 'text-area':
-        (this.fieldEle as HTMLInputElement).value = text;
-        return;
-
       case 'select':
-        this.setValueToSelect(text);
+        (this.fldEle as HTMLInputElement | HTMLSelectElement).value = text;
+        this.setEmpty(text === '');
         return;
 
       case 'output':
-        this.fieldEle.innerText = text;
+        this.fldEle.innerText = text;
         return;
 
       case 'select-output':
-        this.fieldEle.innerText = this.getSelectValue(text);
+        this.fldEle.innerText = this.getSelectValue(text);
         return;
 
       case 'check-box':
-        (this.fieldEle as HTMLInputElement).checked = !!newValue;
+        (this.fldEle as HTMLInputElement).checked = !!newValue;
         return;
 
       case 'image':
@@ -217,30 +219,23 @@ export class FieldElement extends BaseElement implements FieldView {
       case 'text-field':
       case 'password':
       case 'text-area':
+      case 'select':
         //this.requiresValidation = true;
         //need to track changing as well as changed
-        this.fieldEle.addEventListener('change', () => {
-          this.valueHasChanged((this.fieldEle as HTMLInputElement).value);
+        this.fldEle.addEventListener('change', () => {
+          this.valueHasChanged((this.fldEle as HTMLInputElement).value);
         });
-        this.fieldEle.addEventListener('input', () => {
-          this.valueIsChanging((this.fieldEle as HTMLInputElement).value);
-        });
-        return;
 
-      case 'select':
-        //only changed
-        this.fieldEle.addEventListener('change', () => {
-          const ele = this.fieldEle as HTMLSelectElement;
-          this.valueHasChanged(ele.options[ele.selectedIndex].value);
+        //for select, input does not trigger, and we are fine with that
+        this.fldEle.addEventListener('input', () => {
+          this.valueIsChanging((this.fldEle as HTMLInputElement).value);
         });
         return;
 
       case 'check-box':
         //we check for checked attribute and not value for check-box
-        this.fieldEle.addEventListener('change', () => {
-          this.valueHasChanged(
-            '' + (this.fieldEle as HTMLInputElement).checked
-          );
+        this.fldEle.addEventListener('change', () => {
+          this.valueHasChanged('' + (this.fldEle as HTMLInputElement).checked);
         });
         return;
 
@@ -270,9 +265,7 @@ export class FieldElement extends BaseElement implements FieldView {
 
   public valueHasChanged(newValue: string) {
     this.textValue = newValue.trim();
-    if (this.isSelect) {
-      this.setEmpty(!this.textValue);
-    }
+    this.setEmpty(!this.textValue);
     const wasOk = this.valueIsValid;
     const oldValue = this.value;
 
@@ -424,11 +417,7 @@ export class FieldElement extends BaseElement implements FieldView {
   public setList(list: SimpleList): void {
     this.list = list;
 
-    if (!this.fieldEle) {
-      return;
-    }
-
-    htmlUtil.removeChildren(this.fieldEle);
+    htmlUtil.removeChildren(this.fldEle);
     this.setEmpty(true);
     if (!list || list.length === 0) {
       /**
@@ -447,7 +436,7 @@ export class FieldElement extends BaseElement implements FieldView {
     /**
      * render the options
      */
-    const sel = this.fieldEle as HTMLSelectElement;
+    const sel = this.fldEle as HTMLSelectElement;
     const option: HTMLOptionElement = document.createElement('option');
 
     //add an empty option
@@ -505,33 +494,7 @@ export class FieldElement extends BaseElement implements FieldView {
   }
 
   private setEmpty(isEmpty: boolean): void {
-    htmlUtil.setViewState(this.fieldEle, 'empty', isEmpty);
-  }
-  private setValueToSelect(value: string) {
-    this.setEmpty(value !== '');
-    const ele = this.fieldEle as HTMLSelectElement;
-    let idx = ele.selectedIndex;
-    if (idx >= 0) {
-      ele.options[idx].removeAttribute('selected');
-    }
-
-    for (const opt of ele.options) {
-      if (opt.value === value) {
-        opt.setAttribute('selected', '');
-        return;
-      }
-    }
-    this.setEmpty(value === '');
-    console.info(`drop-down selected = ${value !== ''}`, this.fieldEle);
-    /**
-     * we have a situation where the value being set is not available as an option.
-     * This is generally the case when the value is set before the options are set.
-     * Two design alternatives:
-     * 1. add an option with this value and select it
-     * 2. do not do anything. Let the rendering be in limbo with no options being selected.
-     * In practice, this situation gets resolved automatically once the options are set to the select element
-     * Hence we are going with the second alternative.
-     */
+    htmlUtil.setViewState(this.fldEle, 'empty', isEmpty);
   }
 
   public able(enabled: boolean) {
@@ -539,12 +502,12 @@ export class FieldElement extends BaseElement implements FieldView {
       return;
     }
     this.isDisabled = !this.isDisabled;
-    if (this.fieldEle) {
+    if (this.fldEle) {
       //no harm in using the attribute even if it has no meaning for that element
       if (enabled) {
-        this.fieldEle.setAttribute('disabled', 'disabled');
+        this.fldEle.setAttribute('disabled', 'disabled');
       } else {
-        this.fieldEle.removeAttribute('disabled');
+        this.fldEle.removeAttribute('disabled');
       }
     }
   }
@@ -561,7 +524,7 @@ export class FieldElement extends BaseElement implements FieldView {
         this.errorEle.innerText = '';
         htmlUtil.setViewState(this.errorEle, 'invalid', false);
       }
-      htmlUtil.setViewState(this.fieldEle, 'invalid', false);
+      htmlUtil.setViewState(this.fldEle, 'invalid', false);
       return;
     }
 
@@ -578,7 +541,7 @@ export class FieldElement extends BaseElement implements FieldView {
         `field ${this.name} is invalid with an error message="${this.errorMessage}". The field rendering has no provision to show error message`
       );
     }
-    htmlUtil.setViewState(this.fieldEle, 'invalid', true);
+    htmlUtil.setViewState(this.fldEle, 'invalid', true);
   }
 
   /**
@@ -590,7 +553,7 @@ export class FieldElement extends BaseElement implements FieldView {
     let setting: ViewState = 'invalid';
     let val = settings[setting];
     if (val !== undefined) {
-      htmlUtil.setViewState(this.fieldEle!, setting, !!val);
+      htmlUtil.setViewState(this.fldEle!, setting, !!val);
       if (this.errorEle) {
         htmlUtil.setViewState(this.errorEle, setting, !!val);
       }

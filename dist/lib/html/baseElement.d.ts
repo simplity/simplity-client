@@ -1,5 +1,5 @@
 import { HtmlTemplateName } from './htmlUtil';
-import { AppController, PageComponent, BaseView, FormController, PageController, Values } from 'simplity-types';
+import { AppController, PageComponent, BaseView, FormController, PageController, Values, StringMap } from 'simplity-types';
 /**
  * Base class to be extended by all view components
  * As of now, it is NOT a WebComponent, but a controller that is bound to the root html element.
@@ -17,15 +17,16 @@ export declare class BaseElement implements BaseView {
      */
     protected maxWidth: number;
     protected readonly logger: import("simplity-types").Logger;
+    /**
+     * for any initializers/plugins to save anything across their function invocation etc..
+     */
+    readonly initInfo: StringMap<unknown>;
     readonly ac: AppController;
     readonly pc: PageController;
     /**
-     * If this is an input
+     * label, container and field are quite common, and it helps if they are set in the base-class itself, specifically for init operations.
      */
-    readonly inputEle?: HTMLInputElement;
-    /**
-     * If this is a container? Added to the base class because it is quite common
-     */
+    readonly fieldEle?: HTMLElement;
     readonly containerEle?: HTMLElement;
     labelEle?: HTMLElement;
     readonly name: string;
@@ -42,9 +43,8 @@ export declare class BaseElement implements BaseView {
     constructor(fc: FormController | undefined, comp: PageComponent, 
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
-     * a ready html element may be supplied instead of a template name
      */
-    templateName: HtmlTemplateName | '' | HTMLElement, 
+    templateName: HtmlTemplateName | '', 
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table

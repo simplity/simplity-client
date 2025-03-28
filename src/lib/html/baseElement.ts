@@ -9,6 +9,7 @@ import {
   PageController,
   Values,
   ViewInitFunction,
+  StringMap,
 } from 'simplity-types';
 
 const DEFAULT_WIDTH = 4;
@@ -22,16 +23,17 @@ const DEFAULT_WIDTH = 4;
  */
 export class BaseElement implements BaseView {
   protected readonly logger = loggerStub.getLogger();
+  /**
+   * for any initializers/plugins to save anything across their function invocation etc..
+   */
+  public readonly initInfo: StringMap<unknown> = {};
   public readonly ac: AppController;
   public readonly pc: PageController;
-  /**
-   * If this is an input
-   */
-  public readonly inputEle?: HTMLInputElement;
 
   /**
-   * If this is a container? Added to the base class because it is quite common
+   * label, container and field are quite common, and it helps if they are set in the base-class itself, specifically for init operations.
    */
+  public readonly fieldEle?: HTMLElement;
   public readonly containerEle?: HTMLElement;
   public labelEle?: HTMLElement;
 
@@ -52,9 +54,8 @@ export class BaseElement implements BaseView {
     public readonly comp: PageComponent,
     /**
      * mandatory. comp.customHtml, if specified,  will override this.
-     * a ready html element may be supplied instead of a template name
      */
-    templateName: HtmlTemplateName | '' | HTMLElement,
+    templateName: HtmlTemplateName | '',
     /**
      * width of the parent in number of columns.
      * 0 means this is inside a column of a row of a table
@@ -75,9 +76,7 @@ export class BaseElement implements BaseView {
       return;
     }
 
-    if (typeof templateName !== 'string') {
-      this.root = templateName;
-    } else if (comp.templateName) {
+    if (comp.templateName) {
       this.root = htmlUtil.newCustomElement(comp.templateName);
     } else {
       this.root = htmlUtil.newHtmlElement(templateName);
@@ -90,12 +89,8 @@ export class BaseElement implements BaseView {
       });
     }
 
-    /**
-     *
-     * input and panel are quite common. Hence added them to the base
-     */
-    this.inputEle = this.root.querySelector('input') || undefined;
     this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
+    this.fieldEle = htmlUtil.getOptionalElement(this.root, 'field');
 
     if (comp.label) {
       this.labelEle = htmlUtil.getOptionalElement(this.root, 'label');

@@ -51,17 +51,17 @@ export declare class FieldElement extends BaseElement implements FieldView {
     /**
      * instantiated only for input fields.
      */
-    private fieldEle;
     private errorEle?;
     private fieldRendering?;
     /**
-     * is this a select (drop-down) element?
+     * super.fieldEle is optional. Asserted value set to this local attribute for convenience
      */
-    private isSelect;
+    private readonly fldEle;
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
-    constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value, rootEle?: HTMLElement);
+    constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value);
+    resetValue(): void;
     setValue(newValue: Value): void;
     /**
      * wire 'change' and 'changing' events.
@@ -99,7 +99,6 @@ export declare class FieldElement extends BaseElement implements FieldView {
      */
     setList(list: SimpleList): void;
     private setEmpty;
-    private setValueToSelect;
     able(enabled: boolean): void;
     setError(text: string | undefined): void;
     /**
