@@ -439,56 +439,46 @@ export class FieldElement extends BaseElement implements FieldView {
     const sel = this.fldEle as HTMLSelectElement;
     const option: HTMLOptionElement = document.createElement('option');
 
-    //add an empty option
+    //add an empty option if this field is optional
     const firstOpt = option.cloneNode(true) as HTMLOptionElement;
     firstOpt.value = '';
-    firstOpt.innerText = '';
-    if (this.field.isRequired) {
-      firstOpt.disabled = true;
-      firstOpt.hidden = true;
-    }
     sel.appendChild(firstOpt);
 
-    let gotSelected = false;
     for (const pair of list) {
       const opt = option.cloneNode(true) as HTMLOptionElement;
-      const val = pair.value.toString();
-      opt.value = val;
-      if (this.textValue === val) {
-        opt.setAttribute('selected', '');
-        gotSelected = true;
-      }
+      opt.value = pair.value.toString();
       opt.innerText = pair.label;
       sel.appendChild(opt);
     }
 
-    if (gotSelected) {
-      this.setEmpty(false);
-      return;
-    }
-
-    /**
-     * if user has no choice but to select the only one option, why ask them to do that?
-     */
-    if (this.field.isRequired && list.length === 1) {
-      sel.options[1].selected = true;
-      const v = list[0].value;
-      //        this.value = v;
-      //        this.textValue = v.toString();
-      this.valueHasChanged('' + v);
-      this.setEmpty(false);
-
-      return;
-    }
-
-    firstOpt.selected = true;
-    /**
-     * any existing value is not relevant anymore
-     */
     if (this.textValue) {
+      sel.value = this.textValue;
+      // what if this.textValue is not a value in this list?
+      //sel.value would not have succeeded
+      if (sel.value === this.textValue) {
+        this.setEmpty(false);
+        return;
+      }
+
+      this.logger.error(
+        `Field ${this.name}: Current value is '${this.textValue}'. However, this is not a valid value in the new list being set.`
+      );
       this.value = '';
       this.textValue = '';
       this.valueHasChanged('');
+      return;
+    }
+
+    /**
+     * If it is mandatory, why not select the first?
+     * TODO: This may lead to default bias. Some designers may not want this.
+     * should we say 'selectFirstOption?'
+     */
+    if (this.field.isRequired) {
+      const v = list[0].value.toString();
+      sel.value = v;
+      this.valueHasChanged(v);
+      this.setEmpty(false);
       return;
     }
   }

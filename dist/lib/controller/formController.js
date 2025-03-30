@@ -166,7 +166,6 @@ export class FC {
             const keyValue = keyControl.getValue();
             if (keyValue) {
                 this.pc.getList(fieldView, '' + keyValue);
-                this.pc.getList(fieldView, field.listKeyValue);
             }
             /**
              * wire the "change" event to get a keyed list for this drop-down-field
@@ -174,12 +173,12 @@ export class FC {
             this.addEventListener(keyControl.name, 'change', (evt) => {
                 const newValue = evt.newValue;
                 /**
-                 * empty list when key has no value,
+                 * this means that the list is no more valid. Let's first remove it..
                  */
+                fieldView.setList([]);
                 if (newValue === undefined ||
                     newValue === '' ||
                     evt.newValidity === false) {
-                    fieldView.setList([]);
                     return;
                 }
                 let value;
@@ -588,9 +587,15 @@ export class FC {
             case 'different':
                 return v1Exists && v1 != v2;
             case 'range':
-                return v1Exists && v2Exists && v1 < v2;
+                if (v1Exists || v2Exists) {
+                    return v1Exists && v2Exists && v1 < v2;
+                }
+                return true;
             case 'rangeOrEqual':
-                return v1Exists && v2Exists && v1 <= v2;
+                if (v1Exists || v2Exists) {
+                    return v1Exists && v2Exists && v1 <= v2;
+                }
+                return true;
             default:
                 throw new Error(`validation type ${v.validationType} is not handled by the data controller`);
         }

@@ -821,14 +821,29 @@ export class PC implements PageController {
     }
     //call back action??
     if (ok) {
+      if (action.successMessageId) {
+        this.showMessages([this.toMessage(action.successMessageId, 'success')]);
+      }
       if (action.onSuccess) {
         //this chain continues..
         this.doAct(action.onSuccess, p);
       }
-    } else if (action.onFailure) {
-      //this chain continues..
-      this.doAct(action.onFailure, p);
+    } else {
+      if (action.failureMessageId) {
+        this.showMessages([this.toMessage(action.failureMessageId, 'error')]);
+      }
+      if (action.onFailure) {
+        //this chain continues..
+        this.doAct(action.onFailure, p);
+      }
     }
+  }
+
+  toMessage(
+    id: string,
+    type: 'error' | 'warning' | 'info' | 'success'
+  ): DetailedMessage {
+    return { id, type, text: this.ac.getMessage(id) };
   }
 
   private navigate(action: NavigationAction, p: ActionParameters): boolean {

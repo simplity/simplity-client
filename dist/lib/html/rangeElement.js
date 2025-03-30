@@ -1,6 +1,6 @@
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
-import { FieldElement } from './fieldElement';
+import { elementFactory } from './elementFactory';
 export class RangeElement extends BaseElement {
     range;
     fromView;
@@ -8,10 +8,10 @@ export class RangeElement extends BaseElement {
     constructor(fc, range, maxWidth) {
         super(fc, range, 'range-wrapper', maxWidth);
         this.range = range;
-        this.fromView = new FieldElement(fc, range.fromField, 0);
+        this.fromView = elementFactory.newElement(fc, range.fromField, maxWidth);
         let ele = htmlUtil.getChildElement(this.root, 'from-field');
         ele.appendChild(this.fromView.root);
-        this.toView = new FieldElement(fc, range.toField, 0);
+        this.toView = elementFactory.newElement(fc, range.toField, maxWidth);
         ele = htmlUtil.getChildElement(this.root, 'to-field');
         ele.appendChild(this.toView.root);
     }

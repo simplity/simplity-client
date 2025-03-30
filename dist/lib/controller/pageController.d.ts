@@ -97,6 +97,7 @@ export declare class PC implements PageController {
      * @param activeActions
      */
     private actionReturned;
+    toMessage(id: string, type: 'error' | 'warning' | 'info' | 'success'): DetailedMessage;
     private navigate;
     private doFormAction;
     private getFilterData;
