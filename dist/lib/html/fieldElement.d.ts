@@ -63,6 +63,7 @@ export declare class FieldElement extends BaseElement implements FieldView {
     constructor(fc: FormController | undefined, field: DataField, maxWidth: number, initialValue?: Value);
     resetValue(): void;
     setValue(newValue: Value): void;
+    private renderFormattedOutput;
     /**
      * wire 'change' and 'changing' events.
      * Thanks to standardization, 'input' event now serves as 'changing'.

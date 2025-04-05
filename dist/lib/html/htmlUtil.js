@@ -193,13 +193,6 @@ export const htmlUtil = {
      */
     toLabel,
     /**
-     * format the value for output as per specification
-     * @param value
-     * @param formatter
-     * @returns formatted string
-     */
-    formatValue,
-    /**
      * Set the View-state of this element to the desired value.
      *
      * @param ele
@@ -312,23 +305,6 @@ function toLabel(name) {
         }
     }
     return label;
-}
-function formatValue(value, formatter) {
-    if (value === undefined) {
-        return '';
-    }
-    const text = '' + value;
-    if (formatter.casing) {
-        switch (formatter.casing) {
-            case 'UPPER':
-                return text.toUpperCase();
-            case 'lower':
-                return text.toLowerCase();
-        }
-    }
-    formatter;
-    //TODO: Design and implement this concept
-    return text;
 }
 function getViewState(ele, stateName) {
     const attr = 'data-' + stateName;

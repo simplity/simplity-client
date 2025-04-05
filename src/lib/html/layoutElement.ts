@@ -292,7 +292,6 @@ export class LayoutElement {
   private renderMenuBar(): HTMLElement | undefined {
     const menubar = htmlUtil.getOptionalElement(this.root, 'menu-bar');
     if (!menubar) {
-      console.log(this.root);
       this.logger.info(
         `Layout ${this.layout.name} has no child element with data-id="menu-bar". Menu not rendered`
       );

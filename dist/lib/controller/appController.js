@@ -3,6 +3,7 @@ import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
 import { createValidationFn, parseValue } from '../validation/validation';
+import { createFormatterFn } from '../formatter';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 let logger = loggerStub.getLogger();
@@ -35,11 +36,13 @@ export class AC {
     allPages;
     functionDetails;
     validationFns = {};
+    formatterFns = {};
     allHtmls;
     allModules;
     allMenus;
     allLayouts;
     allValueSchemas;
+    allFormatters;
     listSources;
     // app level parameters
     allMessages;
@@ -103,6 +106,8 @@ export class AC {
         this.allMenus = runtime.menuItems || {};
         this.allValueSchemas = runtime.valueSchemas || {};
         this.validationFns = this.createValidationFns(runtime.valueSchemas);
+        this.allFormatters = runtime.valueFormatters || {};
+        this.formatterFns = this.createFormatterFns(runtime.valueFormatters);
         this.viewFactory = runtime.viewComponentFactory;
         this.defaultPageSize = runtime.defaultPageSize;
     }
@@ -111,6 +116,15 @@ export class AC {
         if (schemas) {
             for (const [name, schema] of Object.entries(schemas)) {
                 fns[name] = createValidationFn(schema);
+            }
+        }
+        return fns;
+    }
+    createFormatterFns(formatters) {
+        const fns = {};
+        if (formatters) {
+            for (const [name, formatter] of Object.entries(formatters)) {
+                fns[name] = createFormatterFn(formatter);
             }
         }
         return fns;
@@ -212,7 +226,12 @@ export class AC {
     }
     getValueSchema(nam) {
         const obj = this.allValueSchemas[nam];
-        this.shouldExist(obj, nam, 'menu item');
+        this.shouldExist(obj, nam, 'Value Schema');
+        return obj;
+    }
+    getValueFormatter(nam) {
+        const obj = this.allFormatters[nam];
+        this.shouldExist(obj, nam, 'Value Schema');
         return obj;
     }
     getModuleIfAccessible(nam) {
@@ -543,6 +562,15 @@ export class AC {
             entry.keyedList = list;
         }
         return list;
+    }
+    formatValue(name, v) {
+        const fn = this.formatterFns[name];
+        let value = v;
+        if (!fn) {
+            logger.error(`${name} is not a valid formatter. Value not formatted`);
+            return { value };
+        }
+        return fn(v);
     }
     validateValue(schemaName, value) {
         const fn = this.validationFns[schemaName];

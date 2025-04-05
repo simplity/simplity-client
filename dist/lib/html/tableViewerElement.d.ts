@@ -50,6 +50,7 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private sortedAscending;
     constructor(fc: FormController, table: TableViewer, maxWidth: number);
     private createHeaderDetails;
+    private fieldToCol;
     private renderHeaders;
     /**
      *
@@ -60,7 +61,6 @@ export declare class TableViewerElement extends BaseElement implements TableView
     private renderRows;
     private addTd;
     private addTdForComp;
-    private formatColumnValue;
     /**
      * remove all rows that are rendered. Remove the header if it is dynamic
      */

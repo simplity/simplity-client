@@ -30,11 +30,15 @@ import {
   PageComponent,
   FormController,
   Value,
+  ValueFormatter,
+  FormatterFunction,
+  FormattedValue,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
 import { createValidationFn, parseValue } from '../validation/validation';
+import { createFormatterFn } from '../formatter';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 
@@ -69,11 +73,14 @@ export class AC implements AppController {
   private readonly allPages: StringMap<Page>;
   private readonly functionDetails: StringMap<FunctionDetails>;
   private readonly validationFns: StringMap<ValueValidationFn> = {};
+  private readonly formatterFns: StringMap<FormatterFunction> = {};
   private readonly allHtmls: StringMap<string>;
   private readonly allModules: StringMap<Module>;
   private readonly allMenus: StringMap<MenuItem>;
   private readonly allLayouts: StringMap<Layout>;
   private readonly allValueSchemas: StringMap<ValueSchema>;
+  private readonly allFormatters: StringMap<ValueFormatter>;
+
   private readonly listSources: StringMap<ListSource>;
 
   // app level parameters
@@ -150,6 +157,8 @@ export class AC implements AppController {
     this.allMenus = runtime.menuItems || {};
     this.allValueSchemas = runtime.valueSchemas || {};
     this.validationFns = this.createValidationFns(runtime.valueSchemas);
+    this.allFormatters = runtime.valueFormatters || {};
+    this.formatterFns = this.createFormatterFns(runtime.valueFormatters);
 
     this.viewFactory = runtime.viewComponentFactory;
     this.defaultPageSize = runtime.defaultPageSize;
@@ -166,6 +175,19 @@ export class AC implements AppController {
     }
     return fns;
   }
+
+  private createFormatterFns(
+    formatters?: StringMap<ValueFormatter>
+  ): StringMap<FormatterFunction> {
+    const fns: StringMap<FormatterFunction> = {};
+    if (formatters) {
+      for (const [name, formatter] of Object.entries(formatters)) {
+        fns[name] = createFormatterFn(formatter);
+      }
+    }
+    return fns;
+  }
+
   newWindow(url: string): void {
     logger.info(
       `Request to open a window for url:${url} received. This feature is not yet implemented`
@@ -286,7 +308,13 @@ export class AC implements AppController {
 
   getValueSchema(nam: string): ValueSchema {
     const obj = this.allValueSchemas[nam];
-    this.shouldExist(obj, nam, 'menu item');
+    this.shouldExist(obj, nam, 'Value Schema');
+    return obj;
+  }
+
+  getValueFormatter(nam: string): ValueFormatter {
+    const obj = this.allFormatters[nam];
+    this.shouldExist(obj, nam, 'Value Schema');
     return obj;
   }
   getModuleIfAccessible(nam: string): Module | undefined {
@@ -689,6 +717,17 @@ export class AC implements AppController {
       entry.keyedList = list;
     }
     return list;
+  }
+
+  formatValue(name: string, v: string): FormattedValue {
+    const fn = this.formatterFns[name];
+    let value = v;
+    if (!fn) {
+      logger.error(`${name} is not a valid formatter. Value not formatted`);
+
+      return { value };
+    }
+    return fn(v);
   }
 
   validateValue(schemaName: string, value: string): ValueValidationResult {

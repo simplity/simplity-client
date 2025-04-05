@@ -1,4 +1,4 @@
-import { Value, ValueFormatter } from 'simplity-types';
+import { Value } from 'simplity-types';
 /**
  * display states that are designed by simplity
  */
@@ -128,13 +128,6 @@ export declare const htmlUtil: {
      */
     toLabel: typeof toLabel;
     /**
-     * format the value for output as per specification
-     * @param value
-     * @param formatter
-     * @returns formatted string
-     */
-    formatValue: typeof formatValue;
-    /**
      * Set the View-state of this element to the desired value.
      *
      * @param ele
@@ -159,7 +152,6 @@ declare function removeChildren(ele: HTMLElement): void;
 declare function appendText(ele: HTMLElement, text: string): void;
 declare function appendIcon(ele: HTMLElement, icon: string, alt?: string): void;
 declare function toLabel(name: string): string;
-declare function formatValue(value: Value, formatter: ValueFormatter): string;
 declare function getViewState(ele: HTMLElement, stateName: string): string | boolean | undefined;
 declare function setViewState(ele: HTMLElement, stateName: ViewState, stateValue: Value): void;
 export {};

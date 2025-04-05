@@ -1,15 +1,17 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert, BaseView, PageComponent, FormController, Value } from 'simplity-types';
+import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert, BaseView, PageComponent, FormController, Value, ValueFormatter, FormattedValue } from 'simplity-types';
 export declare class AC implements AppController {
     private readonly appView;
     private readonly allForms;
     private readonly allPages;
     private readonly functionDetails;
     private readonly validationFns;
+    private readonly formatterFns;
     private readonly allHtmls;
     private readonly allModules;
     private readonly allMenus;
     private readonly allLayouts;
     private readonly allValueSchemas;
+    private readonly allFormatters;
     private readonly listSources;
     private readonly allMessages;
     private readonly loginServiceName;
@@ -43,6 +45,7 @@ export declare class AC implements AppController {
      */
     constructor(runtime: ClientRuntime, appView: AppView);
     private createValidationFns;
+    private createFormatterFns;
     newWindow(url: string): void;
     closePopup(): void;
     newError(msg: string): Error;
@@ -69,6 +72,7 @@ export declare class AC implements AppController {
     getModule(nam: string): Module;
     getMenu(nam: string): MenuItem;
     getValueSchema(nam: string): ValueSchema;
+    getValueFormatter(nam: string): ValueFormatter;
     getModuleIfAccessible(nam: string): Module | undefined;
     getMenuIfAccessible(nam: string): MenuItem | undefined;
     getPage(nam: string): Page;
@@ -92,6 +96,7 @@ export declare class AC implements AppController {
     downloadServiceResponse(fileName: string, serviceName: string, data: Vo | undefined): Promise<boolean>;
     getList(listName: string, forceRefresh: boolean, key?: number | string): Promise<SimpleList>;
     getKeyedList(listName: string, forceRefresh: boolean): Promise<KeyedList>;
+    formatValue(name: string, v: string): FormattedValue;
     validateValue(schemaName: string, value: string): ValueValidationResult;
     validateType(valueType: ValueType, textValue: string): ValueValidationResult;
     download(blob: Blob, fileName: string): void;

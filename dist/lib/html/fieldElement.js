@@ -126,6 +126,10 @@ export class FieldElement extends BaseElement {
         this.setValue(value);
     }
     setValue(newValue) {
+        if (this.fieldRendering === 'output') {
+            this.renderFormattedOutput(newValue);
+            return;
+        }
         if (newValue === undefined) {
             newValue = '';
         }
@@ -141,9 +145,6 @@ export class FieldElement extends BaseElement {
                 this.fldEle.value = text;
                 this.setEmpty(text === '');
                 return;
-            case 'output':
-                this.fldEle.innerText = text;
-                return;
             case 'select-output':
                 this.fldEle.innerText = this.getSelectValue(text);
                 return;
@@ -153,10 +154,22 @@ export class FieldElement extends BaseElement {
             case 'image':
             case 'hidden':
                 return;
-                this.logger.error(`Design Error: FieldElement class should not have been used for rendering type ${this.fieldRendering}. Value not set to field ${this.name}`);
-                return;
             default:
                 this.logger.error(`field rendering type ${this.fieldRendering} not implemented. Value not set to field ${this.name}`);
+        }
+    }
+    renderFormattedOutput(val) {
+        const formatter = this.field.valueFormatter;
+        if (!formatter) {
+            this.fldEle.innerHTML = val === undefined ? '' : '' + val;
+            return;
+        }
+        const { value, markups } = this.ac.formatValue(formatter, val);
+        this.fldEle.innerHTML = value;
+        if (markups) {
+            for (const [attr, v] of markups) {
+                htmlUtil.setViewState(this.fldEle, attr, v);
+            }
         }
     }
     /**
@@ -221,7 +234,7 @@ export class FieldElement extends BaseElement {
         if (this.field.onChange) {
             this.pc.act(this.field.onChange, this.fc, { value: newValue });
         }
-        console.log(`Value of ${this.name} has changed with oldValue='${oldValue}', newValue='${this.value}', wasOk='${wasOk}' isOk = '${isOk}' this.fc:`, this.fc);
+        console.info(`Value of ${this.name} has changed with oldValue='${oldValue}', newValue='${this.value}', wasOk='${wasOk}' isOk = '${isOk}' this.fc:`, this.fc);
         if (oldValue === this.value || !this.fc) {
             //value has not actually changed, or there is NO controller
             return;

@@ -2,7 +2,7 @@ import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
 import { elementFactory } from './elementFactory';
 import { LeafElement } from './leafElement';
-import { FieldElement } from './fieldElement';
+const ALIGN_RIGHT = ['align', 'right'];
 export class TableViewerElement extends BaseElement {
     fc;
     table;
@@ -122,28 +122,29 @@ export class TableViewerElement extends BaseElement {
         if (this.table.children) {
             //infer from child components
             for (const child of this.table.children) {
-                let field = child.compType === 'field' || child.compType === 'referred'
-                    ? child
-                    : undefined;
-                if (field && field.hideInList) {
+                if (child.compType === 'field' || child.compType === 'referred') {
+                    const cd = this.fieldToCol(child);
+                    if (cd) {
+                        details.push(cd);
+                    }
                     continue;
                 }
-                const hd = {
+                if (child.compType === 'range') {
+                    const r = child;
+                    for (const f of [r.fromField, r.toField]) {
+                        const cd = this.fieldToCol(f);
+                        if (cd) {
+                            details.push(cd);
+                        }
+                    }
+                    continue;
+                }
+                details.push({
                     name: child.name,
-                    label: child.label || htmlUtil.toLabel(child.name),
                     valueType: 'text',
-                };
-                if (field) {
-                    hd.valueType = field.valueType;
-                    hd.labelAttributes = field.labelAttributes;
-                    hd.valueFormatter = field.valueFormatter;
-                    hd.formattingFn = field.formattingFn;
-                    hd.onClick = field.onClick;
-                }
-                else {
-                    hd.comp = child;
-                }
-                details.push(hd);
+                    label: child.label || htmlUtil.toLabel(child.name),
+                    comp: child,
+                });
             }
             return details;
         }
@@ -155,19 +156,10 @@ export class TableViewerElement extends BaseElement {
             //if form is given, we assume all the fields in the form
             const form = this.ac.getForm(this.table.formName);
             for (const name of form.fieldNames) {
-                const field = form.fields[name];
-                if (field.renderAs === 'hidden') {
-                    continue;
+                const cd = this.fieldToCol(form.fields[name]);
+                if (cd) {
+                    details.push(cd);
                 }
-                details.push({
-                    name,
-                    label: field.label || htmlUtil.toLabel(field.name),
-                    valueType: field.valueType,
-                    labelAttributes: field.labelAttributes,
-                    valueFormatter: field.valueFormatter,
-                    formattingFn: field.formattingFn,
-                    onClick: field.onClick,
-                });
             }
             return details;
         }
@@ -175,6 +167,22 @@ export class TableViewerElement extends BaseElement {
         Hence the header row is not rendered onload.
         columns will be rendered as and when data is received`);
         return undefined;
+    }
+    fieldToCol(field) {
+        if (field.renderAs === 'hidden' || field.hideInList) {
+            return undefined;
+        }
+        const cd = {
+            name: field.name,
+            label: field.label || htmlUtil.toLabel(field.name),
+            valueType: field.valueType,
+            valueFormatter: field.valueFormatter,
+            onClick: field.onClick,
+        };
+        if (field.listOptions) {
+            cd.valueList = toMap(field.listOptions);
+        }
+        return cd;
     }
     renderHeaders(cols) {
         for (const col of cols) {
@@ -189,18 +197,16 @@ export class TableViewerElement extends BaseElement {
      */
     renderData(data, columnNames) {
         this.data = data;
-        /**
-         * header has to be re-rendered if it is not specified at design-time or we are to render a subset of the columns
-         */
-        const reRenderHeader = columnNames !== undefined || this.columnDetails === undefined;
-        this.reset(reRenderHeader);
-        /**
-         * If headers are ready, and no dynamic columns, it's simple
-         */
         if (this.columnDetails && columnNames === undefined) {
+            //we have the headers as well as what columns to be rendered
+            this.reset(false);
             this.renderRows(data, this.columnDetails);
             return;
         }
+        /**
+         * header has to be re-rendered if it is not specified at design-time or we are to render a subset of the columns
+         */
+        this.reset(true);
         const cols = this.getDynamicHeader(data, columnNames);
         this.renderHeaders(cols);
         this.renderRows(data, cols);
@@ -215,41 +221,51 @@ export class TableViewerElement extends BaseElement {
             const searchRow = [];
             const rowEle = this.addTr(idx);
             for (const col of cols) {
-                const value = row[col.name];
-                const textValue = this.formatColumnValue(value, col, row);
                 if (col.comp) {
                     //comp is a static element.
-                    this.addTdForComp(textValue, col.comp, rowEle, searchRow);
+                    this.addTdForComp(col.comp, rowEle);
                     continue;
                 }
-                const isNumeric = col.valueType === 'integer' || col.valueType === 'decimal';
-                const td = this.addTd(textValue, isNumeric, rowEle, searchRow);
-                if (col.onClick) {
-                    htmlUtil.setViewState(td, 'clickable', true);
-                    td.addEventListener('click', () => {
-                        this.twc.cellClicked(idx, col.onClick);
-                    });
-                }
-                if (col.formattingFn) {
-                    const fn = this.ac.getFn(col.formattingFn, 'format')
-                        .fn;
-                    const fd = fn(value, row);
-                    if (fd.markups) {
-                        for (const [name, attr] of Object.entries(fd.markups)) {
-                            htmlUtil.setViewState(td, name, attr);
-                        }
-                    }
+                else {
+                    this.addTd(col, row, rowEle, searchRow, idx);
                 }
             }
             this.searchData.push(searchRow.join('\n'));
             this.rowsEle.appendChild(rowEle);
         }
     }
-    addTd(value, isNumeric, rowEle, searchRow) {
+    addTd(cd, row, rowEle, searchRow, idx) {
         const td = this.dataCellEle.cloneNode(true);
+        const val = row[cd.name];
+        let value = val === undefined ? '' : '' + val;
+        let markups = [];
+        if (cd.valueFormatter) {
+            const fv = this.ac.formatValue(cd.valueFormatter, val);
+            if (fv.markups) {
+                markups = fv.markups;
+            }
+            value = fv.value;
+        }
+        else if (cd.valueList) {
+            const mappedValue = cd.valueList[value];
+            if (mappedValue != undefined) {
+                value = mappedValue;
+            }
+        }
+        if (cd.valueType === 'decimal' || cd.valueType === 'integer') {
+            markups.push(ALIGN_RIGHT);
+        }
+        if (cd.onClick) {
+            markups.push(['clickable', '']);
+            td.addEventListener('click', () => {
+                this.twc.cellClicked(idx, cd.onClick);
+            });
+        }
         htmlUtil.appendText(td, value);
-        if (isNumeric) {
-            htmlUtil.setViewState(td, 'align', 'right');
+        if (markups) {
+            for (const [att, v] of markups) {
+                htmlUtil.setViewState(td, att, v);
+            }
         }
         rowEle.appendChild(td);
         if (value) {
@@ -257,47 +273,11 @@ export class TableViewerElement extends BaseElement {
         }
         return td;
     }
-    addTdForComp(value, leafComp, rowEle, searchRow) {
+    addTdForComp(leafComp, rowEle) {
         const td = this.dataCellEle.cloneNode(true);
-        let ele;
-        if (leafComp.compType === 'range') {
-            const range = leafComp;
-            for (const field of [range.fromField, range.toField]) {
-                const df = { ...field, renderAs: 'output' };
-                ele = new FieldElement(undefined, df, 0);
-                td.appendChild(ele.root);
-            }
-            return;
-        }
-        if (leafComp.compType === 'field' || leafComp.compType === 'referred') {
-            //fields have to be rendered as output
-            const df = { ...leafComp };
-            df.renderAs = 'output';
-            ele = new FieldElement(undefined, df, 0);
-        }
-        else {
-            ele = new LeafElement(undefined, leafComp, 0);
-        }
+        const ele = new LeafElement(undefined, leafComp, 0);
         td.appendChild(ele.root);
         rowEle.appendChild(td);
-        if (value) {
-            searchRow.push(value.toLowerCase());
-        }
-    }
-    formatColumnValue(value, vrd, row) {
-        if (vrd.formattingFn) {
-            const fn = this.ac.getFn(vrd.formattingFn, 'format')
-                .fn;
-            const fd = fn(value, row);
-            return fd.value;
-        }
-        if (vrd.valueFormatter) {
-            return htmlUtil.formatValue(value, vrd.valueFormatter);
-        }
-        if (value === undefined) {
-            return '';
-        }
-        return '' + value;
     }
     /**
      * remove all rows that are rendered. Remove the header if it is dynamic
@@ -552,5 +532,12 @@ export class TableViewerElement extends BaseElement {
             return -1;
         });
     }
+}
+function toMap(arr) {
+    const map = {};
+    for (const { label, value } of arr) {
+        map[value] = label;
+    }
+    return map;
 }
 //# sourceMappingURL=tableViewerElement.js.map

@@ -1,4 +1,4 @@
-import { Value, ValueFormatter } from 'simplity-types';
+import { Value } from 'simplity-types';
 import { app } from '../controller/app';
 import { loggerStub } from '../logger-stub/logger';
 
@@ -218,14 +218,6 @@ export const htmlUtil = {
   toLabel,
 
   /**
-   * format the value for output as per specification
-   * @param value
-   * @param formatter
-   * @returns formatted string
-   */
-  formatValue,
-
-  /**
    * Set the View-state of this element to the desired value.
    *
    * @param ele
@@ -362,24 +354,6 @@ function toLabel(name: string): string {
     }
   }
   return label;
-}
-
-function formatValue(value: Value, formatter: ValueFormatter): string {
-  if (value === undefined) {
-    return '';
-  }
-  const text = '' + value;
-  if (formatter.casing) {
-    switch (formatter.casing) {
-      case 'UPPER':
-        return text.toUpperCase();
-      case 'lower':
-        return text.toLowerCase();
-    }
-  }
-  formatter;
-  //TODO: Design and implement this concept
-  return text;
 }
 
 function getViewState(

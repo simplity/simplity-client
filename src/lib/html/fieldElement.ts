@@ -161,6 +161,11 @@ export class FieldElement extends BaseElement implements FieldView {
   }
 
   public setValue(newValue: Value): void {
+    if (this.fieldRendering === 'output') {
+      this.renderFormattedOutput(newValue);
+      return;
+    }
+
     if (newValue === undefined) {
       newValue = '';
     }
@@ -178,10 +183,6 @@ export class FieldElement extends BaseElement implements FieldView {
         this.setEmpty(text === '');
         return;
 
-      case 'output':
-        this.fldEle.innerText = text;
-        return;
-
       case 'select-output':
         this.fldEle.innerText = this.getSelectValue(text);
         return;
@@ -194,11 +195,6 @@ export class FieldElement extends BaseElement implements FieldView {
       case 'hidden':
         return;
 
-        this.logger.error(
-          `Design Error: FieldElement class should not have been used for rendering type ${this.fieldRendering}. Value not set to field ${this.name}`
-        );
-        return;
-
       default:
         this.logger.error(
           `field rendering type ${this.fieldRendering} not implemented. Value not set to field ${this.name}`
@@ -206,6 +202,20 @@ export class FieldElement extends BaseElement implements FieldView {
     }
   }
 
+  private renderFormattedOutput(val: Value) {
+    const formatter = this.field.valueFormatter;
+    if (!formatter) {
+      this.fldEle.innerHTML = val === undefined ? '' : '' + val;
+      return;
+    }
+    const { value, markups } = this.ac.formatValue(formatter, val);
+    this.fldEle.innerHTML = value;
+    if (markups) {
+      for (const [attr, v] of markups) {
+        htmlUtil.setViewState(this.fldEle, attr as ViewState, v);
+      }
+    }
+  }
   /**
    * wire 'change' and 'changing' events.
    * Thanks to standardization, 'input' event now serves as 'changing'.
@@ -280,7 +290,7 @@ export class FieldElement extends BaseElement implements FieldView {
       this.pc.act(this.field.onChange, this.fc, { value: newValue });
     }
 
-    console.log(
+    console.info(
       `Value of ${this.name} has changed with oldValue='${oldValue}', newValue='${this.value}', wasOk='${wasOk}' isOk = '${isOk}' this.fc:`,
       this.fc
     );
