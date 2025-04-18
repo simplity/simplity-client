@@ -100,90 +100,24 @@ export class TableViewerElement extends BaseElement {
         this.twc = this.fc.newTableViewerController(this);
         this.initSearch();
         this.initConfig();
-        const details = this.createHeaderDetails();
-        if (details) {
-            this.columnDetails = details;
+        /**
+         * dev-utils ensures that a table-editor will have columns, or it is a dynamic
+         */
+        if (table.columns) {
+            this.columnDetails = table.columns;
             /**
              * populate the map for look-up purpose for dynamic columns
              */
-            for (const col of details) {
+            for (const col of table.columns) {
                 this.columnDetailsMap[col.name] = col;
             }
-            this.renderHeaders(details);
+            this.renderHeaders(table.columns);
+        }
+        else {
+            this.logger.info(`Table '${this.name}' has no design-time columns. It will be rendered based on the first row of the data received at run time`);
         }
     }
     /////////////////// methods to render rows
-    createHeaderDetails() {
-        //readily available on a platter?
-        if (this.table.columns) {
-            return this.table.columns;
-        }
-        const details = [];
-        if (this.table.children) {
-            //infer from child components
-            for (const child of this.table.children) {
-                if (child.compType === 'field' || child.compType === 'referred') {
-                    const cd = this.fieldToCol(child);
-                    if (cd) {
-                        details.push(cd);
-                    }
-                    continue;
-                }
-                if (child.compType === 'range') {
-                    const r = child;
-                    for (const f of [r.fromField, r.toField]) {
-                        const cd = this.fieldToCol(f);
-                        if (cd) {
-                            details.push(cd);
-                        }
-                    }
-                    continue;
-                }
-                details.push({
-                    name: child.name,
-                    valueType: 'text',
-                    label: child.label || htmlUtil.toLabel(child.name),
-                    comp: child,
-                });
-            }
-            return details;
-        }
-        /**
-         * as per the current dev-util, this should not arise because children will be added based on the form.
-         * this is just a defensive code??
-         */
-        if (this.table.formName) {
-            //if form is given, we assume all the fields in the form
-            const form = this.ac.getForm(this.table.formName);
-            for (const name of form.fieldNames) {
-                const cd = this.fieldToCol(form.fields[name]);
-                if (cd) {
-                    details.push(cd);
-                }
-            }
-            return details;
-        }
-        this.logger.info(`Table ${this.name} has no design-time columns. 
-        Hence the header row is not rendered onload.
-        columns will be rendered as and when data is received`);
-        return undefined;
-    }
-    fieldToCol(field) {
-        if (field.renderAs === 'hidden' || field.hideInList) {
-            return undefined;
-        }
-        const cd = {
-            name: field.name,
-            label: field.label || htmlUtil.toLabel(field.name),
-            valueType: field.valueType,
-            valueFormatter: field.valueFormatter,
-            onClick: field.onClick,
-        };
-        if (field.listOptions) {
-            cd.valueList = toMap(field.listOptions);
-        }
-        return cd;
-    }
     renderHeaders(cols) {
         for (const col of cols) {
             const isNumeric = col.valueType === 'integer' || col.valueType === 'decimal';
@@ -532,12 +466,5 @@ export class TableViewerElement extends BaseElement {
             return -1;
         });
     }
-}
-function toMap(arr) {
-    const map = {};
-    for (const { label, value } of arr) {
-        map[value] = label;
-    }
-    return map;
 }
 //# sourceMappingURL=tableViewerElement.js.map

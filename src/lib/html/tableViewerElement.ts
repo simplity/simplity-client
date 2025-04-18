@@ -4,15 +4,11 @@ import {
   Values,
   TableViewerView,
   StringMap,
-  ValueRenderingDetails,
-  DataField,
+  ColumnDetails,
   FormController,
   Value,
   StaticComp,
   Button,
-  RangePanel,
-  Field,
-  SimpleList,
 } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil, ViewState } from './htmlUtil';
@@ -22,10 +18,6 @@ import { LeafElement } from './leafElement';
 const ALIGN_RIGHT: [string, string] = ['align', 'right'];
 
 type SortedRow = { idx: number; value: Value };
-type ColumnDetails = ValueRenderingDetails & {
-  valueList?: StringMap<string>;
-  comp?: Button | StaticComp;
-};
 export class TableViewerElement extends BaseElement implements TableViewerView {
   public readonly twc: TableViewerController;
   /**
@@ -148,99 +140,26 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
 
     this.initSearch();
     this.initConfig();
-    const details = this.createHeaderDetails();
-    if (details) {
-      this.columnDetails = details;
+    /**
+     * dev-utils ensures that a table-editor will have columns, or it is a dynamic
+     */
+    if (table.columns) {
+      this.columnDetails = table.columns;
       /**
        * populate the map for look-up purpose for dynamic columns
        */
-      for (const col of details) {
+      for (const col of table.columns) {
         this.columnDetailsMap[col.name] = col;
       }
-      this.renderHeaders(details);
+      this.renderHeaders(table.columns);
+    } else {
+      this.logger.info(
+        `Table '${this.name}' has no design-time columns. It will be rendered based on the first row of the data received at run time`
+      );
     }
   }
 
   /////////////////// methods to render rows
-
-  private createHeaderDetails(): ColumnDetails[] | undefined {
-    //readily available on a platter?
-    if (this.table.columns) {
-      return this.table.columns;
-    }
-
-    const details: ColumnDetails[] = [];
-    if (this.table.children) {
-      //infer from child components
-      for (const child of this.table.children) {
-        if (child.compType === 'field' || child.compType === 'referred') {
-          const cd = this.fieldToCol(child as DataField);
-          if (cd) {
-            details.push(cd);
-          }
-          continue;
-        }
-
-        if (child.compType === 'range') {
-          const r = child as RangePanel;
-          for (const f of [r.fromField, r.toField]) {
-            const cd = this.fieldToCol(f as DataField);
-            if (cd) {
-              details.push(cd);
-            }
-          }
-          continue;
-        }
-        details.push({
-          name: child.name,
-          valueType: 'text',
-          label: child.label || htmlUtil.toLabel(child.name),
-          comp: child,
-        });
-      }
-      return details;
-    }
-
-    /**
-     * as per the current dev-util, this should not arise because children will be added based on the form.
-     * this is just a defensive code??
-     */
-    if (this.table.formName) {
-      //if form is given, we assume all the fields in the form
-      const form = this.ac.getForm(this.table.formName);
-      for (const name of form.fieldNames) {
-        const cd = this.fieldToCol(form.fields[name]);
-        if (cd) {
-          details.push(cd);
-        }
-      }
-      return details;
-    }
-
-    this.logger.info(
-      `Table ${this.name} has no design-time columns. 
-        Hence the header row is not rendered onload.
-        columns will be rendered as and when data is received`
-    );
-    return undefined;
-  }
-
-  private fieldToCol(field: Field | DataField): ColumnDetails | undefined {
-    if (field.renderAs === 'hidden' || field.hideInList) {
-      return undefined;
-    }
-    const cd: ColumnDetails = {
-      name: field.name,
-      label: field.label || htmlUtil.toLabel(field.name),
-      valueType: field.valueType,
-      valueFormatter: field.valueFormatter,
-      onClick: field.onClick,
-    };
-    if (field.listOptions) {
-      cd.valueList = toMap(field.listOptions);
-    }
-    return cd;
-  }
 
   private renderHeaders(cols: ColumnDetails[]): void {
     for (const col of cols) {
@@ -643,12 +562,4 @@ export class TableViewerElement extends BaseElement implements TableViewerView {
       return -1;
     });
   }
-}
-
-function toMap(arr: SimpleList): StringMap<string> {
-  const map: StringMap<string> = {};
-  for (const { label, value } of arr) {
-    map[value] = label;
-  }
-  return map;
 }

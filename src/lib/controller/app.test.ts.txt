@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { AppView, AppRuntime } from 'simplity-types';
 
 import { AC } from './appController';
-import { app } from '../controller/app';
+import { app } from './app';
 jest.mock('./appController');
 
 const ac = AC as jest.Mock;
