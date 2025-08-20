@@ -5,8 +5,13 @@ import {
   Value,
   ValueFormatter,
 } from 'simplity-types';
-import { app } from './controller/app';
+import { app } from './app';
 
+/**
+ * Used by app-controller to create functions from the formatter meta-data.
+ * @param formatter The formatter meta-data that defines how to format the value.
+ * @returns A function that takes a value and returns a formatted value.
+ */
 export function createFormatterFn(
   formatter: ValueFormatter
 ): FormatterFunction {

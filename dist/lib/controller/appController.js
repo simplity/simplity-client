@@ -3,7 +3,7 @@ import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
 import { createValidationFn, parseValue } from '../validation/validation';
-import { createFormatterFn } from '../formatter';
+import { createFormatterFn } from './formatter';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 let logger = loggerStub.getLogger();
