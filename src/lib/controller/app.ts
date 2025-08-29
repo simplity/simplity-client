@@ -3,8 +3,7 @@ import {
   AppView,
   PageController,
   PageView,
-  ClientRuntime,
-  systemResources,
+  AppRuntime,
 } from 'simplity-types';
 import { PC } from './pageController';
 import { loggerStub } from '../logger-stub/logger';
@@ -45,15 +44,15 @@ export const app = {
     /**
      * value is required
      */
-    errorValueIsRequired: systemResources.messages._valueRequired,
+    errorValueIsRequired: '_valueRequired',
     /**
      * generic error message when validation fails and  no specific error id is specified
      */
-    errorInvalidValue: systemResources.messages._invalidValue,
+    errorInvalidValue: '_invalidValue',
     /**
      * general error message when reg-ex fails, and the value schema does not provide specific error
      */
-    errorSchemaIsMissing: systemResources.messages._missingSchema,
+    errorSchemaIsMissing: '_missingSchema',
   },
 
   /**
@@ -64,7 +63,7 @@ export const app = {
    * @param appView
    * @returns
    */
-  newAc: (runtime: ClientRuntime, appView: AppView) => {
+  newAc: (runtime: AppRuntime, appView: AppView) => {
     if (ac) {
       logger.warn(
         `The controller for app ${runtime.name} exists, but a new one being created. This is an ERROR in production mode`

@@ -2,8 +2,7 @@ import { loggerStub } from '../logger-stub/logger';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
-import { createValidationFn, parseValue } from '../validation/validation';
-import { createFormatterFn } from './formatter';
+import { parseValue, validateValue } from '../validation/validation';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 let logger = loggerStub.getLogger();
@@ -32,25 +31,23 @@ const simulatedSession = {
 export class AC {
     appView;
     // app components
+    listSources;
     allForms;
     allPages;
     functionDetails;
-    validationFns = {};
-    formatterFns = {};
-    allHtmls;
+    allLayouts;
     allModules;
     allMenus;
-    allLayouts;
-    allValueSchemas;
-    allFormatters;
-    listSources;
-    // app level parameters
     allMessages;
+    allValueSchemas;
+    allHtmls;
+    allFormatters;
+    // app level parameters
     loginServiceName;
     logoutServiceName;
     imageBasePath;
-    viewFactory;
     defaultPageSize;
+    viewFactory;
     /*
      * context for the logged-in user
      */
@@ -69,9 +66,8 @@ export class AC {
      */
     agent;
     /**
-     * fragile design to manage multiple requests to disable/enable involving async calls
-     * is enabled when 0.
-     * TODO: when a function throws error after disabling!!!
+     * fragile design to manage multiple requests to disable/enable UX involving async calls
+     * TODO: What happens when a function throws error after disabling!!!
      */
     disableUxCount = 0;
     /**
@@ -105,29 +101,9 @@ export class AC {
         this.allModules = runtime.modules || {};
         this.allMenus = runtime.menuItems || {};
         this.allValueSchemas = runtime.valueSchemas || {};
-        this.validationFns = this.createValidationFns(runtime.valueSchemas);
         this.allFormatters = runtime.valueFormatters || {};
-        this.formatterFns = this.createFormatterFns(runtime.valueFormatters);
         this.viewFactory = runtime.viewComponentFactory;
         this.defaultPageSize = runtime.defaultPageSize;
-    }
-    createValidationFns(schemas) {
-        const fns = {};
-        if (schemas) {
-            for (const [name, schema] of Object.entries(schemas)) {
-                fns[name] = createValidationFn(schema);
-            }
-        }
-        return fns;
-    }
-    createFormatterFns(formatters) {
-        const fns = {};
-        if (formatters) {
-            for (const [name, formatter] of Object.entries(formatters)) {
-                fns[name] = createFormatterFn(formatter);
-            }
-        }
-        return fns;
     }
     newWindow(url) {
         logger.info(`Request to open a window for url:${url} received. This feature is not yet implemented`);
@@ -563,18 +539,47 @@ export class AC {
         }
         return list;
     }
-    formatValue(name, v) {
-        const fn = this.formatterFns[name];
-        let value = v;
-        if (!fn) {
+    formatValue(name, value) {
+        const formatter = this.allFormatters[name];
+        if (!formatter) {
             logger.error(`${name} is not a valid formatter. Value not formatted`);
-            return { value };
+            return { value: value === undefined ? '' : '' + value };
         }
-        return fn(v);
+        switch (formatter.type) {
+            case 'boolean':
+                return this.formatBoolean(value, formatter);
+            case 'custom':
+                return this.formatCustom(value, formatter);
+            default:
+                return this.formatUnknown(value, formatter);
+        }
+    }
+    formatBoolean(v, formatter) {
+        let value = formatter.unknownValue;
+        if (v !== undefined) {
+            value = v ? formatter.trueValue : formatter.falseValue;
+        }
+        return { value };
+    }
+    formatUnknown(v, formatter) {
+        console.error(`Formatting functionality not yet implemented for type=${formatter.type}. Hence formatter is just returning the input value as it is`);
+        return { value: v.toString() };
+    }
+    formatCustom(v, formatter) {
+        const fd = this.functionDetails[formatter.function];
+        if (!fd) {
+            console.error(`Custom formatter function ${formatter.function} not found`);
+            return { value: v.toString() };
+        }
+        if (fd.type !== 'format') {
+            console.error(`Function ${formatter.function} is is used as 'format' but it is of type '${fd.type}'. Hence the value is not formatted`);
+            return { value: v.toString() };
+        }
+        return fd.fn(v);
     }
     validateValue(schemaName, value) {
-        const fn = this.validationFns[schemaName];
-        if (!fn) {
+        const schema = this.allValueSchemas[schemaName];
+        if (!schema) {
             return {
                 messages: [
                     {
@@ -585,7 +590,12 @@ export class AC {
                 ],
             };
         }
-        return fn({ value });
+        let result = validateValue(schema, value);
+        if (result.messages || !schema.validationFn) {
+            return result;
+        }
+        const fd = this.getFn(schema.validationFn, 'value');
+        return fd.fn({ value });
     }
     validateType(valueType, textValue) {
         const value = parseValue(textValue, valueType);

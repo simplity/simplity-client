@@ -1,4 +1,4 @@
-import { Alert, AppController, ClientRuntime, AppView, NavigationOptions, PanelView, StringMap } from 'simplity-types';
+import { Alert, AppController, AppRuntime, AppView, NavigationOptions, PanelView, StringMap } from 'simplity-types';
 export declare class AppElement implements AppView {
     readonly root: HTMLElement;
     private currentPopup?;
@@ -14,7 +14,7 @@ export declare class AppElement implements AppView {
      * @param runtime
      * @param appEle container element to which the app-view is to be appended to
      */
-    constructor(runtime: ClientRuntime, appEle: HTMLElement);
+    constructor(runtime: AppRuntime, appEle: HTMLElement);
     private renderLayout;
     closePage(): void;
     navigate(options: NavigationOptions): void;

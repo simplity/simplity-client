@@ -26,8 +26,8 @@ import {
 } from 'simplity-types';
 import { ChartElement } from '../html/chartElement';
 import { loggerStub } from '../logger-stub/logger';
-import { TEC } from './TableEditorController';
-import { CC } from './chartController';
+import { TEC } from './TEC';
+import { SimpleChartController } from './simpleChartController';
 import { TWC } from './tableViewerController';
 
 const logger = loggerStub.getLogger();
@@ -286,7 +286,7 @@ export class FC implements FormController {
 
   newChartController(view: BaseView): ChartController {
     this.checkName(view.name);
-    const controller = new CC(this, view as ChartElement);
+    const controller = new SimpleChartController(this, view as ChartElement);
     this.controllers[view.name] = controller;
     return controller;
   }

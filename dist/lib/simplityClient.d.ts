@@ -1,4 +1,4 @@
-import { ClientRuntime, Logger } from 'simplity-types';
+import { AppRuntime, Logger } from 'simplity-types';
 import { parseValue } from './validation/validation';
 export declare const simplityClient: {
     /**
@@ -21,7 +21,7 @@ export declare const simplityClient: {
      * @param root
      * @returns
      */
-    startHtmlClient: (runtime: ClientRuntime, root: HTMLElement) => import("simplity-types").AppController;
+    startHtmlClient: (runtime: AppRuntime, root: HTMLElement) => import("simplity-types").AppController;
     /**
      * parse a text value as per given value-type. e.g
      * @param text

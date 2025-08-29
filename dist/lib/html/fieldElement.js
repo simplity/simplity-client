@@ -1,4 +1,3 @@
-import { systemResources, } from 'simplity-types';
 import { BaseElement } from './baseElement';
 import { htmlUtil } from './htmlUtil';
 import { parseValue } from '../validation/validation';
@@ -263,7 +262,7 @@ export class FieldElement extends BaseElement {
         if (!this.textValue) {
             this.value = '';
             if (this.field.isRequired) {
-                msgs = [this.createMessage(systemResources.messages._valueRequired)];
+                msgs = [this.createMessage('_valueRequired')];
             }
         }
         else {

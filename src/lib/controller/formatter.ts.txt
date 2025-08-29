@@ -1,12 +1,46 @@
 import {
   BooleanFormatter,
   CustomFormatter,
+  FormattedValue,
   FormatterFunction,
   Value,
   ValueFormatter,
 } from 'simplity-types';
 import { app } from './app';
 
+export function formatValue(
+  value: Value,
+  formatter: ValueFormatter
+): FormattedValue {
+  switch (formatter.type) {
+    case 'boolean':
+      return formatBoolean(value, formatter);
+    case 'custom':
+      return formatCustom(value, formatter);
+    default:
+      return formatUnknown(value, formatter);
+  }
+}
+function formatBoolean(v: Value, formatter: BooleanFormatter): FormattedValue {
+  let value = formatter.unknownValue;
+  if (v !== undefined) {
+    value = v ? formatter.trueValue : formatter.falseValue;
+  }
+  return { value };
+}
+
+function formatUnknown(
+  v: Value,
+  formatter: ValueFormatter
+): FormattedValue {
+  console.error(
+    `Formatting functionality not yet implemented for type=${formatter.type}. Hence formatter is just returning the input value as it is`
+  );
+  return { value: v.toString() };
+}
+
+function formatCustom(v: Value, formatter: CustomFormatter): FormattedValue {
+}
 /**
  * Used by app-controller to create functions from the formatter meta-data.
  * @param formatter The formatter meta-data that defines how to format the value.

@@ -1,24 +1,22 @@
-import { ClientRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert, BaseView, PageComponent, FormController, Value, ValueFormatter, FormattedValue } from 'simplity-types';
+import { AppRuntime, AppController, Form, FunctionDetails, Layout, MenuItem, Page, ValueValidationResult, Values, Vo, AppView, PanelView, Module, ServiceResponse, SimpleList, KeyedList, ValueType, FunctionType, ValueSchema, NavigationOptions, Alert, BaseView, PageComponent, FormController, Value, ValueFormatter, FormattedValue } from 'simplity-types';
 export declare class AC implements AppController {
     private readonly appView;
+    private readonly listSources;
     private readonly allForms;
     private readonly allPages;
     private readonly functionDetails;
-    private readonly validationFns;
-    private readonly formatterFns;
-    private readonly allHtmls;
+    private readonly allLayouts;
     private readonly allModules;
     private readonly allMenus;
-    private readonly allLayouts;
-    private readonly allValueSchemas;
-    private readonly allFormatters;
-    private readonly listSources;
     private readonly allMessages;
+    private readonly allValueSchemas;
+    private readonly allHtmls;
+    private readonly allFormatters;
     private readonly loginServiceName;
     private readonly logoutServiceName;
     private readonly imageBasePath;
-    private readonly viewFactory?;
     private readonly defaultPageSize?;
+    private readonly viewFactory?;
     private sessionId?;
     private readonly context;
     /**
@@ -34,18 +32,15 @@ export declare class AC implements AppController {
      */
     private readonly agent;
     /**
-     * fragile design to manage multiple requests to disable/enable involving async calls
-     * is enabled when 0.
-     * TODO: when a function throws error after disabling!!!
+     * fragile design to manage multiple requests to disable/enable UX involving async calls
+     * TODO: What happens when a function throws error after disabling!!!
      */
     private disableUxCount;
     /**
      * @param runtime meta-data components for this apps
      * @param appView  This is the root html element for this app.
      */
-    constructor(runtime: ClientRuntime, appView: AppView);
-    private createValidationFns;
-    private createFormatterFns;
+    constructor(runtime: AppRuntime, appView: AppView);
     newWindow(url: string): void;
     closePopup(): void;
     newError(msg: string): Error;
@@ -96,7 +91,10 @@ export declare class AC implements AppController {
     downloadServiceResponse(fileName: string, serviceName: string, data: Vo | undefined): Promise<boolean>;
     getList(listName: string, forceRefresh: boolean, key?: number | string): Promise<SimpleList>;
     getKeyedList(listName: string, forceRefresh: boolean): Promise<KeyedList>;
-    formatValue(name: string, v: string): FormattedValue;
+    formatValue(name: string, value: Value): FormattedValue;
+    private formatBoolean;
+    private formatUnknown;
+    private formatCustom;
     validateValue(schemaName: string, value: string): ValueValidationResult;
     validateType(valueType: ValueType, textValue: string): ValueValidationResult;
     download(blob: Blob, fileName: string): void;

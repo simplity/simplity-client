@@ -1,4 +1,3 @@
-import { systemResources, } from 'simplity-types';
 import { PC } from './pageController';
 import { loggerStub } from '../logger-stub/logger';
 import { AC } from './appController';
@@ -34,15 +33,15 @@ export const app = {
         /**
          * value is required
          */
-        errorValueIsRequired: systemResources.messages._valueRequired,
+        errorValueIsRequired: '_valueRequired',
         /**
          * generic error message when validation fails and  no specific error id is specified
          */
-        errorInvalidValue: systemResources.messages._invalidValue,
+        errorInvalidValue: '_invalidValue',
         /**
          * general error message when reg-ex fails, and the value schema does not provide specific error
          */
-        errorSchemaIsMissing: systemResources.messages._missingSchema,
+        errorSchemaIsMissing: '_missingSchema',
     },
     /**
      * create an App Controller.

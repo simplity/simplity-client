@@ -1,6 +1,6 @@
 import { loggerStub } from '../logger-stub/logger';
 import {
-  ClientRuntime,
+  AppRuntime,
   AppController,
   Form,
   FunctionDetails,
@@ -33,12 +33,13 @@ import {
   ValueFormatter,
   FormatterFunction,
   FormattedValue,
+  BooleanFormatter,
+  CustomFormatter,
 } from 'simplity-types';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';
-import { createValidationFn, parseValue } from '../validation/validation';
-import { createFormatterFn } from './formatter';
+import { parseValue, validateValue } from '../validation/validation';
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
 
@@ -69,28 +70,25 @@ const simulatedSession: Session = {
 
 export class AC implements AppController {
   // app components
+  private readonly listSources: StringMap<ListSource>;
   private readonly allForms: StringMap<Form>;
   private readonly allPages: StringMap<Page>;
   private readonly functionDetails: StringMap<FunctionDetails>;
-  private readonly validationFns: StringMap<ValueValidationFn> = {};
-  private readonly formatterFns: StringMap<FormatterFunction> = {};
-  private readonly allHtmls: StringMap<string>;
+  private readonly allLayouts: StringMap<Layout>;
   private readonly allModules: StringMap<Module>;
   private readonly allMenus: StringMap<MenuItem>;
-  private readonly allLayouts: StringMap<Layout>;
+  private readonly allMessages: StringMap<string>;
   private readonly allValueSchemas: StringMap<ValueSchema>;
+  private readonly allHtmls: StringMap<string>;
   private readonly allFormatters: StringMap<ValueFormatter>;
 
-  private readonly listSources: StringMap<ListSource>;
-
   // app level parameters
-  private readonly allMessages: StringMap<string>;
   private readonly loginServiceName;
   private readonly logoutServiceName;
   private readonly imageBasePath;
+  private readonly defaultPageSize?: number;
 
   private readonly viewFactory?: ViewComponentFactory;
-  private readonly defaultPageSize?: number;
 
   /*
    * context for the logged-in user
@@ -113,9 +111,8 @@ export class AC implements AppController {
   private readonly agent: ServiceAgent;
 
   /**
-   * fragile design to manage multiple requests to disable/enable involving async calls
-   * is enabled when 0.
-   * TODO: when a function throws error after disabling!!!
+   * fragile design to manage multiple requests to disable/enable UX involving async calls
+   * TODO: What happens when a function throws error after disabling!!!
    */
   private disableUxCount = 0;
 
@@ -124,7 +121,7 @@ export class AC implements AppController {
    * @param appView  This is the root html element for this app.
    */
   public constructor(
-    runtime: ClientRuntime,
+    runtime: AppRuntime,
     private readonly appView: AppView
   ) {
     this.agent = serviceAgent.newAgent({
@@ -156,36 +153,10 @@ export class AC implements AppController {
 
     this.allMenus = runtime.menuItems || {};
     this.allValueSchemas = runtime.valueSchemas || {};
-    this.validationFns = this.createValidationFns(runtime.valueSchemas);
     this.allFormatters = runtime.valueFormatters || {};
-    this.formatterFns = this.createFormatterFns(runtime.valueFormatters);
 
     this.viewFactory = runtime.viewComponentFactory;
     this.defaultPageSize = runtime.defaultPageSize;
-  }
-
-  private createValidationFns(
-    schemas?: StringMap<ValueSchema>
-  ): StringMap<ValueValidationFn> {
-    const fns: StringMap<ValueValidationFn> = {};
-    if (schemas) {
-      for (const [name, schema] of Object.entries(schemas)) {
-        fns[name] = createValidationFn(schema);
-      }
-    }
-    return fns;
-  }
-
-  private createFormatterFns(
-    formatters?: StringMap<ValueFormatter>
-  ): StringMap<FormatterFunction> {
-    const fns: StringMap<FormatterFunction> = {};
-    if (formatters) {
-      for (const [name, formatter] of Object.entries(formatters)) {
-        fns[name] = createFormatterFn(formatter);
-      }
-    }
-    return fns;
   }
 
   newWindow(url: string): void {
@@ -719,20 +690,57 @@ export class AC implements AppController {
     return list;
   }
 
-  formatValue(name: string, v: string): FormattedValue {
-    const fn = this.formatterFns[name];
-    let value = v;
-    if (!fn) {
+  formatValue(name: string, value: Value): FormattedValue {
+    const formatter = this.allFormatters[name];
+    if (!formatter) {
       logger.error(`${name} is not a valid formatter. Value not formatted`);
-
-      return { value };
+      return { value: value === undefined ? '' : '' + value };
     }
-    return fn(v);
+
+    switch (formatter.type) {
+      case 'boolean':
+        return this.formatBoolean(value, formatter as BooleanFormatter);
+      case 'custom':
+        return this.formatCustom(value, formatter as CustomFormatter);
+      default:
+        return this.formatUnknown(value, formatter);
+    }
+  }
+  private formatBoolean(v: Value, formatter: BooleanFormatter): FormattedValue {
+    let value = formatter.unknownValue;
+    if (v !== undefined) {
+      value = v ? formatter.trueValue : formatter.falseValue;
+    }
+    return { value };
+  }
+
+  private formatUnknown(v: Value, formatter: ValueFormatter): FormattedValue {
+    console.error(
+      `Formatting functionality not yet implemented for type=${formatter.type}. Hence formatter is just returning the input value as it is`
+    );
+    return { value: v.toString() };
+  }
+
+  private formatCustom(v: Value, formatter: CustomFormatter): FormattedValue {
+    const fd = this.functionDetails[formatter.function];
+    if (!fd) {
+      console.error(
+        `Custom formatter function ${formatter.function} not found`
+      );
+      return { value: v.toString() };
+    }
+    if (fd.type !== 'format') {
+      console.error(
+        `Function ${formatter.function} is is used as 'format' but it is of type '${fd.type}'. Hence the value is not formatted`
+      );
+      return { value: v.toString() };
+    }
+    return (fd.fn as FormatterFunction)(v);
   }
 
   validateValue(schemaName: string, value: string): ValueValidationResult {
-    const fn = this.validationFns[schemaName];
-    if (!fn) {
+    const schema = this.allValueSchemas[schemaName];
+    if (!schema) {
       return {
         messages: [
           {
@@ -743,7 +751,12 @@ export class AC implements AppController {
         ],
       };
     }
-    return fn({ value });
+    let result = validateValue(schema, value);
+    if (result.messages || !schema.validationFn) {
+      return result;
+    }
+    const fd = this.getFn(schema.validationFn, 'value');
+    return (fd.fn as ValueValidationFn)({ value });
   }
 
   validateType(valueType: ValueType, textValue: string): ValueValidationResult {

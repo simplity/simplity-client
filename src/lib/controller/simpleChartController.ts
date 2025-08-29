@@ -7,7 +7,7 @@ import {
 } from 'simplity-types';
 import { ChartElement } from '../html/chartElement';
 
-export class CC implements ChartController {
+export class SimpleChartController implements ChartController {
   private data: Vo[] = [];
   public readonly name;
   public readonly type = 'chart';

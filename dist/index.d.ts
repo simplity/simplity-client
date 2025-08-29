@@ -8,3 +8,4 @@ export * from './lib/html/pageElement';
 export * from './lib/html/rangeElement';
 export * from './lib/html/tableEditorElement';
 export * from './lib/html/tableViewerElement';
+export * from './lib/validation/validation';

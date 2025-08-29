@@ -1,4 +1,4 @@
-import { AppController, AppView, PageController, PageView, ClientRuntime } from 'simplity-types';
+import { AppController, AppView, PageController, PageView, AppRuntime } from 'simplity-types';
 /**
  * utility to create controllers
  */
@@ -27,15 +27,15 @@ export declare const app: {
         /**
          * value is required
          */
-        errorValueIsRequired: "A value is required";
+        errorValueIsRequired: string;
         /**
          * generic error message when validation fails and  no specific error id is specified
          */
-        errorInvalidValue: "This value is not valid";
+        errorInvalidValue: string;
         /**
          * general error message when reg-ex fails, and the value schema does not provide specific error
          */
-        errorSchemaIsMissing: "Unable to validate this field because a value schema by name ${1} is missing";
+        errorSchemaIsMissing: string;
     };
     /**
      * create an App Controller.
@@ -45,7 +45,7 @@ export declare const app: {
      * @param appView
      * @returns
      */
-    newAc: (runtime: ClientRuntime, appView: AppView) => AppController;
+    newAc: (runtime: AppRuntime, appView: AppView) => AppController;
     /**
      * To be invoked ONLY after createNew() is invoked. An error is thrown otherwise.
      * @returns current active instance

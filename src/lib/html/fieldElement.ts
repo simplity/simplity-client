@@ -3,7 +3,6 @@ import {
   DetailedMessage,
   FieldView,
   SimpleList,
-  systemResources,
   Value,
   FormController,
   Values,
@@ -325,7 +324,7 @@ export class FieldElement extends BaseElement implements FieldView {
     if (!this.textValue) {
       this.value = '';
       if (this.field.isRequired) {
-        msgs = [this.createMessage(systemResources.messages._valueRequired)];
+        msgs = [this.createMessage('_valueRequired')];
       }
     } else {
       const vs = this.field.valueSchema;

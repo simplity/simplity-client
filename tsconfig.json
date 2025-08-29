@@ -5,6 +5,10 @@
     "outDir": "./dist/",
     "module": "ESNext",
     "target": "ESNext",
+    "baseUrl": "./src/lib/",
+    "paths": {
+      "@/*": ["*"]
+    },
     "moduleResolution": "bundler",
     "lib": ["ES2023", "DOM"],
     "forceConsistentCasingInFileNames": true,

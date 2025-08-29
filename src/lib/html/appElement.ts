@@ -2,7 +2,7 @@ import { LayoutElement } from './layoutElement';
 import {
   Alert,
   AppController,
-  ClientRuntime,
+  AppRuntime,
   AppView,
   Logger,
   NavigationOptions,
@@ -32,7 +32,7 @@ export class AppElement implements AppView {
    * @param runtime
    * @param appEle container element to which the app-view is to be appended to
    */
-  constructor(runtime: ClientRuntime, appEle: HTMLElement) {
+  constructor(runtime: AppRuntime, appEle: HTMLElement) {
     this.logger = loggerStub.getLogger();
     this.root = appEle;
 
