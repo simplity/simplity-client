@@ -1,4 +1,4 @@
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { serviceAgent } from '../agent/agent';
 import { util } from './util';
 import { app } from './app';

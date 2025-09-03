@@ -1,4 +1,4 @@
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import {
   AppRuntime,
   AppController,

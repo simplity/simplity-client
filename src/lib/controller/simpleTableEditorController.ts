@@ -9,7 +9,7 @@ import {
   Values,
   Vo,
 } from 'simplity-types';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { FC } from './formController';
 
 const logger = loggerStub.getLogger();
@@ -17,7 +17,7 @@ const logger = loggerStub.getLogger();
 /**
  * controls a tabular data (rows and columns)
  */
-export class TEC implements TableEditorController {
+export class SimpleTableEditorController implements TableEditorController {
   public readonly type = 'grid';
   public readonly name: string;
   public readonly ac: AppController;

@@ -1,4 +1,4 @@
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { FC } from './formController';
 import { app } from './app';
 const logger = loggerStub.getLogger();
@@ -289,7 +289,7 @@ export class PC {
                     return undefined;
                 }
                 if (c.type !== 'form') {
-                    logger.error(`No value could be determined for field '${qualifiedName}' because the sub-form '${part}' is of type '${c.type}'. SUb forms must be of type 'form'`);
+                    logger.error(`No value could be determined for field '${qualifiedName}' because the sub-form '${part}' is of type '${c.type}'. Sub forms must be of type 'form'`);
                     return undefined;
                 }
                 fc = c;

@@ -1,4 +1,4 @@
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 const logger = loggerStub.getLogger();
 const MAX_ROWS = 'maxRows';
 const FILTERS = 'filters';

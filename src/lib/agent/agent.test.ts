@@ -4,11 +4,10 @@ import {
   AgentConfigData,
   Service,
   ServiceResponse,
-  STATUS_DESCRIPTIONS,
   ServerRequest,
   ServerResponse,
 } from 'simplity-types';
-import { serviceAgent } from './agent';
+import { serviceAgent, STATUS_DESCRIPTIONS } from './agent';
 
 const serverServices: StringMap<Service> = {
   service2: getService('service2', 'server'),

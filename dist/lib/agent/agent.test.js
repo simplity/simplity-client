@@ -1,6 +1,5 @@
 import { describe, expect, it, test } from '@jest/globals';
-import { STATUS_DESCRIPTIONS, } from 'simplity-types';
-import { serviceAgent } from './agent';
+import { serviceAgent, STATUS_DESCRIPTIONS } from './agent';
 const serverServices = {
     service2: getService('service2', 'server'),
     service4: getService('service4', 'server'),

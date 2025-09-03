@@ -10,7 +10,7 @@ import {
   Values,
   Vo,
 } from 'simplity-types';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { FC } from './formController';
 import { ReportConfigurator } from './reportConfigurator';
 
@@ -19,7 +19,7 @@ const logger = loggerStub.getLogger();
 /**
  * controls a tabular data (rows and columns)
  */
-export class TWC implements TableViewerController {
+export class SimpleTableViewerController implements TableViewerController {
   public readonly type = 'table';
   public readonly name: string;
   public readonly ac: AppController;

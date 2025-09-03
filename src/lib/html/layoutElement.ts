@@ -9,7 +9,7 @@ import {
 } from 'simplity-types';
 import { PageElement } from './pageElement';
 import { app } from '../controller/app';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { ChildElementId, htmlUtil } from './htmlUtil';
 import { ModuleElement } from './moduleElement';
 

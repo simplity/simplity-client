@@ -1,5 +1,5 @@
 import { app } from '../controller/app';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 /**
  * display states that are designed by simplity
  */

@@ -1,6 +1,6 @@
 import { PageElement } from './pageElement';
 import { app } from '../controller/app';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { htmlUtil } from './htmlUtil';
 import { ModuleElement } from './moduleElement';
 const PAGE_TITLE = 'page-title';

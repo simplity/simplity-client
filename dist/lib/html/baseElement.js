@@ -1,4 +1,4 @@
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { app } from '../controller/app';
 import { htmlUtil } from './htmlUtil';
 const DEFAULT_WIDTH = 4;

@@ -1,4 +1,4 @@
-import { loggerStub } from './logger-stub/logger';
+import { loggerStub } from './loggerStub/logger';
 import { AppElement } from './html/appElement';
 import { app } from './controller/app';
 import { parseValue } from './validation/validation';

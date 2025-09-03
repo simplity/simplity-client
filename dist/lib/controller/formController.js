@@ -1,7 +1,7 @@
-import { loggerStub } from '../logger-stub/logger';
-import { TEC } from './TableEditorController';
-import { CC } from './chartController';
-import { TWC } from './tableViewerController';
+import { loggerStub } from '../loggerStub/logger';
+import { SimpleTableEditorController } from './simpleTableEditorController';
+import { SimpleChartController } from './simpleChartController';
+import { SimpleTableViewerController } from './simpleTableViewerController';
 const logger = loggerStub.getLogger();
 /**
  * controls a row in a table or the root fields in a page.
@@ -198,14 +198,14 @@ export class FC {
     newTableViewerController(view) {
         const name = view.name;
         this.checkName(name);
-        const controller = new TWC(this, view);
+        const controller = new SimpleTableViewerController(this, view);
         this.controllers[name] = controller;
         return controller;
     }
     newTableEditorController(view) {
         const name = view.name;
         this.checkName(name);
-        const controller = new TEC(this, view);
+        const controller = new SimpleTableEditorController(this, view);
         this.controllers[name] = controller;
         return controller;
     }
@@ -217,7 +217,7 @@ export class FC {
     }
     newChartController(view) {
         this.checkName(view.name);
-        const controller = new CC(this, view);
+        const controller = new SimpleChartController(this, view);
         this.controllers[view.name] = controller;
         return controller;
     }

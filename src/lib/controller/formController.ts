@@ -25,10 +25,10 @@ import {
   Vo,
 } from 'simplity-types';
 import { ChartElement } from '../html/chartElement';
-import { loggerStub } from '../logger-stub/logger';
-import { TEC } from './TEC';
+import { loggerStub } from '../loggerStub/logger';
+import { SimpleTableEditorController } from './simpleTableEditorController';
 import { SimpleChartController } from './simpleChartController';
-import { TWC } from './tableViewerController';
+import { SimpleTableViewerController } from './simpleTableViewerController';
 
 const logger = loggerStub.getLogger();
 
@@ -264,7 +264,7 @@ export class FC implements FormController {
   newTableViewerController(view: TableViewerView): TableViewerController {
     const name = view.name;
     this.checkName(name);
-    const controller = new TWC(this, view);
+    const controller = new SimpleTableViewerController(this, view);
     this.controllers[name] = controller;
     return controller;
   }
@@ -272,7 +272,7 @@ export class FC implements FormController {
   newTableEditorController(view: TableEditorView): TableEditorController {
     const name = view.name;
     this.checkName(name);
-    const controller = new TEC(this, view);
+    const controller = new SimpleTableEditorController(this, view);
     this.controllers[name] = controller;
     return controller;
   }

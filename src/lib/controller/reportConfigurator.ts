@@ -19,7 +19,7 @@ import {
   Vo,
 } from 'simplity-types';
 
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 const logger = loggerStub.getLogger();
 type FieldRow = { seqNo?: number; field: string; label: string };
 const MAX_ROWS = 'maxRows';

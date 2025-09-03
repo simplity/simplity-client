@@ -10,7 +10,7 @@ import {
   StringMap,
 } from 'simplity-types';
 import { app } from '../controller/app';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { ChildElementId, htmlUtil } from './htmlUtil';
 import { PageElement } from './pageElement';
 

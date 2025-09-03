@@ -1,4 +1,4 @@
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import {
   NavigationAction,
   FormAction,
@@ -411,7 +411,7 @@ export class PC implements PageController {
         }
         if (c.type !== 'form') {
           logger.error(
-            `No value could be determined for field '${qualifiedName}' because the sub-form '${part}' is of type '${c.type}'. SUb forms must be of type 'form'`
+            `No value could be determined for field '${qualifiedName}' because the sub-form '${part}' is of type '${c.type}'. Sub forms must be of type 'form'`
           );
           return undefined;
         }

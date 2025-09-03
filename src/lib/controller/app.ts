@@ -6,7 +6,7 @@ import {
   AppRuntime,
 } from 'simplity-types';
 import { PC } from './pageController';
-import { loggerStub } from '../logger-stub/logger';
+import { loggerStub } from '../loggerStub/logger';
 import { AC } from './appController';
 import { util } from './util';
 
