@@ -1,5 +1,7 @@
-import { describe, expect, it, test } from '@jest/globals';
-import { serviceAgent, STATUS_DESCRIPTIONS } from './agent';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const globals_1 = require("@jest/globals");
+const agent_1 = require("./agent");
 const serverServices = {
     service2: getService('service2', 'server'),
     service4: getService('service4', 'server'),
@@ -16,7 +18,7 @@ function getService(service, source) {
     return ( /* data: Vo | undefined */) => {
         return {
             status: 'completed',
-            description: STATUS_DESCRIPTIONS['completed'],
+            description: agent_1.STATUS_DESCRIPTIONS['completed'],
             data: { service, source },
         };
     };
@@ -148,33 +150,33 @@ describe('Session Management', () => {
 });
 */
 function testSessionManagement() {
-    describe('Locating Server', () => {
-        const agent = serviceAgent.newAgent(config2);
-        it('should succeed when serverUrl is not set but a local service is  available', async () => {
+    (0, globals_1.describe)('Locating Server', () => {
+        const agent = agent_1.serviceAgent.newAgent(config2);
+        (0, globals_1.it)('should succeed when serverUrl is not set but a local service is  available', async () => {
             const resp = await agent.serve('service1');
-            expect(resp.status).toBe('completed');
+            (0, globals_1.expect)(resp.status).toBe('completed');
         });
-        it('should set status to noServer when the service requires access to server', async () => {
+        (0, globals_1.it)('should set status to noServer when the service requires access to server', async () => {
             const resp = await agent.serve('service12345');
-            expect(resp.status).toBe('noServer');
+            (0, globals_1.expect)(resp.status).toBe('noServer');
         });
     });
-    describe('Communication Error Handling', () => {
-        const agent = serviceAgent.newAgent(config1);
-        it('should set status to communicationError when there is an error while communicating with the server', async () => {
+    (0, globals_1.describe)('Communication Error Handling', () => {
+        const agent = agent_1.serviceAgent.newAgent(config1);
+        (0, globals_1.it)('should set status to communicationError when there is an error while communicating with the server', async () => {
             const resp = await agent.serve('errorService');
-            expect(resp.status).toBe('communicationError');
+            (0, globals_1.expect)(resp.status).toBe('communicationError');
         });
     });
 }
 function testServe() {
-    describe('serve', () => {
-        const agent = serviceAgent.newAgent(config1);
-        test.each(getResponseCases)('$desc', async ({ service, source }) => {
+    (0, globals_1.describe)('serve', () => {
+        const agent = agent_1.serviceAgent.newAgent(config1);
+        globals_1.test.each(getResponseCases)('$desc', async ({ service, source }) => {
             const resp = await agent.serve(service);
-            expect(resp.status).toBe('completed');
-            expect(resp.data?.service).toBe(service);
-            expect(resp.data?.source).toBe(source);
+            (0, globals_1.expect)(resp.status).toBe('completed');
+            (0, globals_1.expect)(resp.data?.service).toBe(service);
+            (0, globals_1.expect)(resp.data?.source).toBe(source);
         });
     });
 }
@@ -183,7 +185,7 @@ function testAll() {
     testServe();
 }
 /// actual testing code here
-describe('Server Agent', () => {
+(0, globals_1.describe)('Server Agent', () => {
     testAll();
 });
 //# sourceMappingURL=agent.test.js.map

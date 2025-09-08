@@ -1,6 +1,10 @@
-import { BaseElement } from './baseElement';
-import { htmlUtil } from './htmlUtil';
-import { parseValue } from '../validation/validation';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FieldElement = void 0;
+const baseElement_1 = require("./baseElement");
+const htmlUtil_1 = require("./htmlUtil");
+const validation_1 = require("../validation/validation");
+const app_1 = require("../controller/app");
 function getTemplateName(field) {
     const ras = field.renderAs;
     if (!ras) {
@@ -19,68 +23,53 @@ function getTemplateName(field) {
  * Input fields allow the user to enter/alter the value.
  * This is the base class for all the fields.
  */
-export class FieldElement extends BaseElement {
-    field;
-    /**
-     * we have implemented only HTMl client as of now.
-     * value being string fits that quite well.
-     *
-     * only check-box requires a boolean as of now.
-     * Once we implement date-pickers, we may change our mind!!!
-     * Also, the last thing we want the end-user to see in a text-field is '#undefined'
-     */
-    textValue = '';
-    /**
-     * value as seen by the external world.
-     * It contains either a valid value, or an empty string.
-     * if the entered value is invalid, say a numeric field has a textValue of "abcd", this field is ""
-     * this approach is to avoid having undefined as a value.
-     */
-    value = '';
-    valueIsValid = true;
-    /**
-     * '' if this field is valid.
-     */
-    errorMessage = '';
-    /**
-     * used only to temporarily hide the field.
-     * permanently hidden fields are never rendered.
-     */
-    //private isHidden: boolean = false;
-    /**
-     * temporarily disabled. disabled fields should not be rendered as input fields
-     */
-    isDisabled = false;
-    /**
-     * 0-based row number, in case this field is rendered as a column in a table-row
-     */
-    //private rowId = -1;
-    //private isColumn = false;
-    /**
-     * relevant if this field has a drop-down list associated with it.
-     * fds ensures that this list has the right value always
-     */
-    list = [];
-    /**
-     * true if this is an editable field that requires validation.
-     * output field and check-box do not require validation
-     */
-    //private requiresValidation: boolean = true;
-    /**
-     * instantiated only for input fields.
-     */
-    errorEle;
-    fieldRendering;
-    /**
-     * super.fieldEle is optional. Asserted value set to this local attribute for convenience
-     */
-    fldEle;
+class FieldElement extends baseElement_1.BaseElement {
     /**
      * to be called from the concrete class after rendering itself in the constructor
      */
     constructor(fc, field, maxWidth, initialValue) {
         super(fc, field, getTemplateName(field), maxWidth);
         this.field = field;
+        /**
+         * we have implemented only HTMl client as of now.
+         * value being string fits that quite well.
+         *
+         * only check-box requires a boolean as of now.
+         * Once we implement date-pickers, we may change our mind!!!
+         * Also, the last thing we want the end-user to see in a text-field is '#undefined'
+         */
+        this.textValue = '';
+        /**
+         * value as seen by the external world.
+         * It contains either a valid value, or an empty string.
+         * if the entered value is invalid, say a numeric field has a textValue of "abcd", this field is ""
+         * this approach is to avoid having undefined as a value.
+         */
+        this.value = '';
+        this.valueIsValid = true;
+        /**
+         * '' if this field is valid.
+         */
+        this.errorMessage = '';
+        /**
+         * used only to temporarily hide the field.
+         * permanently hidden fields are never rendered.
+         */
+        //private isHidden: boolean = false;
+        /**
+         * temporarily disabled. disabled fields should not be rendered as input fields
+         */
+        this.isDisabled = false;
+        /**
+         * 0-based row number, in case this field is rendered as a column in a table-row
+         */
+        //private rowId = -1;
+        //private isColumn = false;
+        /**
+         * relevant if this field has a drop-down list associated with it.
+         * fds ensures that this list has the right value always
+         */
+        this.list = [];
         if (!this.fieldEle) {
             throw new Error(`HTML template :'${getTemplateName(field)}' - data-id="field" missing for the target element for the field. e.g. <input data-id="field"...../>`);
         }
@@ -100,7 +89,7 @@ export class FieldElement extends BaseElement {
             this.labelEle = undefined;
         }
         this.fldEle.setAttribute('name', field.name);
-        this.errorEle = htmlUtil.getOptionalElement(this.root, 'error');
+        this.errorEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'error');
         this.wireEvents();
         if (field.listOptions) {
             this.setList(field.listOptions);
@@ -167,7 +156,7 @@ export class FieldElement extends BaseElement {
         this.fldEle.innerHTML = value;
         if (markups) {
             for (const [attr, v] of markups) {
-                htmlUtil.setViewState(this.fldEle, attr, v);
+                htmlUtil_1.htmlUtil.setViewState(this.fldEle, attr, v);
             }
         }
     }
@@ -262,7 +251,7 @@ export class FieldElement extends BaseElement {
         if (!this.textValue) {
             this.value = '';
             if (this.field.isRequired) {
-                msgs = [this.createMessage('_valueRequired')];
+                msgs = [this.createMessage(app_1.app.Conventions.messageIds.valueIsRequired)];
             }
         }
         else {
@@ -308,7 +297,7 @@ export class FieldElement extends BaseElement {
         if (!text) {
             return undefined;
         }
-        return parseValue(text, this.field.valueType);
+        return (0, validation_1.parseValue)(text, this.field.valueType);
     }
     getValue() {
         return this.value;
@@ -354,7 +343,7 @@ export class FieldElement extends BaseElement {
      */
     setList(list) {
         this.list = list;
-        htmlUtil.removeChildren(this.fldEle);
+        htmlUtil_1.htmlUtil.removeChildren(this.fldEle);
         this.setEmpty(true);
         if (!list || list.length === 0) {
             /**
@@ -412,7 +401,7 @@ export class FieldElement extends BaseElement {
         }
     }
     setEmpty(isEmpty) {
-        htmlUtil.setViewState(this.fldEle, 'empty', isEmpty);
+        htmlUtil_1.htmlUtil.setViewState(this.fldEle, 'empty', isEmpty);
     }
     able(enabled) {
         if (this.isDisabled === !enabled) {
@@ -439,9 +428,9 @@ export class FieldElement extends BaseElement {
             this.errorMessage = '';
             if (this.errorEle) {
                 this.errorEle.innerText = '';
-                htmlUtil.setViewState(this.errorEle, 'invalid', false);
+                htmlUtil_1.htmlUtil.setViewState(this.errorEle, 'invalid', false);
             }
-            htmlUtil.setViewState(this.fldEle, 'invalid', false);
+            htmlUtil_1.htmlUtil.setViewState(this.fldEle, 'invalid', false);
             return;
         }
         if (this.errorMessage) {
@@ -452,12 +441,12 @@ export class FieldElement extends BaseElement {
         }
         if (this.errorEle) {
             this.errorEle.innerText = text;
-            htmlUtil.setViewState(this.errorEle, 'invalid', true);
+            htmlUtil_1.htmlUtil.setViewState(this.errorEle, 'invalid', true);
         }
         else {
             this.logger.info(`field ${this.name} is invalid with an error message="${this.errorMessage}". The field rendering has no provision to show error message`);
         }
-        htmlUtil.setViewState(this.fldEle, 'invalid', true);
+        htmlUtil_1.htmlUtil.setViewState(this.fldEle, 'invalid', true);
     }
     /**
      * overriding to apply disabled and valid states to the right elements
@@ -468,19 +457,20 @@ export class FieldElement extends BaseElement {
         let setting = 'invalid';
         let val = settings[setting];
         if (val !== undefined) {
-            htmlUtil.setViewState(this.fldEle, setting, !!val);
+            htmlUtil_1.htmlUtil.setViewState(this.fldEle, setting, !!val);
             if (this.errorEle) {
-                htmlUtil.setViewState(this.errorEle, setting, !!val);
+                htmlUtil_1.htmlUtil.setViewState(this.errorEle, setting, !!val);
             }
             delete settings[setting];
         }
         setting = 'disabled';
         val = settings[setting];
         if (val !== undefined) {
-            htmlUtil.setViewState(this.root, setting, !!val);
+            htmlUtil_1.htmlUtil.setViewState(this.root, setting, !!val);
             delete settings[setting];
         }
         super.setDisplayState(settings);
     }
 }
+exports.FieldElement = FieldElement;
 //# sourceMappingURL=fieldElement.js.map

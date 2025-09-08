@@ -1,88 +1,59 @@
-import { BaseElement } from './baseElement';
-import { htmlUtil } from './htmlUtil';
-import { elementFactory } from './elementFactory';
-import { LeafElement } from './leafElement';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TableViewerElement = void 0;
+const baseElement_1 = require("./baseElement");
+const htmlUtil_1 = require("./htmlUtil");
+const elementFactory_1 = require("./elementFactory");
+const leafElement_1 = require("./leafElement");
 const ALIGN_RIGHT = ['align', 'right'];
-export class TableViewerElement extends BaseElement {
-    fc;
-    table;
-    twc;
-    /**
-     * components of this panel
-     */
-    tableEle;
-    configEle;
-    rowsEle;
-    headerRowEle;
-    dataRowEle;
-    headerCellEle;
-    dataCellEle;
-    allTrs = [];
-    /**
-     * how to render the column headers and column Values?
-     */
-    columnDetails;
-    /**
-     * populated if headerDetails is added. Else will remain empty
-     */
-    columnDetailsMap = {};
-    /**
-     * what features are enabled?
-     */
-    searchable;
-    sortable;
-    configurable;
-    /**
-     * for implementing search feature
-     */
-    searchEle;
-    searchInputEle;
-    lastSearched = '';
-    searchData = [];
-    hiddenRows = [];
-    /**
-     * for implementing sort feature
-     */
-    data;
-    /**
-     * thead elements mapped by column name
-     */
-    columnHeaders = {};
-    sortedOn = ''; //column on which  this table is sorted
-    sortedRows = [];
-    sortedAscending = false;
+class TableViewerElement extends baseElement_1.BaseElement {
     constructor(fc, table, maxWidth) {
         super(fc, table, 'table', maxWidth);
         this.fc = fc;
         this.table = table;
+        this.allTrs = [];
+        /**
+         * populated if headerDetails is added. Else will remain empty
+         */
+        this.columnDetailsMap = {};
+        this.lastSearched = '';
+        this.searchData = [];
+        this.hiddenRows = [];
+        /**
+         * thead elements mapped by column name
+         */
+        this.columnHeaders = {};
+        this.sortedOn = ''; //column on which  this table is sorted
+        this.sortedRows = [];
+        this.sortedAscending = false;
         this.sortable = !!table.sortable;
         this.searchable = !!table.searchable;
         this.configurable = !!table.configurable;
         /**
          * typically <Table>
          */
-        this.tableEle = htmlUtil.getChildElement(this.root, 'table');
+        this.tableEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'table');
         /**
          * typically <thead> -> <tr>
          */
-        this.headerRowEle = htmlUtil.getChildElement(this.root, 'header');
+        this.headerRowEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'header');
         /**
          * typically <tbody>
          */
-        this.rowsEle = htmlUtil.getChildElement(this.root, 'rows');
+        this.rowsEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'rows');
         /**
          * typically <tbody> -> <tr>
          */
-        this.dataRowEle = htmlUtil.getChildElement(this.root, 'row');
-        this.searchEle = htmlUtil.getOptionalElement(this.root, 'search');
-        this.configEle = htmlUtil.getOptionalElement(this.root, 'list-config');
+        this.dataRowEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'row');
+        this.searchEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'search');
+        this.configEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'list-config');
         /**
          * we expect the header row to have just one cell. We use that for cloning
          */
         let ele = this.headerRowEle.children[0];
         ele.remove();
         if (table.sortable) {
-            ele = htmlUtil.newHtmlElement('sortable-header');
+            ele = htmlUtil_1.htmlUtil.newHtmlElement('sortable-header');
         }
         this.headerCellEle = ele;
         /**
@@ -92,10 +63,10 @@ export class TableViewerElement extends BaseElement {
         this.dataCellEle.remove();
         this.dataRowEle.remove();
         if (this.table.onRowClick) {
-            htmlUtil.setViewState(this.tableEle, 'clickable', true);
+            htmlUtil_1.htmlUtil.setViewState(this.tableEle, 'clickable', true);
         }
         if (table.selectFieldName) {
-            htmlUtil.setViewState(this.tableEle, 'selectable', true);
+            htmlUtil_1.htmlUtil.setViewState(this.tableEle, 'selectable', true);
         }
         this.twc = this.fc.newTableViewerController(this);
         this.initSearch();
@@ -195,10 +166,10 @@ export class TableViewerElement extends BaseElement {
                 this.twc.cellClicked(idx, cd.onClick);
             });
         }
-        htmlUtil.appendText(td, value);
+        htmlUtil_1.htmlUtil.appendText(td, value);
         if (markups) {
             for (const [att, v] of markups) {
-                htmlUtil.setViewState(td, att, v);
+                htmlUtil_1.htmlUtil.setViewState(td, att, v);
             }
         }
         rowEle.appendChild(td);
@@ -209,7 +180,7 @@ export class TableViewerElement extends BaseElement {
     }
     addTdForComp(leafComp, rowEle) {
         const td = this.dataCellEle.cloneNode(true);
-        const ele = new LeafElement(undefined, leafComp, 0);
+        const ele = new leafElement_1.LeafElement(undefined, leafComp, 0);
         td.appendChild(ele.root);
         rowEle.appendChild(td);
     }
@@ -231,7 +202,7 @@ export class TableViewerElement extends BaseElement {
     }
     addTr(idx) {
         const ele = this.dataRowEle.cloneNode(true);
-        htmlUtil.setViewState(ele, 'idx', idx);
+        htmlUtil_1.htmlUtil.setViewState(ele, 'idx', idx);
         /**
          * Controller needs to know WHENEVER a row is clicked.
          * as a minimum, the controller has to track "current row"
@@ -246,15 +217,15 @@ export class TableViewerElement extends BaseElement {
         const ele = this.headerCellEle.cloneNode(true);
         this.columnHeaders[name] = ele;
         if (isNumeric) {
-            htmlUtil.setViewState(ele, 'align', 'right');
+            htmlUtil_1.htmlUtil.setViewState(ele, 'align', 'right');
         }
         if (this.sortable) {
             ele.addEventListener('click', () => {
                 this.sort(name);
             });
         }
-        const labelEle = htmlUtil.getOptionalElement(ele, 'label') || ele;
-        htmlUtil.appendText(labelEle, label);
+        const labelEle = htmlUtil_1.htmlUtil.getOptionalElement(ele, 'label') || ele;
+        htmlUtil_1.htmlUtil.appendText(labelEle, label);
         this.headerRowEle.appendChild(ele);
         return ele;
     }
@@ -280,7 +251,7 @@ export class TableViewerElement extends BaseElement {
                 allCols.push({
                     name,
                     valueType: typeof value === 'number' ? 'integer' : 'text',
-                    label: htmlUtil.toLabel(name),
+                    label: htmlUtil_1.htmlUtil.toLabel(name),
                 });
             }
         }
@@ -314,7 +285,7 @@ export class TableViewerElement extends BaseElement {
             return;
         }
         const { panel, fc } = this.twc.createConfig();
-        const configEle = elementFactory.newElement(fc, panel, this.maxWidth);
+        const configEle = elementFactory_1.elementFactory.newElement(fc, panel, this.maxWidth);
         this.configEle.appendChild(configEle.root);
         this.twc.configRendered();
         return;
@@ -426,13 +397,13 @@ export class TableViewerElement extends BaseElement {
         if (this.sortedOn === column) {
             this.reverseRows();
             this.sortedAscending = !this.sortedAscending;
-            htmlUtil.setViewState(th, 'sorted', this.sortedAscending ? 'asc' : 'desc');
+            htmlUtil_1.htmlUtil.setViewState(th, 'sorted', this.sortedAscending ? 'asc' : 'desc');
         }
         else {
             if (this.sortedOn) {
                 this.columnHeaders[this.sortedOn].removeAttribute('data-sorted');
             }
-            htmlUtil.setViewState(th, 'sorted', 'asc');
+            htmlUtil_1.htmlUtil.setViewState(th, 'sorted', 'asc');
             this.sortedAscending = true;
             this.sortRows(column);
         }
@@ -467,4 +438,5 @@ export class TableViewerElement extends BaseElement {
         });
     }
 }
+exports.TableViewerElement = TableViewerElement;
 //# sourceMappingURL=tableViewerElement.js.map

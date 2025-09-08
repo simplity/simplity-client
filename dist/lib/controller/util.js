@@ -1,4 +1,7 @@
-export const util = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.util = void 0;
+exports.util = {
     /**
      * get effective style for an component based on various parameters
      * @param defaultStyle decided by the component design

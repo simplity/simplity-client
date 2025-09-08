@@ -1,50 +1,14 @@
-import { loggerStub } from '../loggerStub/logger';
-import { FC } from './formController';
-import { ReportConfigurator } from './reportConfigurator';
-const logger = loggerStub.getLogger();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TableInfo = exports.SimpleTableViewerController = void 0;
+const logger_1 = require("../loggerStub/logger");
+const formController_1 = require("./formController");
+const reportConfigurator_1 = require("./reportConfigurator");
+const logger = logger_1.loggerStub.getLogger();
 /**
  * controls a tabular data (rows and columns)
  */
-export class SimpleTableViewerController {
-    fc;
-    type = 'table';
-    name;
-    ac;
-    pc;
-    /**
-     * met-data of the table panel
-     */
-    table;
-    /**
-     * viw-component instance associated with this table (e.g. angular component)
-     */
-    view;
-    /**
-     * form on which this table is based. It is usually provided, but not mandatory.
-     */
-    form;
-    /**
-     * additional information about this table, some of which may change during user interaction.
-     * designed to be shared with the view-component for ease of rendering
-     */
-    info;
-    /**
-     * data behind this view-component
-     * this is THE MODEL that this controller is controlling
-     * since the view is for readonly, the data is not modified
-     * however, if selection is enables, this additional column is added to the data
-     *
-     */
-    data = [];
-    /**
-     * list config instance if it is rendered for this table
-     */
-    reportConfigurator;
-    /**
-     * selected columns, if user has chosen a subset of columns
-     */
-    selectedNames;
-    currentIdx = -1;
+class SimpleTableViewerController {
     /**
      * important to note that this constructor is called from the constructor of tableView.
      * TableView MAY NOT be rendered fully. Hence instance of tableView should not be used to invoke any of its methods inside this constructor
@@ -53,6 +17,16 @@ export class SimpleTableViewerController {
      */
     constructor(fc, view) {
         this.fc = fc;
+        this.type = 'table';
+        /**
+         * data behind this view-component
+         * this is THE MODEL that this controller is controlling
+         * since the view is for readonly, the data is not modified
+         * however, if selection is enables, this additional column is added to the data
+         *
+         */
+        this.data = [];
+        this.currentIdx = -1;
         this.name = view.name;
         this.pc = fc.pc;
         this.ac = this.pc.ac;
@@ -82,9 +56,9 @@ export class SimpleTableViewerController {
         if (panel && panel.childFormName) {
             form = this.ac.getForm(panel.childFormName);
         }
-        const fc = new FC(this.name + 'Config', this.pc, form);
+        const fc = new formController_1.FC(this.name + 'Config', this.pc, form);
         if (!panel) {
-            this.reportConfigurator = new ReportConfigurator(fc, this, this.table);
+            this.reportConfigurator = new reportConfigurator_1.ReportConfigurator(fc, this, this.table);
             panel = this.reportConfigurator.getConfigPanel();
         }
         return { panel, fc };
@@ -209,60 +183,56 @@ export class SimpleTableViewerController {
         return false;
     }
 }
-export class TableInfo {
-    /**
-     * column names that are to be rendered.
-     * first column could be the check-bax for selecting the row
-     */
-    columnNames = [];
-    /**
-     * labels for the columns to be rendered.
-     */
-    columnLabels = [];
-    /**
-     * row is clickable if selection is allowed ii onRowCLick action is set
-     */
-    rowIsClickable = false;
-    /**
-     * name of the column mapped to selection status of a row.
-     * relevant only if this table is used for selecting rows
-     */
-    selectColumn;
-    /**
-     * minimum number of rows to be selected. 0 if no such restrictions
-     */
-    minRows = 0;
-    /**
-     * maximum rows to be selected. 0 when no such restriction exists
-     */
-    maxRows = 0;
-    /**
-     * total number of rows in this table
-     */
-    totalRows = 0;
-    /**
-     * may be used by the view-component to show this.
-     */
-    nbrSelected = 0;
-    /**
-     * could be used by the view-component to highlight it
-     */
-    currentRowIdx = 0;
-    /**
-     * true there is at least one row in the table, and all rows are selected.
-     * false if table has no rows or at least one row not selected
-     */
-    allSelected = false;
-    /**
-     * true if at least one row is selected AND at least one is not selected.
-     * false if there are no rows, or all rows are selected, or no rows are selected
-     */
-    someSelected = false;
-    /**
-     * whether the row is selected or not
-     */
-    rowSelections = [];
+exports.SimpleTableViewerController = SimpleTableViewerController;
+class TableInfo {
     constructor(meta) {
+        /**
+         * column names that are to be rendered.
+         * first column could be the check-bax for selecting the row
+         */
+        this.columnNames = [];
+        /**
+         * labels for the columns to be rendered.
+         */
+        this.columnLabels = [];
+        /**
+         * row is clickable if selection is allowed ii onRowCLick action is set
+         */
+        this.rowIsClickable = false;
+        /**
+         * minimum number of rows to be selected. 0 if no such restrictions
+         */
+        this.minRows = 0;
+        /**
+         * maximum rows to be selected. 0 when no such restriction exists
+         */
+        this.maxRows = 0;
+        /**
+         * total number of rows in this table
+         */
+        this.totalRows = 0;
+        /**
+         * may be used by the view-component to show this.
+         */
+        this.nbrSelected = 0;
+        /**
+         * could be used by the view-component to highlight it
+         */
+        this.currentRowIdx = 0;
+        /**
+         * true there is at least one row in the table, and all rows are selected.
+         * false if table has no rows or at least one row not selected
+         */
+        this.allSelected = false;
+        /**
+         * true if at least one row is selected AND at least one is not selected.
+         * false if there are no rows, or all rows are selected, or no rows are selected
+         */
+        this.someSelected = false;
+        /**
+         * whether the row is selected or not
+         */
+        this.rowSelections = [];
         this.minRows = meta.minRows || 0;
         this.maxRows = meta.maxRows || 9999;
         if (meta.selectFieldName) {
@@ -350,4 +320,5 @@ export class TableInfo {
         this.currentRowIdx = 0;
     }
 }
+exports.TableInfo = TableInfo;
 //# sourceMappingURL=simpleTableViewerController.js.map

@@ -1,8 +1,11 @@
-import { loggerStub } from './loggerStub/logger';
-import { AppElement } from './html/appElement';
-import { app } from './controller/app';
-import { parseValue } from './validation/validation';
-export const simplityClient = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.simplityClient = void 0;
+const logger_1 = require("./loggerStub/logger");
+const appElement_1 = require("./html/appElement");
+const app_1 = require("./controller/app");
+const validation_1 = require("./validation/validation");
+exports.simplityClient = {
     /**
      * Simplity uses the console as the default device to log to.
      * a call to setLogger(0 would change to the supplied API.
@@ -10,7 +13,7 @@ export const simplityClient = {
      * @returns current logger
      */
     getLogger: () => {
-        return loggerStub.getLogger();
+        return logger_1.loggerStub.getLogger();
     },
     /**
      * change the device/API to which the logs are written.
@@ -20,10 +23,10 @@ export const simplityClient = {
      */
     setLogger: (logger) => {
         if (logger) {
-            loggerStub.connectLogger(logger);
+            logger_1.loggerStub.connectLogger(logger);
         }
         else {
-            loggerStub.swallowAll();
+            logger_1.loggerStub.swallowAll();
         }
         return;
     },
@@ -34,8 +37,8 @@ export const simplityClient = {
      * @returns
      */
     startHtmlClient: (runtime, root) => {
-        new AppElement(runtime, root);
-        return app.getCurrentAc();
+        new appElement_1.AppElement(runtime, root);
+        return app_1.app.getCurrentAc();
     },
     /**
      * parse a text value as per given value-type. e.g
@@ -43,6 +46,6 @@ export const simplityClient = {
      * @param valueType
      * @returns value if it is of the right type, undefined otherwise
      */
-    parseValue,
+    parseValue: validation_1.parseValue,
 };
 //# sourceMappingURL=simplityClient.js.map

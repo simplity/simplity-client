@@ -1,5 +1,8 @@
-import { loggerStub } from '../loggerStub/logger';
-const logger = loggerStub.getLogger();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportConfigurator = void 0;
+const logger_1 = require("../loggerStub/logger");
+const logger = logger_1.loggerStub.getLogger();
 const MAX_ROWS = 'maxRows';
 const FILTERS = 'filters';
 const FIELD_SEQUENCES = 'fieldSequences';
@@ -31,25 +34,7 @@ const COMPARATORS = [
  *
  * NOTE: We considered "deep-copy" for cloning, but that requires additional code that is not really worth while
  */
-export class ReportConfigurator {
-    fc;
-    twc;
-    table;
-    name;
-    allFieldNames = [];
-    fieldsList = [];
-    /**
-     * labels for all the fields
-     */
-    labels = {};
-    pc;
-    allSettings = {};
-    /**
-     * Controller of field sequencing. The underlying data structure for this table is non-standard.
-     * While the table as seqNo and name, and label as fields, the underlying data is an array of field names
-     * Hence we need tp pre and posy process the underlying data
-     */
-    fieldSeqController;
+class ReportConfigurator {
     constructor(
     /**
      * controller for this settings panel
@@ -62,6 +47,13 @@ export class ReportConfigurator {
         this.fc = fc;
         this.twc = twc;
         this.table = table;
+        this.allFieldNames = [];
+        this.fieldsList = [];
+        /**
+         * labels for all the fields
+         */
+        this.labels = {};
+        this.allSettings = {};
         this.pc = this.twc.pc;
         this.name = table.name;
         this.setFieldsAndLabels();
@@ -370,6 +362,7 @@ export class ReportConfigurator {
         return panel;
     }
 }
+exports.ReportConfigurator = ReportConfigurator;
 function arrangeFields(fields) {
     fields.sort((a, b) => {
         const s1 = a.seqNo;

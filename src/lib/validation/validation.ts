@@ -126,7 +126,7 @@ function validateText(
   schema: TextSchema,
   value: string
 ): ValueValidationResult {
-  const min = schema.maxLength || 0;
+  const min = schema.minLength || 0;
   const max = schema.maxLength || DEFAULT_MAX_CHARS;
   const len = value.length;
   if (len < min) {

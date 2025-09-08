@@ -744,7 +744,7 @@ export class AC implements AppController {
       return {
         messages: [
           {
-            messageId: app.Conventions.errorSchemaIsMissing,
+            messageId: app.Conventions.messageIds.schemaIsMissing,
             alertType: 'error',
             params: [schemaName],
           },

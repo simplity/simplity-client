@@ -1,39 +1,13 @@
-import { loggerStub } from '../loggerStub/logger';
-import { FC } from './formController';
-const logger = loggerStub.getLogger();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SimpleTableEditorController = void 0;
+const logger_1 = require("../loggerStub/logger");
+const formController_1 = require("./formController");
+const logger = logger_1.loggerStub.getLogger();
 /**
  * controls a tabular data (rows and columns)
  */
-export class SimpleTableEditorController {
-    fc;
-    type = 'grid';
-    name;
-    ac;
-    pc;
-    /**
-     * form on which this table is based. It is usually provided, but not mandatory.
-     */
-    form;
-    /**
-     * met-data of the table panel
-     */
-    table;
-    /**
-     * viw-component instance associated with this table (e.g. angular component)
-     */
-    view;
-    /**
-     * data behind this view-component
-     * this is THE MODEL that this controller is controlling
-     * since the view is for readonly, the data is not modified
-     * however, if selection is enables, this additional column is added to the data
-     *
-     */
-    data = [];
-    /**
-     * data controllers, one per row, but only if this is an editable table
-     */
-    controllers = [];
+class SimpleTableEditorController {
     /**
      * important to note that this constructor is called from the constructor of tableView.
      * TableView MAY NOPT be rendered fully. Hence instance of tableView should not be used to invoke any of its methods inside this constructor
@@ -42,6 +16,19 @@ export class SimpleTableEditorController {
      */
     constructor(fc, view) {
         this.fc = fc;
+        this.type = 'grid';
+        /**
+         * data behind this view-component
+         * this is THE MODEL that this controller is controlling
+         * since the view is for readonly, the data is not modified
+         * however, if selection is enables, this additional column is added to the data
+         *
+         */
+        this.data = [];
+        /**
+         * data controllers, one per row, but only if this is an editable table
+         */
+        this.controllers = [];
         this.name = view.name;
         this.pc = fc.pc;
         this.ac = this.pc.ac;
@@ -97,7 +84,7 @@ export class SimpleTableEditorController {
     }
     doAppend(idx, row) {
         const name = this.name + '_' + idx;
-        const fc = new FC(name, this.pc, this.form, row);
+        const fc = new formController_1.FC(name, this.pc, this.form, row);
         this.controllers.push(fc);
         this.view.appendRow(fc, idx, row);
         fc.formRendered();
@@ -198,4 +185,5 @@ export class SimpleTableEditorController {
         throw new Error('Method not implemented.');
     }
 }
+exports.SimpleTableEditorController = SimpleTableEditorController;
 //# sourceMappingURL=simpleTableEditorController.js.map

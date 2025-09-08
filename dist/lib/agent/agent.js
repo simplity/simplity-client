@@ -1,4 +1,7 @@
-export const STATUS_DESCRIPTIONS = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.serviceAgent = exports.STATUS_DESCRIPTIONS = void 0;
+exports.STATUS_DESCRIPTIONS = {
     communicationError: 'An error was encountered while communicating with the server',
     completed: 'Completed with success',
     completedWithErrors: 'Completed, but there were errors',
@@ -13,7 +16,7 @@ export const STATUS_DESCRIPTIONS = {
 /*
  * utility to get an instance of a Service Agent
  */
-export const serviceAgent = {
+exports.serviceAgent = {
     /**
      *
      * @param configData
@@ -24,9 +27,6 @@ export const serviceAgent = {
     },
 };
 class SA {
-    responses;
-    localServices;
-    serverUrl;
     constructor(configData) {
         this.responses = configData.responses || {};
         this.localServices = configData.localServices || {};
@@ -56,7 +56,7 @@ class SA {
             req.data = data;
         }
         let status = 'noServer';
-        let description = STATUS_DESCRIPTIONS[status];
+        let description = exports.STATUS_DESCRIPTIONS[status];
         if (!this.serverUrl) {
             return {
                 status,

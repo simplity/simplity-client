@@ -1,18 +1,16 @@
-import { BaseElement } from './baseElement';
-import { elementFactory } from './elementFactory';
-import { htmlUtil } from './htmlUtil';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PanelElement = void 0;
+const baseElement_1 = require("./baseElement");
+const elementFactory_1 = require("./elementFactory");
+const htmlUtil_1 = require("./htmlUtil");
 function getTemplateName(panel) {
     if (panel.panelType) {
         return ('panel-' + panel.panelType);
     }
     return 'panel';
 }
-export class PanelElement extends BaseElement {
-    panel;
-    /**
-     * in case this panel is associated with a child-form
-     */
-    childFc;
+class PanelElement extends baseElement_1.BaseElement {
     constructor(fc, panel, maxWidth) {
         super(fc, panel, getTemplateName(panel), maxWidth);
         this.panel = panel;
@@ -42,9 +40,9 @@ export class PanelElement extends BaseElement {
         /**
          * render children
          */
-        const container = htmlUtil.getChildElement(this.root, 'container');
+        const container = htmlUtil_1.htmlUtil.getChildElement(this.root, 'container');
         for (const child of panel.children) {
-            const ele = elementFactory.newElement(fcForChildren, child, maxWidth);
+            const ele = elementFactory_1.elementFactory.newElement(fcForChildren, child, maxWidth);
             container.appendChild(ele.root);
         }
         if (this.childFc) {
@@ -52,4 +50,5 @@ export class PanelElement extends BaseElement {
         }
     }
 }
+exports.PanelElement = PanelElement;
 //# sourceMappingURL=panelElement.js.map

@@ -1,5 +1,8 @@
-import { app } from '../controller/app';
-import { loggerStub } from '../loggerStub/logger';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.htmlUtil = exports.childElementIds = exports.dataAttributeNames = exports.predefinedHtmlTemplates = void 0;
+const app_1 = require("../controller/app");
+const logger_1 = require("../loggerStub/logger");
 /**
  * display states that are designed by simplity
  */
@@ -66,7 +69,7 @@ const viewStates = {
 /**
  * to be used only by design-time utilities to check if all the required templates are supplied or not
  */
-export const predefinedHtmlTemplates = [
+exports.predefinedHtmlTemplates = [
     'button',
     'button-panel',
     'check-box',
@@ -105,8 +108,8 @@ export const predefinedHtmlTemplates = [
 /**
  * data-* attribute used by our app
  */
-export const dataAttributeNames = ['full', 'id'];
-export const childElementIds = [
+exports.dataAttributeNames = ['full', 'id'];
+exports.childElementIds = [
     'add-button',
     'buttons',
     'chart',
@@ -138,8 +141,8 @@ export const childElementIds = [
  * caching the templates that are already created
  */
 const allTemplates = {};
-const logger = loggerStub.getLogger();
-export const htmlUtil = {
+const logger = logger_1.loggerStub.getLogger();
+exports.htmlUtil = {
     /**
      * removes all children of an html element using child.remove() method
      */
@@ -234,7 +237,7 @@ function newHtmlElement(name) {
 function newElement(name) {
     let ele = allTemplates[name];
     if (!ele) {
-        let html = app.getCurrentAc().getHtml(name);
+        let html = app_1.app.getCurrentAc().getHtml(name);
         if (!html) {
             logger.warn(`A component requires an html-template named "${name}". This template is not available at run time. A dummy HTML is used.`);
             html = `<div><!-- html source ${name} not found --></div>`;
@@ -262,7 +265,7 @@ function appendText(ele, text) {
 function appendIcon(ele, icon, alt) {
     if (icon.endsWith('.html')) {
         const s = icon.substring(0, icon.length - 5);
-        const html = app.getCurrentAc().getHtml(s);
+        const html = app_1.app.getCurrentAc().getHtml(s);
         if (html) {
             ele.appendChild(toEle(html));
             return;
@@ -272,7 +275,7 @@ function appendIcon(ele, icon, alt) {
     }
     const img = document.createElement('img');
     img.alt = alt || '';
-    img.src = app.getCurrentAc().getImageSrc(icon);
+    img.src = app_1.app.getCurrentAc().getImageSrc(icon);
     ele.appendChild(img);
 }
 function toLabel(name) {

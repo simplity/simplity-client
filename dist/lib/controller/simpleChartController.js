@@ -1,14 +1,12 @@
-export class SimpleChartController {
-    fc;
-    view;
-    data = [];
-    name;
-    type = 'chart';
-    pc;
-    chart;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SimpleChartController = void 0;
+class SimpleChartController {
     constructor(fc, view) {
         this.fc = fc;
         this.view = view;
+        this.data = [];
+        this.type = 'chart';
         this.name = view.name;
         this.pc = fc.pc;
         this.chart = view.chart;
@@ -47,4 +45,5 @@ export class SimpleChartController {
         this.setData([]);
     }
 }
+exports.SimpleChartController = SimpleChartController;
 //# sourceMappingURL=simpleChartController.js.map

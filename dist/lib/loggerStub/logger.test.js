@@ -1,22 +1,24 @@
-import { describe, expect, it, jest } from '@jest/globals';
-import { loggerStub, nullLogger } from './logger';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const globals_1 = require("@jest/globals");
+const logger_1 = require("./logger");
 const methods = ['info', 'warn', 'error'];
 const expects = [['one'], [2], ['one', 'two']];
 function doTest(loggerImpl) {
     const spies = [];
     for (const method of methods) {
-        spies.push(jest.spyOn(loggerImpl, method));
+        spies.push(globals_1.jest.spyOn(loggerImpl, method));
     }
-    const logger = loggerStub.getLogger();
+    const logger = logger_1.loggerStub.getLogger();
     logger.info(expects[0][0]);
     logger.warn(expects[1][0]);
     logger.error(expects[2][0], expects[2][1]);
     for (let i = 0; i < 3; i++) {
-        expect(spies[i]).toBeCalledWith(expects[i]);
+        (0, globals_1.expect)(spies[i]).toBeCalledWith(expects[i]);
     }
 }
-describe('Logger Stub', () => {
-    it('should use the right output device', () => {
+(0, globals_1.describe)('Logger Stub', () => {
+    (0, globals_1.it)('should use the right output device', () => {
         doTest(console);
         const testLogger = {
             info() { },
@@ -24,14 +26,14 @@ describe('Logger Stub', () => {
             warn() { },
         };
         //doTest(console);
-        loggerStub.connectLogger(testLogger);
+        logger_1.loggerStub.connectLogger(testLogger);
         doTest(testLogger);
-        loggerStub.swallowAll();
-        doTest(nullLogger);
+        logger_1.loggerStub.swallowAll();
+        doTest(logger_1.nullLogger);
         //@ts-ignore
         global.console = undefined;
-        loggerStub.resetToDefault();
-        doTest(nullLogger);
+        logger_1.loggerStub.resetToDefault();
+        doTest(logger_1.nullLogger);
     });
 });
 //# sourceMappingURL=logger.test.js.map

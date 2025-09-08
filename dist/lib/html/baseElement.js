@@ -1,6 +1,9 @@
-import { loggerStub } from '../loggerStub/logger';
-import { app } from '../controller/app';
-import { htmlUtil } from './htmlUtil';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseElement = void 0;
+const logger_1 = require("../loggerStub/logger");
+const app_1 = require("../controller/app");
+const htmlUtil_1 = require("./htmlUtil");
 const DEFAULT_WIDTH = 4;
 /**
  * Base class to be extended by all view components
@@ -10,28 +13,7 @@ const DEFAULT_WIDTH = 4;
  *
  * click event is handled here, while change and changing is handled by the fieldElement
  */
-export class BaseElement {
-    fc;
-    comp;
-    maxWidth;
-    logger = loggerStub.getLogger();
-    /**
-     * for any initializers/plugins to save anything across their function invocation etc..
-     */
-    initInfo = {};
-    ac;
-    pc;
-    /**
-     * label, container and field are quite common, and it helps if they are set in the base-class itself, specifically for init operations.
-     */
-    fieldEle;
-    containerEle;
-    labelEle;
-    name;
-    /**
-     * root of the html element that this controller manages.
-     */
-    root;
+class BaseElement {
     /**
      *
      * @param table meta data for this view component
@@ -51,24 +33,29 @@ export class BaseElement {
         this.fc = fc;
         this.comp = comp;
         this.maxWidth = maxWidth;
+        this.logger = logger_1.loggerStub.getLogger();
+        /**
+         * for any initializers/plugins to save anything across their function invocation etc..
+         */
+        this.initInfo = {};
         this.name = comp.name;
         if (fc) {
             this.pc = fc.pc;
             this.ac = this.pc.ac;
         }
         else {
-            this.ac = app.getCurrentAc();
-            this.pc = app.getCurrentPc();
+            this.ac = app_1.app.getCurrentAc();
+            this.pc = app_1.app.getCurrentPc();
         }
         if (templateName === '') {
             this.root = document.createElement('div');
             return;
         }
         if (comp.templateName) {
-            this.root = htmlUtil.newCustomElement(comp.templateName);
+            this.root = htmlUtil_1.htmlUtil.newCustomElement(comp.templateName);
         }
         else {
-            this.root = htmlUtil.newHtmlElement(templateName);
+            this.root = htmlUtil_1.htmlUtil.newHtmlElement(templateName);
         }
         if (fc) {
             fc.registerChild(this);
@@ -76,10 +63,10 @@ export class BaseElement {
                 this.clicked();
             });
         }
-        this.containerEle = htmlUtil.getOptionalElement(this.root, 'container');
-        this.fieldEle = htmlUtil.getOptionalElement(this.root, 'field');
+        this.containerEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'container');
+        this.fieldEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'field');
         if (comp.label) {
-            this.labelEle = htmlUtil.getOptionalElement(this.root, 'label');
+            this.labelEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'label');
             if (this.labelEle) {
                 this.labelEle.innerText = comp.label;
             }
@@ -90,7 +77,7 @@ export class BaseElement {
         /**
          * does this html require custom initialization?
          */
-        const att = htmlUtil.getViewState(this.root, 'init');
+        const att = htmlUtil_1.htmlUtil.getViewState(this.root, 'init');
         if (att) {
             const fnName = '' + att;
             const fn = this.ac.getFn(fnName, 'init');
@@ -108,7 +95,7 @@ export class BaseElement {
         if (maxWidth !== 0) {
             let width = comp.width;
             if (width === undefined) {
-                if (htmlUtil.getViewState(this.root, 'full') !== undefined) {
+                if (htmlUtil_1.htmlUtil.getViewState(this.root, 'full') !== undefined) {
                     //the html root has signalled that it wants full width
                     width = maxWidth;
                 }
@@ -122,9 +109,9 @@ export class BaseElement {
         Page may not render properly`);
                 width = maxWidth;
             }
-            htmlUtil.setViewState(this.root, 'width', width);
+            htmlUtil_1.htmlUtil.setViewState(this.root, 'width', width);
             if (this.containerEle) {
-                htmlUtil.setViewState(this.containerEle, 'width', width);
+                htmlUtil_1.htmlUtil.setViewState(this.containerEle, 'width', width);
             }
         }
     }
@@ -134,11 +121,11 @@ export class BaseElement {
      */
     setError(msg) {
         this.logger.warn(`component type ${this.comp.compType} has not implemented setError(), but a request is received with value="${msg}"`);
-        htmlUtil.setViewState(this.root, 'invalid', msg !== undefined);
+        htmlUtil_1.htmlUtil.setViewState(this.root, 'invalid', msg !== undefined);
     }
     setDisplayState(settings) {
         for (const [name, value] of Object.entries(settings)) {
-            htmlUtil.setViewState(this.root, name, value);
+            htmlUtil_1.htmlUtil.setViewState(this.root, name, value);
         }
     }
     clicked() {
@@ -164,4 +151,5 @@ export class BaseElement {
         }
     }
 }
+exports.BaseElement = BaseElement;
 //# sourceMappingURL=baseElement.js.map

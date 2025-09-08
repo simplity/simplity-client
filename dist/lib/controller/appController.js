@@ -1,11 +1,14 @@
-import { loggerStub } from '../loggerStub/logger';
-import { serviceAgent } from '../agent/agent';
-import { util } from './util';
-import { app } from './app';
-import { parseValue, validateValue } from '../validation/validation';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AC = void 0;
+const logger_1 = require("../loggerStub/logger");
+const agent_1 = require("../agent/agent");
+const util_1 = require("./util");
+const app_1 = require("./app");
+const validation_1 = require("../validation/validation");
 const USER = '_user';
 const REGEXP = /\$(\{\d+\})/g;
-let logger = loggerStub.getLogger();
+let logger = logger_1.loggerStub.getLogger();
 /**
  * this is used to simulate Session storage in non-browser environment
  */
@@ -28,55 +31,26 @@ const simulatedSession = {
         simulatedStorage = {};
     },
 };
-export class AC {
-    appView;
-    // app components
-    listSources;
-    allForms;
-    allPages;
-    functionDetails;
-    allLayouts;
-    allModules;
-    allMenus;
-    allMessages;
-    allValueSchemas;
-    allHtmls;
-    allFormatters;
-    // app level parameters
-    loginServiceName;
-    logoutServiceName;
-    imageBasePath;
-    defaultPageSize;
-    viewFactory;
-    /*
-     * context for the logged-in user
-     */
-    sessionId;
-    context;
-    /**
-     * access control related
-     */
-    validPagesArray = [];
-    allowAllMenus = false;
-    allowedModules = {};
-    allowedMenus = {};
-    /**
-     * agent to communicate with the app-server for services
-     * can be a dummy for testing/demo version
-     */
-    agent;
-    /**
-     * fragile design to manage multiple requests to disable/enable UX involving async calls
-     * TODO: What happens when a function throws error after disabling!!!
-     */
-    disableUxCount = 0;
+class AC {
     /**
      * @param runtime meta-data components for this apps
      * @param appView  This is the root html element for this app.
      */
     constructor(runtime, appView) {
         this.appView = appView;
-        this.agent = serviceAgent.newAgent({
+        /**
+         * access control related
+         */
+        this.validPagesArray = [];
+        this.allowAllMenus = false;
+        this.allowedModules = {};
+        this.allowedMenus = {};
+        /**
+         * fragile design to manage multiple requests to disable/enable UX involving async calls
+         * TODO: What happens when a function throws error after disabling!!!
+         */
+        this.disableUxCount = 0;
+        this.agent = agent_1.serviceAgent.newAgent({
             localServices: runtime.localServices,
             responses: runtime.cachedResponses,
             serverUrl: runtime.serverUrl,
@@ -433,7 +407,7 @@ export class AC {
             logger.warn(`service ${serviceName} succeeded, but did not return any data. file ${fileName} would be empty`);
             data = {};
         }
-        util.download(data, fileName);
+        util_1.util.download(data, fileName);
         return true;
     }
     async getList(listName, forceRefresh, key) {
@@ -483,7 +457,7 @@ export class AC {
                 return [];
             }
         }
-        const serviceName = app.Conventions.listServiceName;
+        const serviceName = app_1.app.Conventions.listServiceName;
         const data = key ? { list: listName, key } : { list: listName };
         //request the server
         const resp = await this.serve(serviceName, data);
@@ -525,7 +499,7 @@ export class AC {
         if (forceRefresh === false && entry.keyedList) {
             return entry.keyedList;
         }
-        const serviceName = app.Conventions.listServiceName;
+        const serviceName = app_1.app.Conventions.listServiceName;
         const resp = await this.serve(serviceName, { listName });
         const list = resp.data?.list;
         if (!list) {
@@ -583,14 +557,14 @@ export class AC {
             return {
                 messages: [
                     {
-                        messageId: app.Conventions.errorSchemaIsMissing,
+                        messageId: app_1.app.Conventions.messageIds.schemaIsMissing,
                         alertType: 'error',
                         params: [schemaName],
                     },
                 ],
             };
         }
-        let result = validateValue(schema, value);
+        let result = (0, validation_1.validateValue)(schema, value);
         if (result.messages || !schema.validationFn) {
             return result;
         }
@@ -598,7 +572,7 @@ export class AC {
         return fd.fn({ value });
     }
     validateType(valueType, textValue) {
-        const value = parseValue(textValue, valueType);
+        const value = (0, validation_1.parseValue)(textValue, valueType);
         if (value !== undefined) {
             return { value };
         }
@@ -625,7 +599,7 @@ export class AC {
         if (user) {
             console.info('User context being created', user);
             this.setContextValue(USER, user);
-            const txt = user[app.Conventions.allowedMenuIds];
+            const txt = user[app_1.app.Conventions.allowedMenuIds];
             if (txt === undefined) {
                 ids = '*'; //no restrictions
             }
@@ -645,4 +619,5 @@ export class AC {
         }
     }
 }
+exports.AC = AC;
 //# sourceMappingURL=appController.js.map

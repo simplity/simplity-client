@@ -1,39 +1,34 @@
-import { LayoutElement } from './layoutElement';
-import { app } from '../controller/app';
-import { loggerStub } from '../loggerStub/logger';
-import { htmlUtil } from './htmlUtil';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AppElement = void 0;
+const layoutElement_1 = require("./layoutElement");
+const app_1 = require("../controller/app");
+const logger_1 = require("../loggerStub/logger");
+const htmlUtil_1 = require("./htmlUtil");
 const PAGE_TITLE = 'page-title';
-export class AppElement {
-    root;
-    currentPopup;
-    layoutEle;
-    logger;
-    ac;
-    pageStack = [];
-    spinnerEle;
-    messageEle;
-    messageTextEle;
+class AppElement {
     /**
      *
      * @param runtime
      * @param appEle container element to which the app-view is to be appended to
      */
     constructor(runtime, appEle) {
-        this.logger = loggerStub.getLogger();
+        this.pageStack = [];
+        this.logger = logger_1.loggerStub.getLogger();
         this.root = appEle;
         //create the all important and all powerful controller of controllers!!!
-        this.ac = app.newAc(runtime, this);
+        this.ac = app_1.app.newAc(runtime, this);
         //render the default layout
         this.renderLayout(runtime.startingLayout, {
             module: runtime.startingModule,
         });
-        this.spinnerEle = htmlUtil.newHtmlElement('disable-ux');
+        this.spinnerEle = htmlUtil_1.htmlUtil.newHtmlElement('disable-ux');
         if (this.spinnerEle) {
             document.body.appendChild(this.spinnerEle);
         }
-        this.messageEle = htmlUtil.newHtmlElement('message');
+        this.messageEle = htmlUtil_1.htmlUtil.newHtmlElement('message');
         if (this.messageEle) {
-            this.messageTextEle = htmlUtil.getOptionalElement(this.messageEle, 'message');
+            this.messageTextEle = htmlUtil_1.htmlUtil.getOptionalElement(this.messageEle, 'message');
             document.body.appendChild(this.messageEle);
         }
     }
@@ -45,7 +40,7 @@ export class AppElement {
             this.layoutEle.root.remove();
         }
         const layout = this.ac.getLayout(layoutName);
-        const lv = new LayoutElement(layout, params);
+        const lv = new layoutElement_1.LayoutElement(layout, params);
         this.layoutEle = lv;
         this.root.appendChild(lv.root);
     }
@@ -85,7 +80,7 @@ export class AppElement {
     }
     renderContextValues(values) {
         for (const [name, value] of Object.entries(values)) {
-            const ele = htmlUtil.getOptionalElement(this.root, name);
+            const ele = htmlUtil_1.htmlUtil.getOptionalElement(this.root, name);
             if (ele) {
                 ele.textContent = value.toString();
             }
@@ -114,7 +109,7 @@ export class AppElement {
             msg = txt + '\n' + msg;
         }
         this.messageTextEle.innerText = msg;
-        htmlUtil.setViewState(this.messageEle, 'hidden', false);
+        htmlUtil_1.htmlUtil.setViewState(this.messageEle, 'hidden', false);
     }
     getUserChoice(text, choices) {
         throw new Error(`Text: ${text} to be rendered asking for${choices.length} options. This functionality is not yet developed`);
@@ -135,11 +130,11 @@ export class AppElement {
         }
     }
     doNavigate(url) {
-        app.getCurrentAc().newWindow(url);
+        app_1.app.getCurrentAc().newWindow(url);
     }
     disableUx() {
         if (this.spinnerEle) {
-            htmlUtil.setViewState(this.spinnerEle, 'hidden', false);
+            htmlUtil_1.htmlUtil.setViewState(this.spinnerEle, 'hidden', false);
         }
         else {
             this.logger.error(`App has not provided an html-template named 'disable-ux'. UX is not disabled`);
@@ -147,8 +142,9 @@ export class AppElement {
     }
     enableUx() {
         if (this.spinnerEle) {
-            htmlUtil.setViewState(this.spinnerEle, 'hidden', true);
+            htmlUtil_1.htmlUtil.setViewState(this.spinnerEle, 'hidden', true);
         }
     }
 }
+exports.AppElement = AppElement;
 //# sourceMappingURL=appElement.js.map

@@ -10,6 +10,7 @@ import {
 import { BaseElement } from './baseElement';
 import { HtmlTemplateName, htmlUtil, ViewState } from './htmlUtil';
 import { parseValue } from '../validation/validation';
+import { app } from '../controller/app';
 
 function getTemplateName(field: DataField): HtmlTemplateName | '' {
   const ras = field.renderAs;
@@ -324,7 +325,7 @@ export class FieldElement extends BaseElement implements FieldView {
     if (!this.textValue) {
       this.value = '';
       if (this.field.isRequired) {
-        msgs = [this.createMessage('_valueRequired')];
+        msgs = [this.createMessage(app.Conventions.messageIds.valueIsRequired)];
       }
     } else {
       const vs = this.field.valueSchema;

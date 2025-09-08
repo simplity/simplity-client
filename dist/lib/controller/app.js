@@ -1,19 +1,36 @@
-import { PC } from './pageController';
-import { loggerStub } from '../loggerStub/logger';
-import { AC } from './appController';
-import { util } from './util';
-let logger = loggerStub.getLogger();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = void 0;
+const pageController_1 = require("./pageController");
+const logger_1 = require("../loggerStub/logger");
+const appController_1 = require("./appController");
+const util_1 = require("./util");
+let logger = logger_1.loggerStub.getLogger();
 let pc;
 let ac;
 /**
  * utility to create controllers
  */
-export const app = {
+exports.app = {
     /**
      * constants/conventions that are used across layers.
      * These are fixed at design time. deployment-time parameters can be found in Config
      */
     Conventions: {
+        messageIds: {
+            /**
+             * value is required
+             */
+            valueIsRequired: '_valueRequired',
+            /**
+             * generic error message when validation fails and  no specific error id is specified
+             */
+            invalidValue: '_invalidValue',
+            /**
+             * error when the specified schema is not defined in the app
+             */
+            schemaIsMissing: '_schemaIsMissing',
+        },
         /**
          * name of the style in gridStyles collection that is to be used as a default style
          */
@@ -30,18 +47,6 @@ export const app = {
          * user attribute that has the list of allowed menu ids
          */
         allowedMenuIds: 'allowedMenuIds',
-        /**
-         * value is required
-         */
-        errorValueIsRequired: '_valueRequired',
-        /**
-         * generic error message when validation fails and  no specific error id is specified
-         */
-        errorInvalidValue: '_invalidValue',
-        /**
-         * general error message when reg-ex fails, and the value schema does not provide specific error
-         */
-        errorSchemaIsMissing: '_missingSchema',
     },
     /**
      * create an App Controller.
@@ -55,7 +60,7 @@ export const app = {
         if (ac) {
             logger.warn(`The controller for app ${runtime.name} exists, but a new one being created. This is an ERROR in production mode`);
         }
-        ac = new AC(runtime, appView);
+        ac = new appController_1.AC(runtime, appView);
         return ac;
     },
     /**
@@ -75,7 +80,7 @@ export const app = {
      * @returns
      */
     newPc: (view) => {
-        pc = new PC(view);
+        pc = new pageController_1.PC(view);
         return pc;
     },
     /**
@@ -91,6 +96,6 @@ export const app = {
         logger.error(msg);
         throw new Error(msg);
     },
-    util: util,
+    util: util_1.util,
 };
 //# sourceMappingURL=app.js.map

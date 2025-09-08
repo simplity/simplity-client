@@ -1,58 +1,40 @@
-import { loggerStub } from '../loggerStub/logger';
-import { FC } from './formController';
-import { app } from './app';
-const logger = loggerStub.getLogger();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PC = void 0;
+const logger_1 = require("../loggerStub/logger");
+const formController_1 = require("./formController");
+const app_1 = require("./app");
+const logger = logger_1.loggerStub.getLogger();
 const FORM_NAME = 'ROOT';
 const FIELD_REGEX = /^\${.+}$/;
-export class PC {
-    // ///////// attributes that are non-state : they are immutable
-    name;
-    /**
-     * controller for the root form.
-     */
-    fc;
-    ac;
-    /**
-     * meta data for this page
-     */
-    page;
-    /**
-     * page class/component associated with this service
-     */
-    pageView;
-    buttonsToDisplay = [];
-    /**
-     * is this page for saving data? (for add or update depending on the mode)
-     */
-    forSave = false;
-    /**
-     * relevant if forSave is true.
-     * true if the page is invoked with keys, and hence we are updating
-     */
-    saveIsUpdate = false;
-    // //////////// State (mutable) attributes
-    /**
-     * title of the page may have dynamic content (field) in that.
-     * this field has the calculated string, based on current values
-     */
-    currentTitle;
-    /**
-     * set to true if user changes any field value
-     */
-    isModified = false;
-    /**
-     * values that are set at run time at the page-context.
-     * this context is checked for preparing the payload using params.
-     */
-    values = {};
-    /**
-     * runtime actions are triggered by view components that may be created at run time, needing onclick-action.
-     */
-    functions = {};
-    actions = {};
-    lists = {};
+class PC {
     constructor(pageView) {
-        this.ac = app.getCurrentAc();
+        this.buttonsToDisplay = [];
+        /**
+         * is this page for saving data? (for add or update depending on the mode)
+         */
+        this.forSave = false;
+        /**
+         * relevant if forSave is true.
+         * true if the page is invoked with keys, and hence we are updating
+         */
+        this.saveIsUpdate = false;
+        /**
+         * set to true if user changes any field value
+         */
+        this.isModified = false;
+        /**
+         * values that are set at run time at the page-context.
+         * this context is checked for preparing the payload using params.
+         */
+        this.values = {};
+        /**
+         * runtime actions are triggered by view components that may be created at run time, needing onclick-action.
+         */
+        this.functions = {};
+        this.actions = {};
+        this.lists = {};
+        this.ac = app_1.app.getCurrentAc();
         this.pageView = pageView;
         this.page = pageView.page;
         /**
@@ -67,7 +49,7 @@ export class PC {
         if (formName) {
             form = this.ac.getForm(formName);
         }
-        this.fc = new FC(FORM_NAME, this, form);
+        this.fc = new formController_1.FC(FORM_NAME, this, form);
     }
     pageRendered() {
         this.fc.formRendered();
@@ -764,6 +746,7 @@ export class PC {
         return vo;
     }
 }
+exports.PC = PC;
 /**
  * //TODO we have to validate the fields
  * @param values

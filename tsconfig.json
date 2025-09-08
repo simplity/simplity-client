@@ -3,13 +3,13 @@
   "exclude": ["node_modules", "generatedRecords"],
   "compilerOptions": {
     "outDir": "./dist/",
-    "module": "ESNext",
-    "target": "ESNext",
     "baseUrl": "./src/lib/",
     "paths": {
       "@/*": ["*"]
     },
-    "moduleResolution": "bundler",
+    "module": "CommonJS",
+    "target": "ES2020",
+    "moduleResolution": "node",
     "lib": ["ES2023", "DOM"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,

@@ -1,30 +1,29 @@
-import { BaseElement } from './baseElement';
-import { Chart } from 'chart.js/auto';
-import { htmlUtil } from './htmlUtil';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ChartElement = void 0;
+const baseElement_1 = require("./baseElement");
+const auto_1 = require("chart.js/auto");
+const htmlUtil_1 = require("./htmlUtil");
 const OPTIONS = {
     responsive: true, // Adapt to parent size
     maintainAspectRatio: true, // Keep a fixed ratio (e.g., 1:1 for pie)
     aspectRatio: 1, // Square chart (optional, adjust as needed)
 };
-export class ChartElement extends BaseElement {
-    fc;
-    chart;
-    /**
-     * for implementing sort feature
-     */
-    data = [];
-    cc;
-    chartEle;
-    labels = [];
-    fieldNames = [];
+class ChartElement extends baseElement_1.BaseElement {
     constructor(fc, chart, maxWidth) {
         super(fc, chart, 'chart', maxWidth);
         this.fc = fc;
         this.chart = chart;
+        /**
+         * for implementing sort feature
+         */
+        this.data = [];
+        this.labels = [];
+        this.fieldNames = [];
         if (!fc) {
             throw new Error(`Chart-component ${chart.name} is probably inside of a table?. Please check your page component design`);
         }
-        this.chartEle = htmlUtil.getChildElement(this.root, 'chart');
+        this.chartEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'chart');
         this.cc = fc.newChartController(this);
         this.cc;
         for (const field of this.chart.fields) {
@@ -83,7 +82,7 @@ export class ChartElement extends BaseElement {
                 ],
             },
         };
-        new Chart(this.chartEle, config);
+        new auto_1.Chart(this.chartEle, config);
     }
     chartClicked(idx) {
         const field = this.chart.fields[idx];
@@ -98,4 +97,5 @@ export class ChartElement extends BaseElement {
         this.root.innerHTML = '';
     }
 }
+exports.ChartElement = ChartElement;
 //# sourceMappingURL=chartElement.js.map

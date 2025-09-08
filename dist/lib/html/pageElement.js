@@ -1,25 +1,21 @@
-import { htmlUtil } from './htmlUtil';
-import { PanelElement } from './panelElement';
-import { app } from '../controller/app';
-import { elementFactory } from './elementFactory';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PageElement = void 0;
+const htmlUtil_1 = require("./htmlUtil");
+const panelElement_1 = require("./panelElement");
+const app_1 = require("../controller/app");
+const elementFactory_1 = require("./elementFactory");
 //import { loggerStub } from '../logger-stub/logger';
 //const logger = loggerStub.getLogger();
 const NBR_COLS_IN_GRID = 12;
-export class PageElement {
-    page;
-    inputs;
-    titleEle;
-    // private readonly buttonsEle: HTMLElement;
-    pc;
-    fc;
-    root;
+class PageElement {
     constructor(page, inputs) {
         this.page = page;
         this.inputs = inputs;
-        this.root = htmlUtil.newHtmlElement('page');
-        this.titleEle = htmlUtil.getOptionalElement(this.root, 'title');
-        const dataContainer = htmlUtil.getChildElement(this.root, 'data');
-        const buttonsEle = htmlUtil.getChildElement(this.root, 'buttons');
+        this.root = htmlUtil_1.htmlUtil.newHtmlElement('page');
+        this.titleEle = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'title');
+        const dataContainer = htmlUtil_1.htmlUtil.getChildElement(this.root, 'data');
+        const buttonsEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'buttons');
         /**
          * are we to put buttons above data-panel?
          */
@@ -28,9 +24,9 @@ export class PageElement {
             const ele = dataContainer.parentElement;
             ele.insertBefore(buttonsEle, ele.firstChild);
         }
-        this.pc = app.newPc(this);
+        this.pc = app_1.app.newPc(this);
         this.fc = this.pc.fc;
-        const dataPanel = new PanelElement(this.pc.fc, this.page.dataPanel, NBR_COLS_IN_GRID);
+        const dataPanel = new panelElement_1.PanelElement(this.pc.fc, this.page.dataPanel, NBR_COLS_IN_GRID);
         /**
          * dataPanel is the main container that defines the width units
          */
@@ -53,7 +49,7 @@ export class PageElement {
                 middleButtons: page.middleButtons,
                 rightButtons: page.rightButtons,
             };
-            const ele = elementFactory.newElement(this.fc, buttonPanel, NBR_COLS_IN_GRID);
+            const ele = elementFactory_1.elementFactory.newElement(this.fc, buttonPanel, NBR_COLS_IN_GRID);
             buttonsEle.appendChild(ele.root);
         }
         this.pc.pageRendered();
@@ -72,4 +68,5 @@ export class PageElement {
             JSON.stringify(alerts));
     }
 }
+exports.PageElement = PageElement;
 //# sourceMappingURL=pageElement.js.map

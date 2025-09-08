@@ -1,4 +1,7 @@
-import { BaseElement } from './baseElement';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LeafElement = void 0;
+const baseElement_1 = require("./baseElement");
 const getTemplateName = (comp) => {
     if (comp.compType == 'button') {
         return 'button';
@@ -12,8 +15,7 @@ const getTemplateName = (comp) => {
  * These elements are allowed to be rendered inside a TablePanel, in which case we have to handle them with their rowId.
  * This base class handles that part.
  */
-export class LeafElement extends BaseElement {
-    comp;
+class LeafElement extends baseElement_1.BaseElement {
     constructor(fc, comp, maxWidth) {
         super(fc, comp, getTemplateName(comp), maxWidth);
         this.comp = comp;
@@ -26,4 +28,5 @@ export class LeafElement extends BaseElement {
         }
     }
 }
+exports.LeafElement = LeafElement;
 //# sourceMappingURL=leafElement.js.map

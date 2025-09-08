@@ -1,54 +1,15 @@
-import { loggerStub } from '../loggerStub/logger';
-import { SimpleTableEditorController } from './simpleTableEditorController';
-import { SimpleChartController } from './simpleChartController';
-import { SimpleTableViewerController } from './simpleTableViewerController';
-const logger = loggerStub.getLogger();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FC = void 0;
+const logger_1 = require("../loggerStub/logger");
+const simpleTableEditorController_1 = require("./simpleTableEditorController");
+const simpleChartController_1 = require("./simpleChartController");
+const simpleTableViewerController_1 = require("./simpleTableViewerController");
+const logger = logger_1.loggerStub.getLogger();
 /**
  * controls a row in a table or the root fields in a page.
  */
-export class FC {
-    name;
-    pc;
-    form;
-    ac;
-    type = 'form';
-    controllers = {};
-    /**
-     * all fields in this form.
-     */
-    fieldViews = {};
-    /**
-     * this is THE MODEL that this controller should control
-     */
-    data = {};
-    /**
-     * all the registered children
-     */
-    children = {};
-    // {fieldName: {eventName: [handler1, handler2, ...] }}
-    listeners = {};
-    /**
-     * set to true whenever a child reports a data-change
-     */
-    gotModified = true;
-    /**
-     * editable fields within tab-children of tabs panel.
-     * For each tabs panel, for each tab-child of that tabs, we have an array of editable fields.
-     * populated if the tabs panel is marked as trackErrors
-     */
-    tabGroups;
-    /**
-     * array that would contain one entry for each child-tab. (Each entry would be again an array)
-     * This is used during registration process.
-     */
-    currentGroupArray;
-    /**
-     * current tab that is open to which any editable field is to be added to.
-     * This is used during registration process.
-     *
-     * registerFields() would push editable fields into this array
-     */
-    currentTabArray;
+class FC {
     /**
      * @param name unique across all elements of the parent. anything if this has no parent.
      * @param pc
@@ -59,6 +20,26 @@ export class FC {
         this.name = name;
         this.pc = pc;
         this.form = form;
+        this.type = 'form';
+        this.controllers = {};
+        /**
+         * all fields in this form.
+         */
+        this.fieldViews = {};
+        /**
+         * this is THE MODEL that this controller should control
+         */
+        this.data = {};
+        /**
+         * all the registered children
+         */
+        this.children = {};
+        // {fieldName: {eventName: [handler1, handler2, ...] }}
+        this.listeners = {};
+        /**
+         * set to true whenever a child reports a data-change
+         */
+        this.gotModified = true;
         this.ac = pc.ac;
         if (data) {
             this.data = data;
@@ -198,14 +179,14 @@ export class FC {
     newTableViewerController(view) {
         const name = view.name;
         this.checkName(name);
-        const controller = new SimpleTableViewerController(this, view);
+        const controller = new simpleTableViewerController_1.SimpleTableViewerController(this, view);
         this.controllers[name] = controller;
         return controller;
     }
     newTableEditorController(view) {
         const name = view.name;
         this.checkName(name);
-        const controller = new SimpleTableEditorController(this, view);
+        const controller = new simpleTableEditorController_1.SimpleTableEditorController(this, view);
         this.controllers[name] = controller;
         return controller;
     }
@@ -217,7 +198,7 @@ export class FC {
     }
     newChartController(view) {
         this.checkName(view.name);
-        const controller = new SimpleChartController(this, view);
+        const controller = new simpleChartController_1.SimpleChartController(this, view);
         this.controllers[view.name] = controller;
         return controller;
     }
@@ -608,6 +589,7 @@ export class FC {
         }
     }
 }
+exports.FC = FC;
 function addMessage(text, msgs) {
     msgs.push({ text, id: '', type: 'error' });
 }

@@ -1,16 +1,10 @@
-import { BaseElement } from './baseElement';
-import { htmlUtil } from './htmlUtil';
-import { elementFactory } from './elementFactory';
-export class TableEditorElement extends BaseElement {
-    fc;
-    table;
-    tec;
-    tableEle;
-    rowsEle;
-    headerRowEle;
-    dataRowEle;
-    headerCellEle;
-    dataCellEle;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TableEditorElement = void 0;
+const baseElement_1 = require("./baseElement");
+const htmlUtil_1 = require("./htmlUtil");
+const elementFactory_1 = require("./elementFactory");
+class TableEditorElement extends baseElement_1.BaseElement {
     //private configEle: HTMLElement | undefined;
     //private currentConfig: ListConfiguration | undefined;
     //private Configs: ListConfiguration[] | undefined;
@@ -21,20 +15,20 @@ export class TableEditorElement extends BaseElement {
         /**
          * typically <Table>
          */
-        this.tableEle = htmlUtil.getChildElement(this.root, 'table');
+        this.tableEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'table');
         /**
          * typically <thead> -> <tr>
          */
-        this.headerRowEle = htmlUtil.getChildElement(this.root, 'header');
+        this.headerRowEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'header');
         /**
          * typically <tbody>
          */
-        this.rowsEle = htmlUtil.getChildElement(this.root, 'rows');
+        this.rowsEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'rows');
         /**
          * typically <tbody> -> <tr>
          */
-        this.dataRowEle = htmlUtil.getChildElement(this.root, 'row');
-        const btn = htmlUtil.getChildElement(this.root, 'add-button');
+        this.dataRowEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'row');
+        const btn = htmlUtil_1.htmlUtil.getChildElement(this.root, 'add-button');
         if (table.rowsCanBeAdded) {
             btn.addEventListener('click', () => {
                 console.info(`add row clicked for ${this.table.name}`);
@@ -63,7 +57,7 @@ export class TableEditorElement extends BaseElement {
      * remove all rows that are rendered
      */
     reset() {
-        htmlUtil.removeChildren(this.rowsEle);
+        htmlUtil_1.htmlUtil.removeChildren(this.rowsEle);
     }
     /**
      * render an additional row, possibly with data.
@@ -76,12 +70,12 @@ export class TableEditorElement extends BaseElement {
      */
     appendRow(fc, rowIdx, values) {
         const rowEle = this.dataRowEle.cloneNode(true);
-        htmlUtil.setViewState(rowEle, 'idx', rowIdx);
+        htmlUtil_1.htmlUtil.setViewState(rowEle, 'idx', rowIdx);
         for (const column of this.table.children) {
             const cellEle = this.dataCellEle.cloneNode(true);
             let value = values && values[column.name];
             if (this.table.editable) {
-                const field = elementFactory.newElement(fc, column, 0, value);
+                const field = elementFactory_1.elementFactory.newElement(fc, column, 0, value);
                 cellEle.appendChild(field.root);
             }
             else {
@@ -91,7 +85,7 @@ export class TableEditorElement extends BaseElement {
                 else {
                     value = '' + value;
                 }
-                htmlUtil.appendText(cellEle, value);
+                htmlUtil_1.htmlUtil.appendText(cellEle, value);
             }
             rowEle.appendChild(cellEle);
         }
@@ -100,9 +94,10 @@ export class TableEditorElement extends BaseElement {
     renderHeader() {
         for (const column of this.table.children) {
             const ele = this.headerCellEle.cloneNode(true);
-            htmlUtil.appendText(ele, column.label || '');
+            htmlUtil_1.htmlUtil.appendText(ele, column.label || '');
             this.headerRowEle.appendChild(ele);
         }
     }
 }
+exports.TableEditorElement = TableEditorElement;
 //# sourceMappingURL=tableEditorElement.js.map

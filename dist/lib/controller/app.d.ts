@@ -8,6 +8,20 @@ export declare const app: {
      * These are fixed at design time. deployment-time parameters can be found in Config
      */
     Conventions: {
+        messageIds: {
+            /**
+             * value is required
+             */
+            valueIsRequired: string;
+            /**
+             * generic error message when validation fails and  no specific error id is specified
+             */
+            invalidValue: string;
+            /**
+             * error when the specified schema is not defined in the app
+             */
+            schemaIsMissing: string;
+        };
         /**
          * name of the style in gridStyles collection that is to be used as a default style
          */
@@ -24,18 +38,6 @@ export declare const app: {
          * user attribute that has the list of allowed menu ids
          */
         allowedMenuIds: string;
-        /**
-         * value is required
-         */
-        errorValueIsRequired: string;
-        /**
-         * generic error message when validation fails and  no specific error id is specified
-         */
-        errorInvalidValue: string;
-        /**
-         * general error message when reg-ex fails, and the value schema does not provide specific error
-         */
-        errorSchemaIsMissing: string;
     };
     /**
      * create an App Controller.

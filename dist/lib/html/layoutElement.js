@@ -1,53 +1,41 @@
-import { PageElement } from './pageElement';
-import { app } from '../controller/app';
-import { loggerStub } from '../loggerStub/logger';
-import { htmlUtil } from './htmlUtil';
-import { ModuleElement } from './moduleElement';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LayoutElement = void 0;
+const pageElement_1 = require("./pageElement");
+const app_1 = require("../controller/app");
+const logger_1 = require("../loggerStub/logger");
+const htmlUtil_1 = require("./htmlUtil");
+const moduleElement_1 = require("./moduleElement");
 const PAGE_TITLE = 'page-title';
 /**
  * Only child of AppElement. Defines the over-all layout
  */
-export class LayoutElement {
-    layout;
-    root;
-    ac;
-    logger;
-    /*
-     * handle to the child elements
-     */
-    pageEle;
-    menuBarEle;
-    /**
-     * if a modal page is active
-     */
-    modalContainerEle;
-    modalPageParent;
-    modalPageView;
-    /**
-     * html elements for any context-value being rendered in the layout
-     */
-    contextEles = {};
-    //private currentModule = '';
-    //private lc: LayoutController;
-    /**
-     * module names mapped to their indexes in the modules[] array
-     */
-    moduleMap = {};
-    menuGroups = {};
-    /**
-     * keeps track of active pages. Current one is on the top.
-     */
-    pageStack = [];
+class LayoutElement {
     constructor(layout, options) {
         this.layout = layout;
-        this.logger = loggerStub.getLogger();
-        this.ac = app.getCurrentAc();
-        this.root = htmlUtil.newHtmlElement('layout');
+        /**
+         * html elements for any context-value being rendered in the layout
+         */
+        this.contextEles = {};
+        //private currentModule = '';
+        //private lc: LayoutController;
+        /**
+         * module names mapped to their indexes in the modules[] array
+         */
+        this.moduleMap = {};
+        this.menuGroups = {};
+        /**
+         * keeps track of active pages. Current one is on the top.
+         */
+        this.pageStack = [];
+        this.logger = logger_1.loggerStub.getLogger();
+        this.ac = app_1.app.getCurrentAc();
+        this.root = htmlUtil_1.htmlUtil.newHtmlElement('layout');
         /**
          * keep the modal container ready;
          */
-        this.modalContainerEle = htmlUtil.newHtmlElement('panel-modal');
-        this.modalPageParent = htmlUtil.getChildElement(this.modalContainerEle, 'page');
+        this.modalContainerEle = htmlUtil_1.htmlUtil.newHtmlElement('panel-modal');
+        this.modalPageParent = htmlUtil_1.htmlUtil.getChildElement(this.modalContainerEle, 'page');
         document.body.appendChild(this.modalContainerEle);
         /*
          * modules are mandatory. however, during development, it could be an empty array
@@ -65,12 +53,12 @@ export class LayoutElement {
             names = [PAGE_TITLE, ...this.layout.contextNamesToRender];
         }
         for (const nam of names) {
-            const ele = htmlUtil.getOptionalElement(this.root, nam);
+            const ele = htmlUtil_1.htmlUtil.getOptionalElement(this.root, nam);
             if (ele) {
                 this.contextEles[nam] = ele;
             }
         }
-        this.pageEle = htmlUtil.getChildElement(this.root, 'page');
+        this.pageEle = htmlUtil_1.htmlUtil.getChildElement(this.root, 'page');
         this.renderModule(options);
     }
     /**
@@ -107,7 +95,7 @@ export class LayoutElement {
                     this.pageStack.push(lastEntry); //retain the current page.
                     if (!options.asModal) {
                         //hide it if not modal
-                        htmlUtil.setViewState(lastEntry.ele.root, 'hidden', true);
+                        htmlUtil_1.htmlUtil.setViewState(lastEntry.ele.root, 'hidden', true);
                     }
                 }
                 else {
@@ -116,11 +104,11 @@ export class LayoutElement {
                 }
             }
         }
-        const pageView = new PageElement(page, options.pageParameters || {});
+        const pageView = new pageElement_1.PageElement(page, options.pageParameters || {});
         if (options.asModal && this.modalContainerEle) {
             this.modalPageView = pageView;
             this.modalPageParent.appendChild(pageView.root);
-            htmlUtil.setViewState(this.modalContainerEle, 'hidden', false);
+            htmlUtil_1.htmlUtil.setViewState(this.modalContainerEle, 'hidden', false);
         }
         else {
             this.pageStack.push({
@@ -131,7 +119,7 @@ export class LayoutElement {
         }
         if (this.menuBarEle) {
             const toHide = this.modalPageView === undefined && !!page.hideModules;
-            htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
+            htmlUtil_1.htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
         }
     }
     /**
@@ -154,15 +142,15 @@ export class LayoutElement {
         entry.ele.root.remove();
         //show the last page
         entry = this.pageStack[this.pageStack.length - 1];
-        htmlUtil.setViewState(entry.ele.root, 'hidden', false);
+        htmlUtil_1.htmlUtil.setViewState(entry.ele.root, 'hidden', false);
         if (this.menuBarEle) {
             const toHide = !!entry.ele.page.hideModules;
-            htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
+            htmlUtil_1.htmlUtil.setViewState(this.menuBarEle, 'hidden', toHide);
         }
         window.scrollTo({ top: entry.scrollTop, behavior: 'instant' });
     }
     closeModalPage() {
-        htmlUtil.setViewState(this.modalContainerEle, 'hidden', true);
+        htmlUtil_1.htmlUtil.setViewState(this.modalContainerEle, 'hidden', true);
         this.modalPageView.root.remove();
         this.modalPageView = undefined;
     }
@@ -225,20 +213,20 @@ export class LayoutElement {
         }
     }
     renderMenuBar() {
-        const menubar = htmlUtil.getOptionalElement(this.root, 'menu-bar');
+        const menubar = htmlUtil_1.htmlUtil.getOptionalElement(this.root, 'menu-bar');
         if (!menubar) {
             this.logger.info(`Layout ${this.layout.name} has no child element with data-id="menu-bar". Menu not rendered`);
             return;
         }
         for (const moduleName of this.layout.modules) {
             const module = this.ac.getModule(moduleName);
-            const mg = new ModuleElement(this.ac, module);
+            const mg = new moduleElement_1.ModuleElement(this.ac, module);
             this.menuGroups[moduleName] = mg;
-            const label = htmlUtil.getChildElement(mg.root, 'label');
+            const label = htmlUtil_1.htmlUtil.getChildElement(mg.root, 'label');
             if (module.icon) {
-                htmlUtil.appendIcon(label, module.icon);
+                htmlUtil_1.htmlUtil.appendIcon(label, module.icon);
             }
-            htmlUtil.appendText(label, module.label);
+            htmlUtil_1.htmlUtil.appendText(label, module.label);
             menubar.appendChild(mg.root);
         }
         return menubar;
@@ -248,4 +236,5 @@ export class LayoutElement {
         return msg;
     }
 }
+exports.LayoutElement = LayoutElement;
 //# sourceMappingURL=layoutElement.js.map
